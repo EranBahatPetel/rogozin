@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מלבנים אינטראקטיביים עם קלט ותצוגה דינמית</title>
+    <style>
+        body, html {
+            margin: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        #topBar {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #e0e0e0;
+        }
+        #currentLevelInfo, #potentialScoreInfo, #cumulativeScoreInfo {
+            flex: 1;
+            text-align: center;
+        }
+        #inputArea {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f0f0f0;
+        }
+        #textInput, #levelSelect {
+            margin-right: 10px;
+        }
+        #canvasContainer {
+            position: relative;
+            flex: 1;
+            width: 100%;
+            height: 70vh;
+        }
+        #myCanvas {
+            width: 100%;
+            height: 100%;
+        }
+        #tempMessage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: rgba(0, 255, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 24px;
+            display: none;
+        }
+        #errorMessage {
+            position: fixed;
+            top: 10%;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: rgba(255, 0, 0, 0.7);
+            color: white;
+            padding: 20px;
+            border-radius: 10px;
+            font-size: 18px;
+            display: none;
+            text-align: center;
+            max-width: 300px;
+        }
+        #errorConfirm {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: white;
+            color: red;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .arrowInput {
+            width: 30px;
+            font-size: 12px;
+            position: absolute;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            max-width: 300px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+    <div id="topBar">
+        <div id="currentLevelInfo">רמה : 1</div>
+        <div id="potentialScoreInfo">ניקוד אפשרי : 0</div>
+        <div id="cumulativeScoreInfo">ניקוד מצטבר: 0</div>
+    </div>
+    <div id="inputArea">
+        <input type="text" id="textInput" placeholder="מה הנוסחה ?" dir="ltr">
+        <select id="levelSelect">
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+<!--            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+--!>			
+        </select>
+    </div>
+    <div id="canvasContainer">
+        <canvas id="myCanvas"></canvas>
+//        <div id="tempMessage">יפה מאוד!</div>
+    </div>
+<!--     <div id="errorMessage">
+        תשובה לא נכונה. התשובה הנכונה היא: y=3*x+5
+        <button id="errorConfirm">אישור</button>
+    </div>
+ -->    
+	<div id="correctModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>יפה מאוד !</p>
+            <button id="correctConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>תשובה לא נכונה. לחץ כדי להמשיך.</p>
+            <button id="errorConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="solutionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>לחץ כדי להמשיך</p>
+            <button id="solutionConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="hintModal" class="modal" dir="ltr">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="hintText"></p>
+            <button id="hintConfirm">אישור</button>
+        </div>
+    </div>
+    <script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        const currentLevelInfo = document.getElementById('currentLevelInfo');
+        const potentialScoreInfo = document.getElementById('potentialScoreInfo');
+        const textInput = document.getElementById('textInput');
+        const levelSelect = document.getElementById('levelSelect');
+        const cumulativeScoreInfo = document.getElementById('cumulativeScoreInfo');
+//        const tempMessage = document.getElementById('tempMessage');
+//        const errorMessage = document.getElementById('errorMessage');
+        const correctModal = document.getElementById('correctModal');
+        const errorModal = document.getElementById('errorModal');
+        const solutionModal = document.getElementById('solutionModal');
+        const hintModal = document.getElementById('hintModal');
+        const hintText = document.getElementById('hintText');
+
+        const rectangles = [
+            { text: 'תשובה בבקשה', color: 'blue' },
+            { text: 'רמז', color: 'green' },
+            { text: 'תרגיל אחר בבקשה', color: 'red' }
+        ];
+
+        let cumulativeScore = 0;
+		let potentialScore = 0;
+        let currentLevel = 1;
+        let leftNumbers = [];
+        let rightNumbers = [];
+//        let additionalNumber = 0;
+		let plus = 1;
+		let minus = 2;
+		let multiply = 3;
+		let divide = 4;
+		let operation = 0;
+		let operation2 = 0;
+		let mmm = 0;
+		let bbb = 0;
+		let maxNumber = 10;
+		let maxLevel = 6;
+		let formula = "ABC";
+		let hint = "DEF";
+		
+
+        function resizeCanvas() {
+            const container = document.getElementById('canvasContainer');
+            canvas.width = container.offsetWidth;
+            canvas.height = container.offsetHeight;
+        }
+
+        function drawRectangleWithText(x, y, width, height, text, color) {
+            ctx.fillStyle = color;
+            ctx.fillRect(x, y, width, height);
+            
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(x, y, width, height);
+			ctx.direction = "rtl";
+
+            ctx.font = 'bold 18px Arial';
+            ctx.fillStyle = 'white';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x + width / 2, y + height / 2);
+
+            return { x, y, width, height, text, color };
+        }
+
+        function drawArrow(fromX, fromY, toX, toY) {
+            const headLength = 10;
+            const angle = Math.atan2(toY - fromY, toX - fromX);
+
+            ctx.beginPath();
+            ctx.moveTo(fromX, fromY);
+            ctx.lineTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle - Math.PI / 6), toY - headLength * Math.sin(angle - Math.PI / 6));
+            ctx.moveTo(toX, toY);
+            ctx.lineTo(toX - headLength * Math.cos(angle + Math.PI / 6), toY - headLength * Math.sin(angle + Math.PI / 6));
+            ctx.stroke();
+        }
+
+        function drawNumberedArrow(fromX, fromY, toX, toY, number, isInput = false) {
+            drawArrow(fromX, fromY, toX, toY);
+            
+            const midX = (fromX + toX) / 2;
+            const midY = (fromY + toY) / 2;
+
+            if (isInput) {
+                const input = document.createElement('input');
+                input.type = 'text';
+                input.className = 'arrowInput';
+                input.style.left = `${midX-20}px`;
+                input.style.top = `${midY - 20}px`;
+                document.getElementById('canvasContainer').appendChild(input);
+            } else {
+                ctx.font = 'bold 14px Arial';
+                ctx.fillStyle = 'black';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText(number.toString(), midX, midY - 10);
+            }
+        }
+		
+		function checkPositiveResult(number)
+		{
+			if (operation == plus)
+				return 1;
+			if (operation == minus)
+				if (number - bbb >= 0)
+					return 1;
+				else
+					return 0;
+			if (operation == multiply)
+				if (operation2 == 0 || operation2 == plus)
+					return 1;
+				else if (number * mmm - bbb >= 0)
+					return 1;
+				else
+					return 0;
+			if (operation == divide)
+				if (operation2 == 0 || operation2 == plus)
+					return 1;
+				else if (number * mmm - bbb >= 0)
+					return 1;
+				else
+					return 0;
+			return 1;
+		}
+
+        function getUniqueRandomNumbers(count, max) {
+            const numbers = new Set();
+            while(numbers.size < count) {
+				const number = Math.floor(Math.random() * max) + 1;
+//				alert(number);
+				if (checkPositiveResult(number) == 1)
+					numbers.add(number);
+            }
+            return Array.from(numbers);
+        }
+
+        function drawCentralRectangleWithArrows() {
+            const rectWidth = canvas.width * 0.1;
+            const rectHeight = canvas.height * 0.4;
+            const x = (canvas.width - rectWidth) / 2;
+            const y = (canvas.height - rectHeight) / 2 + canvas.height * 0.1;
+
+            drawRectangleWithText(x, y, rectWidth, rectHeight, '', 'orange');
+
+            const arrowSpacing = rectHeight / 6;
+            
+            for (let i = 0; i < 5; i++) {
+                if (i < 4) {
+                    drawNumberedArrow(x - 30, y + i * arrowSpacing, x, y + i * arrowSpacing, leftNumbers[i]);
+                } else {
+                    drawNumberedArrow(x - 30, y + i * arrowSpacing, x, y + i * arrowSpacing, 0, true);
+                }
+            }
+
+            for (let i = 0; i < 5; i++) {
+                if (i === 3)
+                    drawNumberedArrow(x + rectWidth, y + i * arrowSpacing, x + rectWidth + 30, y + i * arrowSpacing, 0, true);
+				else
+                    drawNumberedArrow(x + rectWidth, y + i * arrowSpacing, x + rectWidth + 30, y + i * arrowSpacing, rightNumbers[i]);
+                }
+		}
+
+        function drawBottomRectangles() {
+            const rectWidth = Math.min(canvas.width * 0.25, 200);
+            const rectHeight = Math.min(canvas.height * 0.1, 60);
+            const totalWidth = rectWidth * 3 + 20 * 2;
+            const startX = (canvas.width - totalWidth) / 2;
+            const y = canvas.height - rectHeight - 10;
+
+            rectangles.forEach((rect, i) => {
+                const x = startX + (rectWidth + 20) * i;
+                rect.bounds = drawRectangleWithText(x, y, rectWidth, rectHeight, rect.text, rect.color);
+            });
+        }
+
+        function drawAll() {
+            if (!ctx) return;  // בדיקה שהקונטקסט קיים
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            // Remove existing input fields
+            document.querySelectorAll('.arrowInput').forEach(el => el.remove());
+
+            drawCentralRectangleWithArrows();
+            drawBottomRectangles();
+        }
+		
+		function setOperations(levelChosen)
+		{
+			if (levelChosen == 1)
+			{
+				operation = plus;
+				operation2 = 0;
+				bbb = Math.floor(Math.random() * 10 + 1);
+				formula = "y=x+" + bbb;
+			}
+			else if (levelChosen == 2)
+			{
+				operation = minus;
+				operation2 = 0;
+				bbb = Math.floor(Math.random() * 10 + 1);
+				formula = "y=x-" + bbb;
+			}
+			else if (levelChosen == 3)
+			{
+				operation = multiply;
+				operation2 = 0;
+				mmm = Math.floor(Math.random() * 10 + 1);
+				formula = "y=" + mmm + "*x";
+			}
+			else if (levelChosen == 4)
+			{
+				operation = divide;
+				operation2 = 0;
+				mmm = Math.floor(Math.random() * 10 + 1);
+				formula = "y=x:" + mmm;				
+			}
+			else if (levelChosen == 5)
+			{
+				operation = multiply;
+				operation2 = Math.floor(Math.random() * 2) + 1;
+				mmm = Math.floor(Math.random() * 10 + 2);
+				bbb = Math.floor(Math.random() * 10 + 1);
+				if (operation2 == plus)
+					formula = "y=" + mmm + "*x+" + bbb;
+				else
+					formula = "y=" + mmm + "*x-" + bbb;
+			}
+			else if (levelChosen == 6)
+			{
+				operation = divide;
+				operation2 = Math.floor(Math.random() * 2) + 1;
+				mmm = Math.floor(Math.random() * 10 + 2);
+				bbb = Math.floor(Math.random() * 10 + 1);
+				if (operation2 == plus)
+					formula = "y=x:" + mmm + "+" + bbb;
+				else
+					formula = "y=x:" + mmm + "-" + bbb;
+			}
+		}
+
+		function setHint()
+		{
+			if (operation == plus)
+				hint = "" + rightNumbers[0] + "=" + leftNumbers[0] + "+" + bbb;
+			else if (operation == minus)
+				hint = "" + rightNumbers[0] + "=" + leftNumbers[0] + "-" + bbb;
+			else if (operation == multiply)
+			{
+				if (operation2 == 0)
+					hint = "" + rightNumbers[0] + "=" + mmm + "*" + leftNumbers[0];
+				else if (operation2 == 1)
+					hint = "" + rightNumbers[0] + "=" + mmm + "*" + leftNumbers[0] + "+" + bbb;
+				else 
+					hint = "" + rightNumbers[0] + "=" + mmm + "*" + leftNumbers[0] + "-" + bbb;
+			}
+			else if (operation == divide)
+			{
+				if (operation2 == 0)
+					hint = "" + rightNumbers[0] + "=" + leftNumbers[0] + ":" + mmm;
+				else if (operation2 == 1)
+					hint = "" + rightNumbers[0] + "=" + leftNumbers[0] + ":" + mmm + "+" + bbb;
+				else
+					hint = "" + rightNumbers[0] + "=" + leftNumbers[0] + ":" + mmm + "-" + bbb;
+			}
+		}
+
+        function updateArrowNumbers() {
+			const levelChosen = Math.floor(Math.random() * currentLevel) + 1;
+//			alert(currentLevel + " " + levelChosen);
+			setOperations(levelChosen);
+			
+            leftNumbers = getUniqueRandomNumbers(5, 20);
+            for (let i = 0; i < 5; i++) {
+				if (levelChosen == 1)
+					rightNumbers[i] = leftNumbers[i] + bbb;
+				else if (levelChosen == 2)
+					rightNumbers[i] = leftNumbers[i] - bbb;
+				else if (levelChosen == 3)
+					rightNumbers[i] = leftNumbers[i] * mmm;
+				else if (levelChosen == 4)
+				{
+					rightNumbers[i] = leftNumbers[i];
+					leftNumbers[i] = rightNumbers[i] * mmm;
+				}
+				else if (levelChosen == 5)
+				{
+					if (operation2 == plus)
+						rightNumbers[i] = leftNumbers[i] * mmm + bbb;
+					else
+						rightNumbers[i] = leftNumbers[i] * mmm - bbb;
+				}
+				else if (levelChosen == 6)
+				{
+					if (operation2 == plus)
+					{
+						rightNumbers[i] = leftNumbers[i];
+						leftNumbers[i] = (rightNumbers[i] - bbb) * mmm;
+					}
+					else
+					{
+						rightNumbers[i] = leftNumbers[i];
+						leftNumbers[i] = (rightNumbers[i] + bbb) * mmm;
+					}
+				}
+			}
+//            rightNumbers = leftNumbers.slice(0, 4).map(num => num * 3 + 5);
+//            additionalNumber = Math.floor(Math.random() * 20) + 1;
+        }
+		
+		function showAnswer()
+		{
+			const rectWidth = canvas.width * 0.1;
+			const rectHeight = canvas.height * 0.2;
+			const x = (canvas.width - rectWidth) / 2;
+			const y = (canvas.height - rectHeight) / 2 + canvas.height * 0.1;
+
+			drawRectangleWithText(x, y, rectWidth, rectHeight, formula, 'purple');		
+		}
+		
+        function initializeCanvas() {
+            resizeCanvas();
+            updateArrowNumbers();
+            drawAll();
+        }
+
+        canvas.addEventListener('click', (event) => {
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            for (let i = 0; i < rectangles.length; i++) {
+                const rectangle = rectangles[i];
+                const { x, y, width, height, text } = rectangle.bounds;
+                if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+                    if (i === 0) { // "תשובה בבקשה"
+                        solutionModal.style.display = 'block';
+						showAnswer();
+
+						potentialScore += currentLevel;
+						potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+						
+						document.querySelectorAll('.arrowInput')[1].value = rightNumbers[3];
+                        document.querySelectorAll('.arrowInput')[0].value = leftNumbers[4]; //additionalNumber;
+                    } else if (i === 1) { // "רמז"
+						setHint();
+                        hintText.textContent = hint; // `${mmm} * ${leftNumbers[0]} + ${bbb} = ${rightNumbers[0]}`;
+						if (potentialScore > 0)
+						{
+							potentialScore--;
+							potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+						}
+                        hintModal.style.display = 'block';
+                    } else if (i === 2) { // "תרגיל אחר בבקשה"
+						potentialScore += currentLevel;
+						potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+                        updateArrowNumbers();
+                        drawAll();
+                    }
+                    return;
+                }
+            }
+        });
+
+        textInput.addEventListener('keyup', (event) => {
+            if (event.key === 'Enter') {
+                const text = textInput.value;
+                
+                potentialScore += currentLevel;
+                potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+				showAnswer();
+                if (text === formula) {
+                    cumulativeScore += currentLevel;
+                    cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+					correctModal.style.display = 'block';
+				} else {
+					errorModal.style.display = 'block';
+
+//                    errorMessage.style.display = 'block';
+                }
+                
+                textInput.value = '';
+            }
+        });
+
+        levelSelect.addEventListener('change', () => {
+            currentLevel = parseInt(levelSelect.value) || 1;
+currentLevelInfo.textContent = `רמה : ${currentLevel}`;
+});
+   // Close modals when clicking on the close button or outside the modal
+    window.onclick = function(event) {
+		if (event.target == solutionModal || event.target == hintModal || event.target == correctModal || event.target == errorModal) {
+			correctModal.style.display = "none";
+			errorModal.style.display = "none";
+			solutionModal.style.display = "none";
+            hintModal.style.display = "none";
+        }
+    }
+
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.onclick = function() {
+			correctModal.style.display = "none";
+			errorModal.style.display = "none";
+            solutionModal.style.display = "none";
+            hintModal.style.display = "none";
+        }
+    });
+
+    document.getElementById('solutionConfirm').onclick = function() {
+        solutionModal.style.display = "none";
+        updateArrowNumbers();
+        drawAll();
+    }
+
+    document.getElementById('hintConfirm').onclick = function() {
+        hintModal.style.display = "none";
+    }
+
+    document.getElementById('errorConfirm').onclick = function() {
+        errorModal.style.display = "none";
+        updateArrowNumbers();	
+        drawAll();
+    }
+
+    document.getElementById('correctConfirm').onclick = function() {
+        correctModal.style.display = "none";
+        updateArrowNumbers();
+        drawAll();
+    }
+
+    window.addEventListener('load', initializeCanvas);
+    window.addEventListener('resize', initializeCanvas);
+
+    // קריאה מיידית לפונקציית האתחול
+    if (document.readyState === 'complete') {
+        initializeCanvas();
+    } else {
+        window.addEventListener('load', initializeCanvas);
+    }
+        initializeCanvas();
+</script>
+</body>
+</html>
