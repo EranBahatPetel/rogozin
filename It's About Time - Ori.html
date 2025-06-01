@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        #setup {
+            text-align: center;
+            padding: 20px;
+            background: #f8f8f8;
+            border-bottom: 2px solid #ccc;
+        }
+        #intervals-setup {
+            display: none;
+            margin-top: 20px;
+        }
+        #intervals-container {
+            display: flex;
+            justify-content: space-around;
+            margin: 20px 0;
+        }
+        #game-container {
+            flex: 1;
+            display: none;
+            flex-wrap: wrap;
+        }
+        .player-area {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        #prepare-btn {
+            min-width: 120px;
+        }
+        .accuracy {
+            margin: 10px 0;
+            font-size: 16px;
+            color: white;
+            line-height: 1.5;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+        .highlight {
+            color: black;
+            font-weight: bold;
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+            margin: 10px auto;
+            display: block;
+        }
+        select, input {
+            padding: 5px;
+            margin: 5px;
+            font-size: 16px;
+			align: right;
+        }
+    </style>
+</head>
+<body>
+    <div id="setup">
+        <div id="player-count-setup">
+            <label>מיקום המשחק: </label>
+            <select id="situation">
+                <option value="0">ראובן (1) - אנחנו בגן עדן</option>
+                <option value="1">שמעון (2) - אנחנו אלופי העולם</option>
+                <option value="2">לוי (3) - יש לנו שעון ביד</option>
+                <option value="3">יהודה (4) - אנחנו משתפרים ממשחק למשחק</option>
+                <option value="4">דן (5) - אנחנו במקום שקט ורגוע</option>
+                <option value="2">נפתלי (6) - יכול להיות יותר טוב</option>
+                <option value="3">גד (7) - לא כל כך נעים לשחק פה</option>
+                <option value="4">אשר (8) - יש כאן המון רעש</option>
+                <option value="2">יששכר (9) - מפריעים לנו בלי הפסקה</option>
+                <option value="3">זבולון (10) - מבלבלים אותנו בכוונה</option>
+                <option value="4">יוסף (11) - יורים עלינו</option>
+                <option value="2">בנימין (12) - אנחנו בגהינום</option>
+            </select>
+            <label>מספר שחקנים: </label>
+            <select id="playerCount">
+                <option value="0">0</option>
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+            </select>
+        </div>
+        
+        <div id="intervals-setup">
+            <div id="intervals-container"></div>
+            <button id="prepare-btn" onclick="handleGameButton()">התחילו לשחק</button>
+        </div>
+    </div>
+
+    <div id="game-container"></div>
+
+    <script>
+		const playerCountSetup = document.getElementById("player-count-setup");
+        let gameStarted = false;
+        let gameState = 'initial'; // initial -> playing -> stopped
+        
+        const players = Array(4).fill().map(() => ({
+            lastTapTime: 0,
+            tapCount: 0,
+            totalAccuracy: 0,
+            totalPoints: 0
+        }));
+
+		let situation = 1;
+        document.getElementById('situation').addEventListener('change', function() {
+            situation = document.getElementById('situation').selectedIndex + 1;
+			console.log(" situation = " + situation);
+		})
+		
+        document.getElementById('playerCount').addEventListener('change', function() {
+            const count = parseInt(this.value);
+            const intervalsSetup = document.getElementById('intervals-setup');
+            const intervalsContainer = document.getElementById('intervals-container');
+            
+            if (count > 0) {
+                intervalsSetup.style.display = 'block';
+                intervalsContainer.innerHTML = '';
+                
+                for (let i = 1; i <= count; i++) {
+                    const div = document.createElement('div');
+                    div.innerHTML = `
+                        <label>מרווח זמן שחקן ${i} (שניות):</label>
+                        <input type="number" class="interval" data-player="${i}" value="1" min="0.1" max="10" step="0.1">
+                    `;
+                    intervalsContainer.appendChild(div);
+                }
+            } else {
+                intervalsSetup.style.display = 'none';
+            }
+        });
+
+        function handleGameButton() {
+            const btn = document.getElementById('prepare-btn');
+            
+            switch(gameState) {
+                case 'initial':
+					playerCountSetup.style.display = 'none';
+                    startGame();
+                    btn.textContent = 'לחצו על המקש שלכם או באיזור שלכם כדי להתחיל במשחק.';
+                    gameState = 'waiting';
+					keyPressed = false;
+                    break;
+                    
+                case 'waiting':
+                    btn.textContent = 'עצור';
+                    gameState = 'playing';
+                    break;
+                    
+                case 'playing':
+                    gameStarted = false;
+                    btn.textContent = 'מחק תוצאות ומהתחלה';
+                    gameState = 'stopped';
+                    break;
+                    
+                case 'stopped':
+					playerCountSetup.style.display = 'block';
+                    const gameContainer = document.getElementById('game-container');
+                    gameContainer.style.display = 'none';
+                    btn.textContent = 'התחילו לשחק';
+                    gameState = 'initial';
+                    players.forEach(player => {
+                        player.lastTapTime = 0;
+                        player.tapCount = 0;
+                        player.totalAccuracy = 0;
+                        player.totalPoints = 0;
+                    });
+                    break;
+            }
+        }
+
+        function startGame() {
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            const gameContainer = document.getElementById('game-container');
+            gameContainer.style.display = 'flex';
+            gameContainer.innerHTML = '';
+            
+            for (let i = 1; i <= playerCount; i++) {
+                const area = document.createElement('div');
+                area.className = 'player-area';
+                area.style.width = playerCount <= 2 ? '50%' : '50%';
+                area.style.height = playerCount <= 2 ? '100%' : '50%';
+				switch (i)
+				{
+					case 1:
+						area.onclick = tap1;
+						break;
+					case 2:
+						area.onclick = tap2;
+						break;
+					case 3:
+						area.onclick = tap3;
+						break;
+					case 4:
+						area.onclick = tap4;
+						break;
+				}
+                area.style.backgroundColor = [
+                    '#ff9999',  // אדום
+                    '#90EE90',  // ירוק
+                    '#FFB366',  // כתום
+                    '#87CEEB'   // תכלת
+                ][i-1];
+                area.innerHTML = `
+                    <h2>שחקן ${i} (מקש ${i === 1 ? '1' : i === 2 ? '4' : i === 3 ? '7' : '0'} או לחיצה כאן)</h2>
+                    <div class="taps">מספר הקשות: 0<br><br><br><br><br></div>
+                    <div class="accuracy"></div>
+                `;
+                gameContainer.appendChild(area);
+            }
+            
+            players.forEach(player => {
+                player.lastTapTime = 0;
+                player.tapCount = 0;
+                player.totalAccuracy = 0;
+                player.totalPoints = 0;
+            });
+            
+            gameStarted = true;
+        }
+
+		let keyPressed = false;
+        document.addEventListener('keydown', function(event) {
+            if (!gameStarted) return;
+			if (!keyPressed)
+			{
+				keyPressed = true;
+				handleGameButton();
+			}
+			
+            const key = event.key;
+            let playerNum;
+            switch(key) {
+                case '1': playerNum = 1; break;
+                case '4': playerNum = 2; break;
+                case '7': playerNum = 3; break;
+                case '0': playerNum = 4; break;
+                default: return;
+            }
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            if (playerNum <= playerCount) {
+                tap(playerNum);
+            }
+        });
+
+        function tap1() {tap(1);}
+        function tap2() {tap(2);}
+        function tap3() {tap(3);}
+        function tap4() {tap(4);}
+        function tap(playerIndex) {
+            const currentTime = Date.now();
+            const player = players[playerIndex - 1];
+            const interval = parseFloat(document.querySelector(`.interval[data-player="${playerIndex}"]`).value);
+            
+            if (player.lastTapTime === 0) {
+                player.lastTapTime = currentTime;
+                updatePlayerDisplay(playerIndex, 1, 'לחץ שוב אחרי ' + interval + ' שניות', false, 0, 0);
+                return;
+            }
+
+            const timeDiff = (currentTime - player.lastTapTime) / 1000;
+            const accuracy = Math.abs(interval - timeDiff);
+            
+            let points;
+            const accuracyPercentage = Math.max(0, 100 - (accuracy / interval * 100));
+            
+            if (accuracyPercentage > 99) {
+                points = 100;
+            } else if (accuracyPercentage > 0) {
+                points = Math.round(accuracyPercentage);
+            } else {
+                points = 0;
+            }
+
+            points = Math.round(points * interval) * situation;
+
+            player.tapCount++;
+            player.totalAccuracy += accuracy;
+            player.totalPoints = (player.totalPoints || 0) + points;
+            player.lastTapTime = currentTime;
+
+            let accuracyText = `הפרש: ${timeDiff.toFixed(3)} שניות`;
+            if (accuracy < interval * 0.001) accuracyText += ' - מושלם!!!';
+            else if (accuracy < interval * 0.01) accuracyText += ' - מעולה!!';
+            else if (accuracy < interval * 0.02) accuracyText += ' - מצוין!';
+            else if (accuracy < interval * 0.05) accuracyText += '- טוב מאוד';
+            else if (accuracy < interval * 0.1) accuracyText += ' - טוב';
+            else if (accuracy < interval * 0.2) accuracyText += ' - בסדר';
+
+            updatePlayerDisplay(playerIndex, player.tapCount, accuracyText, accuracy < interval * 0.02, points, player.totalPoints);
+        }
+
+        function updatePlayerDisplay(playerIndex, tapCount, accuracyText, highlight = false, points = 0, totalPoints = 0) {
+            const playerArea = document.querySelectorAll('.player-area')[playerIndex - 1];
+            playerArea.querySelector('.taps').textContent = `מספר הקשות: ${tapCount}`;
+            const accuracyElement = playerArea.querySelector('.accuracy');
+            accuracyElement.innerHTML = `${accuracyText}<br>נקודות: ${points}<br>סה"כ נקודות: ${totalPoints}`;
+            accuracyElement.className = highlight ? 'accuracy highlight' : 'accuracy';
+        }
+    </script>
+</body>
+</html>

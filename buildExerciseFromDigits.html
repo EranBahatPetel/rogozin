@@ -1,0 +1,1247 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>בנה תרגיל מערכים נתונים עם פעולות חשבון</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .header {
+            background-color: gray;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+        }
+        .timer {
+            font-size: 24px;
+        }
+        .controls {
+            background-color: gray;
+            padding: 10px;
+            margin-top: 10px;
+            display: flex;
+            gap: 10px;
+        }
+        .text-bar {
+            background-color: lightgray;
+            padding: 10px;
+            margin-top: 10px;
+            text-align: center;
+        }
+        .input-row {
+            display: flex;
+            margin-top: 10px;
+            padding: 10px;
+            width: 150%;
+            font-size: 18px;
+            gap: 0;
+            text-align: right;
+            margin-right: 100px;
+        }
+        .input-row > * {
+            margin: 0;
+            padding: 0;
+            align: center;
+        }
+        .color-squares {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            white-space: nowrap;
+            display: block;
+        }
+        .square {
+            display: inline-block;
+            width: 150px;
+            height: 50px;
+            margin-right: 10px;
+            text-align: center;
+            line-height: 50px;
+            color: white;
+            cursor: pointer;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid black;
+        }
+        .modalOK {
+            font-size: 24px;
+            display: none;
+            position: fixed;
+            top: 75%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background-color: white;
+            padding: 20px;
+            border: 1px solid black;
+            width: 350px;
+            height: 150px;
+            text-align: center;
+			color : red;
+        }
+        .modal input {
+            display: block;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div id="currentPoints">נקודות : 0</div>
+        <div class="timer">00:00:00</div>
+    </div>
+
+    <div class="controls">
+        <select>
+            <option>שתי ספרות</option>
+            <option>שלוש ספרות</option>
+            <option>ארבע ספרות</option>
+            <option>חמש ספרות</option>
+            <option>שש ספרות</option>
+        </select>
+        <select>
+            <option>+ -</option>
+            <option>+ - * /</option>
+            <option>+ - * / ( )</option>
+            <option>+ - * / ( ) ^</option>
+        </select>
+        <select>
+            <option>פעולה בין כל שתי ספרות</option>
+            <option>אפשר רצף ספרות</option>
+        </select>
+    </div>
+
+    <div class="text-bar" id="concatenated-text">טקסט באמצע</div>
+
+    <div id="r2" class="input-row" dir="ltr">
+		<span id="r2d0">א</span>
+		<span id="r2do1">
+				<select id="r2o00" onchange="updateText()"><option> </option><option>+</option><option>-</option></select>
+<!-- 				<select id="r2o00" onchange="updateText()"><option> </option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+ --><!-- 				<select id="r2o01" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r2o02" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+ -->			<span id="r2d1">ב</span>
+		</span>
+        <span id="r2result"> = 0</span>
+    </div>
+
+    <div id="r3" class="input-row" dir="ltr">
+		<span id="r3do0">
+				<select id="r3o00" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o01" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o02" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r3d0">א</span>
+		</span>
+		<span id="r3do1">
+				<select id="r3o10" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o11" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o12" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r3d1">ב</span>
+		</span>
+		<span id="r3do2">
+				<select id="r3o20" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o21" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o22" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r3d2">אב</span>
+		</span>
+		<span id="r3do3">
+				<select id="r3o30" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o31" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o32" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+		</span>
+        <span id="r3result"> = 0</span>
+    </div>
+
+    <div id="r4" class="input-row" dir="ltr">
+		<span id="r4do0">
+				<select id="r4o00" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o01" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o02" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r4d0">א</span>
+		</span>
+		<span id="r4do1">
+				<select id="r4o10" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o11" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o12" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r4d1">ב</span>
+		</span>
+		<span id="r4do2">
+				<select id="r4o20" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o21" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o22" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r4d2">אב</span>
+		</span>
+		<span id="r4do3">
+				<select id="r4o30" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o31" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o32" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r4d3">אב</span>
+		</span>
+		<span id="r4do4">
+				<select id="r4o40" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o41" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o42" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+		</span>
+        <span id="r4result"> = 0</span>
+    </div>
+
+    <div id="r5" class="input-row" dir="ltr">
+		<span id="r5do0">
+				<select id="r5o00" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o01" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o02" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r5d0">א</span>
+		</span>
+		<span id="r5do1">
+				<select id="r5o10" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o11" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o12" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r5d1">ב</span>
+		</span>
+		<span id="r5do2">
+				<select id="r5o20" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o21" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o22" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r5d2">אב</span>
+		</span>
+		<span id="r5do3">
+				<select id="r5o30" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o31" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o32" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r5d3">אב</span>
+		</span>
+		<span id="r5do4">
+				<select id="r5o40" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o41" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o42" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r5d4">אב</span>
+		</span>
+		<span id="r5do5">
+				<select id="r5o50" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o51" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o52" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+		</span>
+        <span id="r5result"> = 0</span>
+    </div>
+
+    <div id="r6" class="input-row" dir="ltr">
+		<span id="r6do0">
+				<select id="r6o00" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o01" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o02" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r6d0">א</span>
+		</span>
+		<span id="r6do1">
+				<select id="r6o10" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o11" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o12" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r6d1">ב</span>
+		</span>
+		<span id="r6do2">
+				<select id="r6o20" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o21" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o22" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r6d2">אב</span>
+		</span>
+		<span id="r6do3">
+				<select id="r6o30" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o31" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o32" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r6d3">אב</span>
+		</span>
+		<span id="r6do4">
+				<select id="r6o40" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o41" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o42" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r6d4">אב</span>
+		</span>
+		<span id="r6do5">
+				<select id="r6o50" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o51" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o52" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+			<span id="r6d5">אב</span>
+		</span>
+		<span id="r6do6">
+				<select id="r6o60" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o61" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o62" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+		</span>
+        <span id="r6result"> = 0</span>
+    </div>
+
+
+    <div class="color-squares">
+<!--         <div class="square" style="background-color: blue" onclick="alert('כחול')">יש לי תשובה</div>
+        <div class="square" style="background-color: green" onclick="alert('ירוק')">אפשר רמז ?</div>
+ -->
+		<div class="square" style="background-color: red" id="solutionPlease" onclick="showSolution()">פתרון בבקשה</div>
+        <div class="square" style="background-color: purple" onclick="showModal()">קלט ממני</div>
+    </div>
+
+    <div class="modal" id="inputModal">
+        <input type="text" id="input1" placeholder="סיפרה 1">
+        <input type="text" id="input2" placeholder="סיפרה 2">
+        <input type="text" id="input3" placeholder="סיפרה 3">
+        <input type="text" id="input4" placeholder="סיפרה 4">
+        <input type="text" id="input5" placeholder="סיפרה 5">
+        <input type="text" id="input6" placeholder="סיפרה 6">
+        <input type="text" id="inputResult" placeholder="תוצאה">
+        <button onclick="submitInputs()">אישור</button>
+    </div>
+
+    <div class="modalOK" id="modalOK">
+		יפה מאוד ! <br>תשובה נכונה !
+        <br><br><button onclick="drawAll()">תרגיל נוסף</button>
+    </div>
+
+    <script>
+        // Timer functionality
+		const currentPoints = document.getElementById("currentPoints");
+		const concatenatedText = document.getElementById("concatenated-text");
+		const solutionPlease = document.getElementById("solutionPlease");
+		const results = [r2result, r3result, r4result, r5result, r6result];
+		const rs = [
+			document.getElementById('r2'),
+			document.getElementById('r3'),
+			document.getElementById('r4'),
+			document.getElementById('r5'),
+			document.getElementById('r6')];	
+			
+		const r2dos = [
+			document.getElementById('r2do1')
+			];
+		const r2os =[
+				[
+				document.getElementById('r2o00')
+/*				document.getElementById('r2o12'),
+				document.getElementById('r2o13') */
+				]
+			];
+		const r2ds = [
+			document.getElementById('r2d0'),
+			document.getElementById('r2d1')
+			];
+
+		const r3dos = [
+			document.getElementById('r3do0'),
+			document.getElementById('r3do1'),
+			document.getElementById('r3do2'),
+			document.getElementById('r3do3')];
+		const r3os =[
+				[
+				document.getElementById('r3o00'),
+				document.getElementById('r3o01'),
+				document.getElementById('r3o02')
+				],
+				[
+				document.getElementById('r3o10'),
+				document.getElementById('r3o11'),
+				document.getElementById('r3o12')
+				],
+				[
+				document.getElementById('r3o20'),
+				document.getElementById('r3o21'),
+				document.getElementById('r3o22')
+				],
+				[
+				document.getElementById('r3o30'),
+				document.getElementById('r3o31'),
+				document.getElementById('r3o32')
+				]
+			];
+		const r3ds = [
+			document.getElementById('r3d0'),
+			document.getElementById('r3d1'),
+			document.getElementById('r3d2')
+			];
+
+		const r4dos = [
+			document.getElementById('r4do0'),
+			document.getElementById('r4do1'),
+			document.getElementById('r4do2'),
+			document.getElementById('r4do3'),
+			document.getElementById('r4do4')];
+		const r4os =[
+				[
+				document.getElementById('r4o00'),
+				document.getElementById('r4o01'),
+				document.getElementById('r4o02')
+				],
+				[
+				document.getElementById('r4o10'),
+				document.getElementById('r4o11'),
+				document.getElementById('r4o12')
+				],
+				[
+				document.getElementById('r4o20'),
+				document.getElementById('r4o21'),
+				document.getElementById('r4o22')
+				],
+				[
+				document.getElementById('r4o30'),
+				document.getElementById('r4o31'),
+				document.getElementById('r4o32')
+				],
+				[
+				document.getElementById('r4o40'),
+				document.getElementById('r4o41'),
+				document.getElementById('r4o42')
+				]
+			];
+		const r4ds = [
+			document.getElementById('r4d0'),
+			document.getElementById('r4d1'),
+			document.getElementById('r4d2'),
+			document.getElementById('r4d3')
+			];
+
+		const r5dos = [
+			document.getElementById('r5do0'),
+			document.getElementById('r5do1'),
+			document.getElementById('r5do2'),
+			document.getElementById('r5do3'),
+			document.getElementById('r5do4'),
+			document.getElementById('r5do5')];
+		const r5os =[
+				[
+				document.getElementById('r5o00'),
+				document.getElementById('r5o01'),
+				document.getElementById('r5o02')
+				],
+				[
+				document.getElementById('r5o10'),
+				document.getElementById('r5o11'),
+				document.getElementById('r5o12')
+				],
+				[
+				document.getElementById('r5o20'),
+				document.getElementById('r5o21'),
+				document.getElementById('r5o22')
+				],
+				[
+				document.getElementById('r5o30'),
+				document.getElementById('r5o31'),
+				document.getElementById('r5o32')
+				],
+				[
+				document.getElementById('r5o40'),
+				document.getElementById('r5o41'),
+				document.getElementById('r5o42')
+				],
+				[
+				document.getElementById('r5o50'),
+				document.getElementById('r5o51'),
+				document.getElementById('r5o52')
+				]
+			];
+		const r5ds = [
+			document.getElementById('r5d0'),
+			document.getElementById('r5d1'),
+			document.getElementById('r5d2'),
+			document.getElementById('r5d3'),
+			document.getElementById('r5d4')
+			];
+
+		const r6dos = [
+			document.getElementById('r6do0'),
+			document.getElementById('r6do1'),
+			document.getElementById('r6do2'),
+			document.getElementById('r6do3'),
+			document.getElementById('r6do4'),
+			document.getElementById('r6do5'),
+			document.getElementById('r6do6')];
+		const r6os =[
+				[
+				document.getElementById('r6o00'),
+				document.getElementById('r6o01'),
+				document.getElementById('r6o02')
+				],
+				[
+				document.getElementById('r6o10'),
+				document.getElementById('r6o11'),
+				document.getElementById('r6o12')
+				],
+				[
+				document.getElementById('r6o20'),
+				document.getElementById('r6o21'),
+				document.getElementById('r6o22')
+				],
+				[
+				document.getElementById('r6o30'),
+				document.getElementById('r6o31'),
+				document.getElementById('r6o32')
+				],
+				[
+				document.getElementById('r6o40'),
+				document.getElementById('r6o41'),
+				document.getElementById('r6o42')
+				],
+				[
+				document.getElementById('r6o50'),
+				document.getElementById('r6o51'),
+				document.getElementById('r6o52')
+				],
+				[
+				document.getElementById('r6o60'),
+				document.getElementById('r6o61'),
+				document.getElementById('r6o62')
+				]
+			];
+		const r6ds = [
+			document.getElementById('r6d0'),
+			document.getElementById('r6d1'),
+			document.getElementById('r6d2'),
+			document.getElementById('r6d3'),
+			document.getElementById('r6d4'),
+			document.getElementById('r6d5')
+			];
+		const rds = [r2ds, r3ds, r4ds, r5ds, r6ds];
+		const ros = [r2os, r3os, r4os, r5os, r6os];
+
+        let seconds = 0;
+        function updateTimer() {
+            seconds++;
+            const hours = Math.floor(seconds / 3600);
+            const minutes = Math.floor((seconds % 3600) / 60);
+            const secs = seconds % 60;
+            const time = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(secs).padStart(2, '0')}`;
+            document.querySelector('.timer').textContent = time;
+        }
+        setInterval(updateTimer, 1000);
+        updateTimer();
+
+		let digitsNumber = 2;
+		
+		function displayOps(i, what)
+		{
+			for (let j = 0; j < 3; j++)
+				os[i][j].style.display = what;
+		}
+		
+		function updateDigitsNumber()
+		{
+            digitsNumber = document.querySelectorAll('.controls select')[0].selectedIndex + 2;
+			for (let i = 0; i < 5; i++)
+				rs[i].style.display = 'none';
+			rs[digitsNumber - 2].style.display = 'block';
+			if (digitsNumber == 2)
+			{
+				const secondSelect = document.querySelectorAll('.controls select')[1];
+				if (secondSelect.selectedIndex > 1)
+					secondSelect.selectedIndex = 1;
+			}
+			if (digitsNumber == 2)
+			{
+				const spacesSelect = document.querySelectorAll('.controls select')[2];
+				spacesSelect.selectedIndex = 0;
+				allowSpaces = false;
+			}
+			
+			drawAll();
+			
+			/*
+			for (let i = 0; i < digitsNumber; i++)
+				ds[i].style.display = 'block';
+			for (let i = digitsNumber; i < 7; i++)
+				ds[i].style.display = 'none';
+			
+			switch(digitsNumber)
+			{
+				case 2 :
+					for (let i = 0; i <= 7; i++)
+					{
+						if (i == 0 || i >= 3)
+							displayOps(i, 'none');
+						else
+							displayOps(i, 'block');
+					}
+					break;
+				default :
+					for (let i = 0; i <= 7; i++)
+					{
+						if (i == 0 || i > digitsNumber)
+							displayOps(i, 'none');
+						else
+							displayOps(i, 'block');
+					}
+					break;
+			} */
+		}
+		
+		let allowSpaces = false;
+		
+		function updateSpaces()
+		{
+			if (digitsNumber == 2)
+			{
+				const spacesSelect = document.querySelectorAll('.controls select')[2];
+				spacesSelect.selectedIndex = 0;
+				return;
+			}
+				
+            const spacesSelect = document.querySelectorAll('.controls select')[2];
+            if (spacesSelect.selectedIndex == 0) 
+				allowSpaces = false;
+			else
+				allowSpaces = true;
+//			alert("allowSpaces = " + allowSpaces);
+			drawAll();
+		}
+		
+        // Update the available options based on second select
+		let currentOp = 1;
+        function updateOperators() {
+            const secondSelect = document.querySelectorAll('.controls select')[1];
+			let operators = [];
+			if (digitsNumber == 2 && secondSelect.selectedIndex > 1)
+				secondSelect.selectedIndex = 1;
+				
+			switch (secondSelect.selectedIndex)
+			{
+				case 1 :
+					operators = ["*","/"];
+					break;
+				case 2 :
+					operators = ["*","/","(",")"];
+					break;
+				case 3 :
+					operators = ["*","/","(",")", "^"];
+					break;
+			}
+            
+            const allSelects = document.querySelectorAll('.input-row select');
+			allSelects.forEach(select => {
+				while (select.options.length > 3)
+					select.remove(select.options.length - 1);
+				for (let i = 0; i < operators.length; i++)
+					select.add(new Option(operators[i], operators[i]));
+			});
+
+			currentOp = secondSelect.selectedIndex + 1;
+			drawAll();
+        }
+
+        // Add change event listener to the second select
+        document.querySelectorAll('.controls select')[0].addEventListener('change', updateDigitsNumber);
+        document.querySelectorAll('.controls select')[1].addEventListener('change', updateOperators);
+        document.querySelectorAll('.controls select')[2].addEventListener('change', updateSpaces);
+
+		let totalPoints = 0;
+        function updateText() {
+//            const spans = document.querySelectorAll('.input-row span');
+//            const selects = document.querySelectorAll('.input-row select');
+            let userExercise = '';
+            let exprExercise = '';
+			let exprResult = '';
+			
+			if (digitsNumber == 2)
+			{
+				if (r2o00.value == '' && !allowSpaces)
+				{
+					exprExercise = userExercise = nums[0] + '?' + nums[1];
+				}	
+				else if (r2o00.value == '×')
+				{
+					userExercise = nums[0] + '×' + nums[1];
+					exprExercise = nums[0] + '*' + nums[1];
+				}	
+				else if (r2o00.value == '^')
+				{
+					userExercise = nums[0] + '^' + nums[1];
+					exprExercise = nums[0] + '**' + nums[1];
+				}
+				else
+					exprExercise = userExercise = nums[0] + r2o00.value + nums[1];
+			}
+			else
+			{
+				for (let i = 0; i < 3; i++)
+				{
+					userExercise += ros[digitsNumber - 2][0][i].value;
+					exprExercise += ros[digitsNumber - 2][0][i].value;
+				}	
+				userExercise += nums[0];
+				exprExercise += nums[0];
+				for (let i = 1; i < digitsNumber; i++)
+				{
+					if (ros[digitsNumber - 2][i][0].value == '' && 
+						ros[digitsNumber - 2][i][1].value == '' && 
+						ros[digitsNumber - 2][i][2].value == '' && !allowSpaces)
+						{
+							userExercise += '?';
+							exprExercise += '?';
+						}
+					else
+					{
+						for (let j = 0; j < 3; j++)
+						{
+							if (ros[digitsNumber - 2][i][j].value == '×')
+							{
+								userExercise += '×';
+								exprExercise += '*';
+							}	
+							else if (ros[digitsNumber - 2][i][j].value == '^')
+							{
+								userExercise += '^';
+								exprExercise += '**';
+							}
+							else
+							{
+								userExercise += ros[digitsNumber - 2][i][j].value;
+								exprExercise += ros[digitsNumber - 2][i][j].value;
+							}
+						}
+					}
+					userExercise += nums[i];
+					exprExercise += nums[i];
+				}
+				for (let i = 0; i < 3; i++)
+				{
+					userExercise += ros[digitsNumber - 2][digitsNumber][i].value;
+					exprExercise += ros[digitsNumber - 2][digitsNumber][i].value;
+				}	
+			}
+			exprResult = calculate(exprExercise);
+			console.log(exprExercise + " = " + exprResult);
+			userExercise += '=' + exprResult;
+				
+            concatenatedText.innerHTML = "<span dir='ltr'>" + userExercise + "</span>";
+			if (exprResult == result)
+			{
+	            const select0 = document.querySelectorAll('.controls select')[0];
+	            const select1 = document.querySelectorAll('.controls select')[1];
+	            const select2 = document.querySelectorAll('.controls select')[2];
+
+				points = (select0.selectedIndex + 1) * (select1.selectedIndex + 1) * (select2.selectedIndex + 1);
+				totalPoints += points;
+				currentPoints.innerHTML = "<span>" + totalPoints + " נקודות " + "</span>";
+	            document.getElementById('modalOK').style.display = 'block';
+				document.getElementById('modalOK').innerHTML = "יפה מאוד !" + "<br>" + 
+					"תשובה נכונה !" + "<br>" + points + " נקודות !" + "<br>" + 
+					"<button onclick='drawAll()'>תרגיל נוסף</button>" + "<br>";
+			}
+            
+/*
+            for (let i = 0; i < spans.length; i++) {
+                result += spans[i].textContent;
+                if (i * 3 + 2 < selects.length) {
+                    result += selects[i * 3].value + selects[i * 3 + 1].value + selects[i * 3 + 2].value;
+                }
+            }
+*/
+        }
+
+        // Modal functionality
+		let userInput = false;
+        function showModal() {
+            document.getElementById('inputModal').style.display = 'block';
+//			console.log("x " + digitsNumber);
+            for(let i = 1; i <= digitsNumber; i++)
+			{
+//				console.log("y " + i + " " + document.getElementById(`input${i}`).textContent);
+                document.getElementById(`input${i}`).style.display = 'block';
+                document.getElementById(`input${i}`).textContent = '';
+			}
+            for(let i = digitsNumber + 1; i <= 6; i++)
+			{
+//				console.log("z " + i + " " + document.getElementById(`input${i}`).textContent);
+                document.getElementById(`input${i}`).style.display = 'none';
+			}
+			userInput = true;
+        }
+		
+		function showSolution()
+		{
+			if (userInput)
+				drawAll();
+			else
+			{
+				alert(originalExercise + " = " + result);
+				setTimeout(() => {
+					drawAll();
+				}, 50);
+			}				
+		}
+
+        function submitInputs() {
+            nums = [];
+            for(let i = 1; i <= digitsNumber; i++) {
+                nums.push(document.getElementById(`input${i}`).value);
+            }
+			result = document.getElementById(`inputResult`).value;
+            document.getElementById('inputModal').style.display = 'none';
+			initBoard();
+			solutionPlease.textContent = "תרגיל חדש";
+        }
+
+		let result = 0;
+		let originalExercise = '';
+		let currentExercise = '';
+
+        function calculate(expr) {
+			actualExpr = '';
+			for (let i = 0; i < expr.length; i++)
+				if (expr[i] == '^')
+					actualExpr += "**";
+				else
+					actualExpr += expr[i];
+					
+            try {
+                return eval(actualExpr);
+            } catch {
+//				alert("error : " + expr);
+                return "???";
+            }
+        }
+		
+		function stronger(i ,j)
+		{
+			if (tempExercise[i] == '+' ||
+				tempExercise[i] == '-')
+				i1 = 1;
+			if (tempExercise[i] == '*' ||
+				tempExercise[i] == '/')
+				i1 = 2;
+			if (tempExercise[j] == '+' ||
+				tempExercise[j] == '-')
+				j1 = 1;
+			if (tempExercise[j] == '*' ||
+				tempExercise[j] == '/')
+				j1 = 2;
+			return (i1 > j1);
+		}
+
+		let tempExercise = "";
+
+		let paramLocation = -1;
+		let lastLocation = 0;
+		let firstLocation = 0;
+		
+		function isOp(c)
+		{
+			return c == '+' ||
+					c == '-' ||
+					c == '*' ||
+					c == '/';
+		}
+
+		function findLocations()
+		{
+			let startLocation = 0;
+			let endLocation = tempExercise.length;
+			for (let i = 0; i < tempExercise.length; i++)
+				if (tempExercise[i] == ')')
+				{
+//					console.log("AAA " + i);
+					for (let j = i - 1; j > -1; j--)
+						if (tempExercise[j] == '(')
+						{
+							startLocation = j + 1;
+							endLocation = i;
+//							console.log("BBB " + j);
+							break;
+						}
+					break;
+				}
+						
+//			console.log("startLocation " + startLocation);
+//			console.log("endLocation " + endLocation);
+			paramLocation = -1;
+			for (let i = startLocation; i < endLocation; i++)
+			{
+				if (isOp(tempExercise[i]))
+				{
+					if (paramLocation == -1)
+						paramLocation = i;
+					else if (stronger(i, paramLocation))
+						paramLocation = i;
+				}
+			}
+//			console.log("paramLocation " + paramLocation);
+
+			if (paramLocation == -1)
+			{
+				return false;
+			}
+			
+			lastLocation = endLocation;
+			for (let i = paramLocation + 2; i < endLocation; i++)
+			{
+				if (tempExercise[i] == ' ')
+				{
+					lastLocation = i;
+					break;
+				}
+			}
+//			console.log("lastLocation " + lastLocation);
+
+			firstLocation = startLocation;
+			for (let i = paramLocation - 2; i > startLocation; i--)
+			{
+				if (tempExercise[i] == ' ')
+				{
+					firstLocation = i + 1;
+					break;
+				}
+			}
+//			console.log("firstLocation " + firstLocation);
+			return true;
+		}
+		
+		let before = "";
+		let highlightedPart = "";
+		let after = "";
+		
+		function closeParans(start)
+		{
+			for (let i = start; i >= 1; i--)
+				if (originalExercise[i] == '(')
+					if (originalExercise[i - 1] == '(')
+						return true;
+					else
+						return false;
+			return false;
+		}
+
+		function paransProblematic(start)
+		{
+			let i = 0;
+			for (i = start; i < originalExercise.length; i++)
+			{
+				if (originalExercise[i] == ')')
+				{
+					if (paransProblematic(i + 1))
+						return true;
+					if (originalExercise[i - 1] == ')' && closeParans(i - 2))
+						return true;
+					let j = 0;
+					for (j = i - 1; j >= 0; j--)
+					{
+						if (isOp(originalExercise[j]))
+							break;
+						if (originalExercise[j] == '(' || originalExercise[j] == ')')
+							return true;
+					}
+				}
+			}
+			if (i >= originalExercise.length)
+				return false;
+		}
+		
+		function removeUnneededParans()
+		{
+            if (before[before.length - 1] == '(' &&
+				after[0] == ')')
+			{
+				paranNeeded = 0;
+				for (let i = 0; i < highlightedPart.length; i++)
+					if (isOp(highlightedPart[i]))
+						paranNeeded++;
+					
+//				console.log(highlightedPart + " " + paranNeeded);
+				if (paranNeeded <= 1)
+				{
+					before = before.slice(0, before.length - 1);
+					after = after.slice(1, after.length);
+				}
+			}	
+		}
+
+		let MAX_RESULT = 1000;
+		function exerciseProblematic()
+		{
+			if (!findLocations())
+			{
+//				alert("A " + tempExercise);
+				return false;
+			}
+			
+            before = tempExercise.slice(0, firstLocation);
+//			console.log("EP before = " + before);
+            highlightedPart = tempExercise.slice(firstLocation, lastLocation);
+//			console.log("EP highlightedPart = " + highlightedPart);
+            after = tempExercise.slice(lastLocation);
+//			console.log("EP after = " + after);
+
+//			alert("C " + highlightedPart);
+            const partialResult = calculate(highlightedPart);
+			if ((partialResult == "Infinity") || (partialResult == "Nan") || 
+				(partialResult == 0) || (partialResult > MAX_RESULT) ||
+				(partialResult < 0 && !allowNegative) ||
+				partialResult != Math.floor(partialResult))
+			{
+				return true;
+			}
+            
+//			console.log("CP1 tempExercise = " + tempExercise);
+			removeUnneededParans();
+
+			tempExercise = before + partialResult + after;
+//			console.log("CP2 tempExercise = " + tempExercise);
+			return exerciseProblematic();
+		}
+		
+		
+		function removeRedundantParans()
+		{
+			for (let i = 0; i < tempExercise.length; i++)
+			{
+				if (tempExercise[i] == '(')
+				{
+					j = i + 1;
+					paransFound = 1;
+					while (true)
+					{
+						if (tempExercise[j] == '(')
+							paransFound++;
+						else if (tempExercise[j] == ')')
+						{
+							paransFound--;
+							if (paransFound == 0)
+								break;
+						}
+						j++;
+					}
+					newExercise = tempExercise.slice(0, i) + tempExercise.slice(i + 1, j) +
+						tempExercise.slice(j + 1, tempExercise.length);
+					newResult = calculate(newExercise);
+					tempResult = calculate(tempExercise);
+//					console.log("new : " + newExercise + " " + newResult);
+//					console.log("temp : " + tempExercise + " " + tempResult);
+					if (newResult == tempResult)
+					{
+						tempExercise = newExercise;
+						removeRedundantParans();
+						return;
+					}
+				}
+			}
+		}
+
+		let allowNegative = false;
+		let nums = [];
+		function buildExercise() {
+//			console.log("E " + currentOp);
+			nums = [];
+			
+			let leftParan1 = 0;
+			let leftParan2 = 0;
+			let rightParan1 = 0;
+			let rightParan2 = 0;
+			let paranNum = 0;
+			let doParan = 0;
+
+			originalExercise = '';
+			let i = 0, num = 0, op = 0;
+			if (currentOp == 1)
+			{
+				opStr = ['-','+'];
+				opNum = 2;
+			}
+			else if (currentOp >= 4)
+			{
+				opStr = ['-','+','*','/','^'];
+				opNum = 5;
+			}
+			else if (currentOp >= 2)
+			{
+				opStr = ['-','+','*','/'];
+				opNum = 4;
+			}
+			
+			if (currentOp >= 3)
+				paranNum = 2;
+/*			else
+				paranNum = 3; */
+				
+			let plus = 1, minus = 0;
+
+			if (currentOp >= 3)
+			{
+				doParan = Math.floor(Math.random() * paranNum);
+				if (doParan == 1)
+				{
+					leftParan1++;
+					originalExercise += "(";
+				}
+			}
+
+			num = 1 + Math.floor(Math.random() * 9);
+			nums.push(num);
+
+			originalExercise += num;
+			
+			while (i < digitsNumber - 1)
+			{
+//				console.log("A " + originalExercise);
+				let addOp = true;
+				if (allowSpaces && digitsNumber > 2 && Math.floor(Math.random() * 4) == 0)
+				{
+					if (originalExercise[originalExercise.length - 1] != ')')
+						addOp = false;
+//					else
+//						console.log("HERE !" + originalExercise);
+				}
+				
+				if (addOp)
+				{
+					op = Math.floor(Math.random() * opNum);
+//					console.log("opNum = " + opNum + " op = " + op + " opStr[op] = " + opStr[op]);
+//					if (op == 4)
+//						console.log("XXXXX");
+					originalExercise += " " + opStr[op] + " ";
+
+					if (currentOp >= 3)
+					{
+						doParan = Math.floor(Math.random() * paranNum);
+						if ((doParan == 1) && (leftParan1 == rightParan1))
+						{
+							leftParan1++;
+							originalExercise += "(";
+						}
+					}
+					if (currentOp >= 4)
+					{
+						doParan = Math.floor(Math.random() * paranNum);
+	//					alert("A " + originalExercise + " " + doParan + " " + leftParan1 + " " + rightParan1);
+						if ((doParan == 1) && (leftParan1 == rightParan1 + 1))
+						{
+							leftParan1++;
+							originalExercise += "(";
+	//						alert("B " + originalExercise + " " + doParan + " " + leftParan1 + " " + rightParan1);
+						}
+					}
+				}
+				
+				num = 1 + Math.floor(Math.random() * 9);
+				nums.push(num);
+					
+				originalExercise += num;
+				i++;
+				
+				if (currentOp >= 3)
+				{
+					doParan = Math.floor(Math.random() * paranNum);
+					if (doParan == 1 && leftParan1 == rightParan1 + 1 /* && opInParan1 >= 1 */)
+					{
+						rightParan1++;
+						originalExercise += ")";
+//						console.log("A " + originalExercise);
+//						opInParan1 = 0;
+					}
+					else if (currentOp >= 4 && doParan == 1 && leftParan1 == rightParan1 + 2 /* && opInParan2 >= 1 */)
+					{
+						rightParan1++;
+						originalExercise += ")";
+//						console.log("A " + originalExercise);
+//						opInParan2 = 0;
+					}
+				}
+			}
+			
+			if (currentOp >= 3 && leftParan1 > rightParan1)
+			{
+				rightParan1++;
+				originalExercise += ")";
+			}
+		
+			if (currentOp >= 4 && leftParan1 > rightParan1)
+			{
+				rightParan1++;
+				originalExercise += ")";
+			}
+		
+//			console.log("B " + originalExercise);
+			if (currentOp >= 3)
+			{
+/*				if (rightParan1 == 0)
+					alert("B1 " + originalExercise + " " + leftParan1 + " " + rightParan1);
+				if (leftParan1 != rightParan1)
+					alert("B2 " + originalExercise + " " + leftParan1 + " " + rightParan1);
+				if (originalExercise[0] == '(' &&
+					originalExercise[originalExercise.length - 1] == ')')
+					alert("B3 " + originalExercise + " " + leftParan1 + " " + rightParan1); */
+				if ((rightParan1 == 0) || 
+				(leftParan1 != rightParan1) ||
+				(originalExercise[0] == '(' &&
+					originalExercise[originalExercise.length - 1] == ')'))
+				{
+//					alert("B " + originalExercise + " " + leftParan1 + " " + rightParan1);
+					buildExercise();
+					return;
+				}
+			}
+			
+//			alert(originalExercise);
+			actualLength = digitsNumber;
+			
+			result = calculate(originalExercise);
+			if ((result == "Infinity") || (result == "Nan") || 
+				(result > MAX_RESULT) ||
+				(result < 0 && !allowNegative) || 
+				result != Math.floor(result))
+			{
+//				alert("C" + originalExercise);
+//				alert(originalExercise + "=" + result);
+				buildExercise();
+				return;
+			}
+			
+			tempExercise = originalExercise;
+			if (paransProblematic(0) || exerciseProblematic())
+			{
+//				alert("D" + originalExercise);
+//				alert("Build another : " + tempExercise);
+				buildExercise();
+				return;
+			}
+			else
+			{
+				tempExercise = originalExercise;
+				console.log("before removeRedundantParans : \n" + originalExercise + " = " + result);
+				removeRedundantParans();
+				originalExercise = tempExercise;
+				console.log(originalExercise + " = " + result);
+			}
+		} // buildExercise
+		
+		function initBoard()
+		{
+			for (let i = 0; i < ros[digitsNumber - 2].length; i++)
+				for (let j = 0; j < ros[digitsNumber - 2][i].length; j++)
+				{
+					ros[digitsNumber - 2][i][j].selectedIndex = 0;
+				}
+			updateText();
+			for (let i = 0; i < digitsNumber; i++)
+				rds[digitsNumber - 2][i].textContent = '' + nums[i];
+			results[digitsNumber - 2].textContent =  ' = ' + result;
+		}
+
+        function drawAll() {
+            document.getElementById('inputModal').style.display = 'none';
+			userInput = false;
+			solutionPlease.textContent = "פתרון בבקשה"; 	
+            document.getElementById('modalOK').style.display = 'none';
+			for (let i = 0; i < 5; i++)
+			{
+//				alert(i + " " + rs[i]);
+				rs[i].style.display = 'none';
+			}
+			rs[digitsNumber - 2].style.display = 'block';
+			buildExercise();
+//			r2o00.selectedIndex = 0;
+			initBoard();
+		}
+		drawAll();
+    </script>
+</body>
+</html>

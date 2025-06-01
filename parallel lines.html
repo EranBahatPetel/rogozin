@@ -1,0 +1,1008 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>זיהוי משוואת הישר</title>
+    <style>
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: left;
+        }
+        .fraction > span {
+            display: block;
+            padding-top: 0.15em;
+        }
+        .fraction span.fdn {
+            border-top: thin solid black;
+        }
+        .fraction span.bar {
+            display: none;
+        }
+        body, html {
+            margin: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        .text-content {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .red-text {
+            color: red;
+            font-size: 16px;
+        }
+        .green-text {
+            color: green;
+            font-size: 16px;
+       }
+        #topBar {
+            display: flex;
+            justify-content: space-betweenenen
+			;
+            padding: 10px;
+            background-color: #e0e0e0;
+        }
+        .score-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            background-color: white;
+            padding: 2px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            transform: scale(0.2);
+            transform-origin: top right;
+        }
+        .score-box {
+            text-align: center;
+            padding: 2px;
+        }
+        .score-box:first-child {
+            border-left: 1px solid #ccc;
+        }
+        #timer {
+            font-size: 10px;
+            margin: 0px 0;
+            background-color: #fff;
+            padding: 5px 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin: 0 0 1px 0;
+            color: #333;
+            font-size: 0.8em;
+        }
+        .score {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        #currentLevelInfo, #potentialScoreInfo, #cumulativeScoreInfo {
+            flex: 1;
+            text-align: center;
+        }
+        #textContainer {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            left: 50px;
+            top: 30%;
+            transform: translateY(-50%);
+        }
+        #textInput2-container {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            left: 10px;
+            top: 5%;
+            transform: translateY(-50%);
+        }
+        #inputArea {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f0f0f0;
+            align: left;
+        }
+        #levelSelect, #kindSelect {
+            margin-right: 10px;
+        }
+        .coordinate-system {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            position: relative;
+        }
+        canvas {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #buttonCanvas {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+        }
+        #errorConfirm {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: white;
+            color: red;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #text-boxes {
+            position: absolute;
+            right: 100px;
+            top: 100px;
+        }
+        .text-box {
+            width: 150px;
+            height: 20px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: left;
+			text-align: left;
+            background-color: #f0f0f0;
+			direction: ltr;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+			padding-top: 150px; /* Location of the box */
+			padding-left: 350px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.1);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            max-width: 300px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        #coordinates, #randomPoint {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        #coordinates {
+            top: 10px;
+            left: 10px;
+        }
+        #randomPoint {
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="topBar">
+        <!-- <div id="currentLevelInfo">רמה : 1</div> -->
+        <div id="potentialScoreInfo">ניקוד אפשרי : 0</div>
+        <div id="xxx">&nbsp;&nbsp;&nbsp;</div>
+		<div id="timer">0 שניות</div>
+        <div id="xxx">&nbsp;&nbsp;&nbsp;</div>
+        <div id="cumulativeScoreInfo">ניקוד מצטבר: 0</div>
+    </div>
+    <div id="inputArea" direction="ltr">
+        <select id="levelSelect">
+            <option value="1">זוויות קודקודיות</option>
+            <option value="2">זוויות צמודות</option>
+            <option value="3">זוויות מתחלפות</option>
+            <option value="4">זוויות מתאימות</option>
+            <option value="5">זוויות אחרות</option>
+<!--             <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+            const texts = ['1. רביע ראשון m,b > 0', '2.   לא מקבילים לצירים', '3. גם מקבילים לצירים'];
+ -->			
+			
+        </select>
+    <select id="kindSelect">
+            <option value="1">רק הסוג הנוכחי</option> 
+            <option value="2">כל הסוגים עד הנוכחי</option> 
+        </select>
+    </div>
+    <div id="text-boxes"></div>
+    <div id="textContainer">
+		<div id="textContent1" class="text-content">
+			<span class="red-text"></span><br>
+			<span class="green-text"></span>
+		</div>
+    </div>
+    
+	<div class="coordinate-system">
+        <canvas id="coordinateSystem" width="400" height="400"></canvas>
+        <div id="coordinates"></div>
+        <div id="randomPoint"></div>
+		<div id="textInput2-container">
+			<input type="text" id="textInput2" dir='ltr' placeholder="x כתוב כאן את הזווית">
+		</div>
+    </div>
+
+    <canvas id="buttonCanvas" width="300" height="200">
+	</canvas>
+	<div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="errorText"></p>
+            <button id="errorConfirm">אישור</button>
+        </div>
+    </div>
+	<div id="correctModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>יפה מאוד ! תשובה מדוייקת !</p>
+            <button id="correctConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="solutionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="solutionText"></p>
+            <button id="solutionConfirm">אישור</button>
+    </div>
+   <div id="hintModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="hintText"></p>
+            <button id="hintConfirm">אישור</button>
+    </div>
+<script>
+        const canvas = document.getElementById('coordinateSystem');
+        const ctx = canvas.getContext('2d');
+        const coordinates = document.getElementById('coordinates');
+        const randomPointDisplay = document.getElementById('randomPoint');
+        const buttonCanvas = document.getElementById('buttonCanvas');
+        const buttonCtx = buttonCanvas.getContext('2d');
+
+        const textBoxes = document.getElementById('text-boxes');
+//        const currentLevelInfo = document.getElementById('currentLevelInfo');
+        const potentialScoreInfo = document.getElementById('potentialScoreInfo');
+        const textInput2 = document.getElementById('textInput2');
+        const textContent1 = document.getElementById('textContent1');
+        const levelSelect = document.getElementById('levelSelect');
+        const kindSelect = document.getElementById('kindSelect');
+        const cumulativeScoreInfo = document.getElementById('cumulativeScoreInfo');
+        const correctModal = document.getElementById('correctModal');
+        const solutionModal = document.getElementById('solutionModal');
+        const hintModal = document.getElementById('hintModal');
+        const errorModal = document.getElementById('errorModal');
+/*
+        const partialModal = document.getElementById('partialModal');
+        const otherModal = document.getElementById('otherModal');
+        const hintModal = document.getElementById('hintModal');
+*/
+        const solutionText = document.getElementById('solutionText');
+        const hintText = document.getElementById('hintText');
+        const errorText = document.getElementById('errorText');
+
+        const rectangles = [
+            { text: 'פתרון בבקשה', color: 'red' },
+            { text: 'אפשר רמז ?', color: 'blue' },
+            { text: 'יש לי תשובה', color: 'green' }
+        ];
+
+        const timerElement = document.getElementById('timer');
+
+        let seconds = 0;
+
+        // פונקציה לעדכון הטיימר
+        function updateTimer() {
+            seconds++;
+            timerElement.textContent = seconds + (seconds === 1 ? ' שנייה' : ' שניות');
+        }        
+		let cumulativeScore = 0;
+		let potentialScore = 0;
+        let currentLevel = 1;
+		let maxNumber = 10;
+		let maxLevel = 6;
+		let pointedX = -11;
+		let pointedY = -11;
+		
+        function degreesToRadians(degrees) {
+            return degrees * Math.PI / 180;
+        }
+
+        function normalizeAngle(angle) {
+            angle = angle % 360;
+            if (angle < 0) angle += 360;
+            return angle;
+        }
+
+        function calculateIntersectionPoint(line1Start, line1End, line2Start, line2End) {
+            const a1 = line1End.y - line1Start.y;
+            const b1 = line1Start.x - line1End.x;
+            const c1 = a1 * line1Start.x + b1 * line1Start.y;
+
+            const a2 = line2End.y - line2Start.y;
+            const b2 = line2Start.x - line2End.x;
+            const c2 = a2 * line2Start.x + b2 * line2Start.y;
+
+            const det = a1 * b2 - a2 * b1;
+            if (det !== 0) {
+                return {
+                    x: (b2 * c1 - b1 * c2) / det,
+                    y: (a1 * c2 - a2 * c1) / det
+                };
+            }
+            return null;
+        }
+
+        function calculateIntersectionAngles(parallelAngle, intersectAngle) {
+            let angle = Math.abs((intersectAngle - parallelAngle) % 180);
+            if (angle > 90) angle = 180 - angle;
+            return Math.round(angle);
+        }
+
+        function findAngleBisector(angle1, angle2) {
+            angle1 = degreesToRadians(normalizeAngle(angle1));
+            angle2 = degreesToRadians(normalizeAngle(angle2));
+            
+            const v1 = { x: Math.cos(angle1), y: Math.sin(angle1) };
+            const v2 = { x: Math.cos(angle2), y: Math.sin(angle2) };
+            
+            const bisector = {
+                x: v1.x + v2.x,
+                y: v1.y + v2.y
+            };
+            
+            const length = Math.sqrt(bisector.x * bisector.x + bisector.y * bisector.y);
+            return {
+                x: bisector.x / length,
+                y: bisector.y / length
+            };
+        }
+
+        function drawAngleText(text, x, y, angle1, angle2, index) {
+            const bisector = findAngleBisector(angle1, angle2);
+            const distance = 20;
+            
+            const textX = x - distance * bisector.x;
+            const textY = y - distance * bisector.y;
+
+            ctx.font = '12px Arial';
+            ctx.fillStyle = 'black';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            
+//            const displayText = index === 0 ? text + '°' : String.fromCharCode(98 + index - 1) + (index);
+//            const displayText = index === 0 ? text + '°' : 'x' + (index);
+//            ctx.fillText(displayText, textX, textY);
+            ctx.fillText(text, textX, textY);
+        }
+
+        function drawLine(x1, y1, x2, y2, color) {
+            ctx.beginPath();
+            ctx.strokeStyle = color;
+            ctx.moveTo(x1, y1);
+            ctx.lineTo(x2, y2);
+            ctx.stroke();
+        }
+
+        function drawIntersection(parallelAngle, intersectAngle, acuteAngle, givenAngle, askAngle, hintAngle) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            ctx.lineWidth = 2;
+
+//            const parallelAngle = normalizeAngle(parseFloat(document.getElementById('parallelAngle').value));
+//            const intersectAngle = normalizeAngle(parseFloat(document.getElementById('intersectAngle').value));
+            
+            const slope = Math.tan(degreesToRadians(parallelAngle));
+			const otherSlope = Math.abs(Math.tan(degreesToRadians(parallelAngle)) / Math.tan(degreesToRadians(60)));
+//			alert(slope + " " + parallelAngle + " " + degreesToRadians(parallelAngle));
+            const dx = canvas.width;
+            const dy = dx * slope;
+
+//            const spacing = 200;
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2; // + spacing * Math.sqrt(otherSlope) / 2;
+
+            // קו כחול מרכזי והנקודות שלו
+            const line1Start = {x: centerX - dx/2, y: centerY - dy/2};
+            const line1End = {x: centerX + dx/2, y: centerY + dy/2};
+			if (currentLevel > 2 || givenAngle < 4)
+				drawLine(line1Start.x, line1Start.y, line1End.x, line1End.y, 'blue');
+
+			let bestSpacing = -10000;
+			let bestDiff = 1000;
+			
+			for (let spacing = -10000; spacing < 10000; spacing += 100)
+			{
+				// קו כחול שני והנקודות שלו
+				let line2Start = {x: centerX - dx/2, y: centerY - dy/2 - spacing};
+				let line2End = {x: centerX + dx/2, y: centerY + dy/2 - spacing};
+
+				// קו אדום והנקודות שלו
+				let intersectSlope = Math.tan(degreesToRadians(intersectAngle));
+				let redDx = canvas.width;
+				let redDy = redDx * intersectSlope;
+				let redStart = {x: centerX - redDx/2, y: centerY - redDy/2};
+				let redEnd = {x: centerX + redDx/2, y: centerY + redDy/2};
+
+				// חישוב נקודות החיתוך
+				let intersection1 = calculateIntersectionPoint(line1Start, line1End, redStart, redEnd);
+				let intersection2 = calculateIntersectionPoint(line2Start, line2End, redStart, redEnd);
+				if (intersection1 && intersection2)
+				{
+					diff = Math.sqrt((intersection1.x - intersection2.x) * (intersection1.x - intersection2.x) + 
+								(intersection1.y - intersection2.y) * (intersection1.y - intersection2.y));
+					if ((spacing != 0) && Math.abs(diff - 120) < Math.abs(bestDiff - 120))
+					{
+						baseSpacing = spacing;
+						bestDiff = diff;
+					}
+				}
+			}
+			
+				// קו כחול שני והנקודות שלו
+				let line2Start = {x: centerX - dx/2, y: centerY - dy/2 - baseSpacing};
+				let line2End = {x: centerX + dx/2, y: centerY + dy/2 - baseSpacing};
+
+				// קו אדום והנקודות שלו
+				let intersectSlope = Math.tan(degreesToRadians(intersectAngle));
+				let redDx = canvas.width;
+				let redDy = redDx * intersectSlope;
+				let redStart = {x: centerX - redDx/2, y: centerY - redDy/2};
+				let redEnd = {x: centerX + redDx/2, y: centerY + redDy/2};
+
+				// חישוב נקודות החיתוך
+				let intersection1 = calculateIntersectionPoint(line1Start, line1End, redStart, redEnd);
+				let intersection2 = calculateIntersectionPoint(line2Start, line2End, redStart, redEnd);
+
+			console.log(parallelAngle + " " + intersectAngle + " " + baseSpacing);
+			if (currentLevel > 2 || givenAngle >= 4)
+				drawLine(line2Start.x, line2Start.y, line2End.x, line2End.y, 'blue');
+            drawLine(redStart.x, redStart.y, redEnd.x, redEnd.y, 'red');
+
+            let angleIndex = 0;
+
+            // הצגת הזוויות בנקודת החיתוך הראשונה
+            if (intersection1) {
+				console.log(intersection1);
+				if(givenAngle == 0)
+					drawAngleText(acuteAngle+ '°', intersection1.x, intersection1.y, parallelAngle, intersectAngle, 0);
+				if(givenAngle == 1)
+					drawAngleText(acuteAngle+ '°', intersection1.x, intersection1.y, intersectAngle, parallelAngle + 180, 0);
+				if(givenAngle == 2)
+	                drawAngleText(acuteAngle+ '°', intersection1.x, intersection1.y, parallelAngle + 180, intersectAngle + 180, 0);
+				if(givenAngle == 3)
+	                drawAngleText(acuteAngle+ '°', intersection1.x, intersection1.y, intersectAngle + 180, parallelAngle, 0);
+				if(askAngle == 0)
+					drawAngleText('x', intersection1.x, intersection1.y, parallelAngle, intersectAngle, 0);
+				if(askAngle == 1)
+					drawAngleText('x', intersection1.x, intersection1.y, intersectAngle, parallelAngle + 180, 0);
+				if(askAngle == 2)
+	                drawAngleText('x', intersection1.x, intersection1.y, parallelAngle + 180, intersectAngle + 180, 0);
+				if(askAngle == 3)
+	                drawAngleText('x', intersection1.x, intersection1.y, intersectAngle + 180, parallelAngle, 0);
+				if(hintAngle == 0)
+					drawAngleText('y', intersection1.x, intersection1.y, parallelAngle, intersectAngle, 0);
+				if(hintAngle == 1)
+					drawAngleText('y', intersection1.x, intersection1.y, intersectAngle, parallelAngle + 180, 0);
+				if(hintAngle == 2)
+	                drawAngleText('y', intersection1.x, intersection1.y, parallelAngle + 180, intersectAngle + 180, 0);
+				if(hintAngle == 3)
+	                drawAngleText('y', intersection1.x, intersection1.y, intersectAngle + 180, parallelAngle, 0);
+            }
+
+            // הצגת הזוויות בנקודת החיתוך השנייה
+            if (intersection2) {
+				console.log(intersection2);
+				if(givenAngle == 4)
+	                drawAngleText(acuteAngle+ '°', intersection2.x, intersection2.y, parallelAngle, intersectAngle, 0);
+				if(givenAngle == 5)
+	                drawAngleText(acuteAngle+ '°', intersection2.x, intersection2.y, intersectAngle, parallelAngle + 180, 0);
+				if(givenAngle == 6)
+	                drawAngleText(acuteAngle+ '°', intersection2.x, intersection2.y, parallelAngle + 180, intersectAngle + 180, 0);
+				if(givenAngle == 7)
+	                drawAngleText(acuteAngle+ '°', intersection2.x, intersection2.y, intersectAngle + 180, parallelAngle, 0);
+				if(askAngle == 4)
+	                drawAngleText('x', intersection2.x, intersection2.y, parallelAngle, intersectAngle, 0);
+				if(askAngle == 5)
+	                drawAngleText('x', intersection2.x, intersection2.y, intersectAngle, parallelAngle + 180, 0);
+				if(askAngle == 6)
+	                drawAngleText('x', intersection2.x, intersection2.y, parallelAngle + 180, intersectAngle + 180, 0);
+				if(askAngle == 7)
+	                drawAngleText('x', intersection2.x, intersection2.y, intersectAngle + 180, parallelAngle, 0);
+				if(hintAngle == 4)
+	                drawAngleText('y', intersection2.x, intersection2.y, parallelAngle, intersectAngle, 0);
+				if(hintAngle == 5)
+	                drawAngleText('y', intersection2.x, intersection2.y, intersectAngle, parallelAngle + 180, 0);
+				if(hintAngle == 6)
+	                drawAngleText('y', intersection2.x, intersection2.y, parallelAngle + 180, intersectAngle + 180, 0);
+				if(hintAngle == 7)
+	                drawAngleText('y', intersection2.x, intersection2.y, intersectAngle + 180, parallelAngle, 0);
+            }
+        } // drawIntersection
+
+        function drawRectangleWithText(x, y, width, height, text1, text2, color) {
+            buttonCtx.fillStyle = color;
+            buttonCtx.fillRect(x, y, width, height);
+            
+            buttonCtx.strokeStyle = 'black';
+            buttonCtx.lineWidth = 2;
+            buttonCtx.strokeRect(x, y, width, height);
+			buttonCtx.direction = "rtl";
+
+            buttonCtx.font = 'bold 10px Arial';
+            buttonCtx.fillStyle = 'white';
+            buttonCtx.textAlign = 'center';
+            buttonCtx.textBaseline = 'middle';
+			if (text2 == "")
+				buttonCtx.fillText(text1, x + width / 2, y + height / 2);
+			else
+			{
+				buttonCtx.fillText(text1, x + width / 2, y + height / 6);
+				buttonCtx.fillText(text2, x + width / 2, y + 3 * height / 6);
+			}
+
+            return { x, y, width, height, text1, color };
+        }
+
+        function drawBottomRectangles() {
+            const rectWidth = Math.min(buttonCanvas.width * 0.25, 200);
+            const rectHeight = Math.min(buttonCanvas.height * 0.5, 60);
+            const totalWidth = rectWidth * 3 + 20 * 2;
+            const startX = (buttonCanvas.width - totalWidth) / 2;
+            const y = buttonCanvas.height - rectHeight - 10;
+
+            rectangles.forEach((rect, i) => {
+                const x = startX + (rectWidth + 20) * i;
+                rect.bounds = drawRectangleWithText(x, y, rectWidth, rectHeight, rect.text, '', rect.color);
+            });
+        }
+		
+		let onlyCurrent = true;
+		let hintNumber = 0;
+		let acuteAngle = 0;
+		let solutionAngle = 0;
+		let hintAngle = -1;
+		let askAngle = -1;
+		let givenAngle = -1;
+		
+		function chooseBetween(x1, x2)
+		{
+			if (Math.floor(Math.random() * 2) == 0)
+				return x1;
+			else
+				return x2;
+		}
+		
+		function chooseHintAngle()
+		{
+			switch (givenAngle)
+			{
+				case 0 :
+					hintAngle = 6;
+					askAngle = chooseBetween(5, 7);
+					break;
+				case 1 :
+					hintAngle = 7;
+					askAngle = chooseBetween(4, 6);
+					break;
+				case 2 :
+					hintAngle = 4;
+					askAngle = chooseBetween(5, 7);
+					break;
+				case 3 :
+					hintAngle = 5;
+					askAngle = chooseBetween(4, 6);
+					break;
+				case 4 :
+					hintAngle = 2;
+					askAngle = chooseBetween(1, 3);
+					break;
+				case 5 :
+					hintAngle = 3;
+					askAngle = chooseBetween(0, 2);
+					break;
+				case 6 :
+					hintAngle = 0;
+					askAngle = chooseBetween(1, 3);
+					break;
+				case 7 :
+					hintAngle = 1;
+					askAngle = chooseBetween(0, 2);
+					break;
+			}
+		}
+
+		let parallelAngle = 0, intersectAngle = 0;
+		function chooseAngles() {
+			hintNumber = 0;
+			hintAngle = -1;
+			textInput2.value = '';
+			
+			do
+			{ 
+				parallelAngle = Math.floor(Math.random() * 360);
+			} while (parallelAngle == 90 || parallelAngle == 270);
+
+			mult = 2 * Math.floor(Math.random() * 2) - 1;
+			intersectAngle = parallelAngle + mult * (30 + Math.floor(Math.random() * 60));
+			if (onlyCurrent)
+				kind = currentLevel;
+			else
+				kind = 1 + Math.floor(Math.random() * currentLevel);
+			
+			console.log("kind = " + kind);
+            acuteAngle = calculateIntersectionAngles(parallelAngle, intersectAngle);
+			givenAngle = Math.floor(Math.random() * 8);
+			if (givenAngle % 2 == 1)
+				acuteAngle = 180 - acuteAngle;
+			switch (kind)
+			{
+				case 1 :
+					solutionAngle = acuteAngle;
+					switch (givenAngle)
+					{
+						case 0 :
+						case 1 :
+						case 4 :
+						case 5 :
+							askAngle = givenAngle + 2;
+							break;
+						case 2 :
+						case 3 :
+						case 6 :
+						case 7 :
+							askAngle = givenAngle - 2;
+							break;
+					}
+					break;
+				case 2 :
+					askAngle = givenAngle + 1;
+					if (askAngle % 4 == 0)
+						askAngle -= 4;
+					solutionAngle = 180 - acuteAngle;
+					break;	
+				case 3 :
+					solutionAngle = acuteAngle;
+					switch (givenAngle)
+					{
+						case 0 :
+						case 6 :
+						case 2 :
+						case 4 :
+							askAngle = 6 - givenAngle;
+							break;
+						case 1 :
+						case 7 :
+						case 3 :
+						case 5 :
+							askAngle = 8 - givenAngle;
+							break;
+					}
+					break;
+				case 4 :
+					solutionAngle = acuteAngle;
+					switch (givenAngle)
+					{
+						case 0 :
+						case 1 :
+						case 2 :
+						case 3 :
+							askAngle = givenAngle + 4;
+							break;
+						case 4 :
+						case 5 :
+						case 6 :
+						case 7 :
+							askAngle = givenAngle - 4;
+							break;
+					}
+					break;
+				case 5 :
+					solutionAngle = 180 - acuteAngle;
+					chooseHintAngle();
+					break;
+			}
+					
+			console.log("angles = " + givenAngle + " " + askAngle);
+					
+			
+			drawIntersection(parallelAngle, intersectAngle, acuteAngle, givenAngle, askAngle, -1);
+            textContent1.innerHTML = '<span class="red-text" dir="rtl">' + "כתוב כמה שווה הזווית X";
+		}
+/* 
+	            "<span class='fraction' dir='ltr'>" + 
+				"<span class='fup'>y1-y2</span><span class='bar'>/</span>" +
+				"<span class='fdn'>x1-x2</span></span>=m<br>" +
+
+*/		
+        function drawAll() {
+            if (!ctx) return;  // בדיקה שהקונטקסט קיים
+
+//            ctx.clearRect(0, 0, canvas.width, canvas.height);
+	
+			chooseAngles();
+            drawBottomRectangles();
+            canvas.style.display = 'block';
+//            canvas.style.display = 'none';
+        }
+				
+/*
+        function createTextBoxes() {
+            const texts = ['1. רביע ראשון m,b > 0', '2.   לא מקבילים לצירים', '3. גם מקבילים לצירים'];
+            texts.forEach(text => {
+                const box = document.createElement('div');
+                box.className = 'text-box';
+                box.textContent = text;
+                textBoxes.appendChild(box);
+            });
+        }
+*/
+
+/*
+        function initializeCanvas() {
+//			alert(canvas.width + " " + window.innerWidth + " " + canvas.height + " " + window.innerHeight);
+			createTextBoxes();
+            drawAll();
+        }
+*/
+
+        function drawPoint(x, y, originalX, originalY, color) {
+            ctx.beginPath();
+//			alert("A" + x + " " + y+ " " + originalX+ " " + originalY+ " " +
+//				(canvas.width / 2 + x * 18)+ " " + (canvas.height / 2 - y * 18));
+            ctx.arc(canvas.width / 2 + x * 18, canvas.height / 2 - y * 18, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+			
+            ctx.fillStyle = color;
+            ctx.font = '10px Arial';
+            ctx.textAlign = 'center';
+            ctx.direction = 'ltr';
+			
+			if (x > 0)
+				offsetX = -15
+			else
+				offsetX = 15;
+			if (y > 0)
+				offsetY = 15;
+			else
+				offsetY = -15;
+		
+            ctx.fillText("(" + originalX +", " + originalY + ")",
+				canvas.width / 2 + x * 18 + offsetX, canvas.height / 2 - y * 18 + offsetY);
+			
+        }
+		
+        function drawExtendedLine() {
+            // מחשב את נקודות החיתוך עם קצוות ה-canvas
+			x1 = canvas.width / 2 + chosenX1 / scale * 18;
+			x2 = canvas.width / 2 + chosenX2 / scale * 18;
+			y1 = canvas.height / 2 - chosenY1 / scale * 18;
+			y2 = canvas.height / 2 - chosenY2 / scale * 18;
+			
+            const m = (y2 - y1) / (x2 - x1);
+            const b1 = y1 - m * x1;
+            const b2 = y2 - m * x2;
+//			alert(chosenY2 + " " + chosenY1 + " " + chosenX2 + " " + chosenX1);
+//			alert("B " + y2 + " " + y1 + " " + x2 + " " + x1);
+//			alert("C " + chosenM + " " + chosenB + " " + b1);
+            let startX, startY, endX, endY;
+
+            if (isFinite(m)) {
+                startX = 0;
+                startY = b1;
+                endX = canvas.width;
+                endY = m * canvas.width + b1;
+            } else {
+                // במקרה של קו אנכי
+                startX = x1;
+                startY = 0;
+                endX = x1;
+                endY = canvas.height;
+            }
+
+            // מצייר את הקו
+            ctx.beginPath();
+            ctx.moveTo(startX, startY);
+            ctx.lineTo(endX, endY);
+            ctx.strokeStyle = 'blue';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+        }
+
+		function setHint(showingSolution)
+		{
+			hintNumber++;
+			if (hintNumber > 1 && !showingSolution)
+				return("אין יותר רמזים !");
+			else if (kind == 1)
+				return("הזווית הנתונה והזווית X הן זוויות קודקודיות ולכן שוות");
+			else if (kind == 2)
+				return("הזווית הנתונה והזווית X הן זוויות צמודות ולכן סכומן 180" + '°');
+			else if (kind == 3)
+				return("הזווית הנתונה והזווית X הן זוויות מתחלפות ולכן שוות");
+			else if (kind == 4)
+				return("הזווית הנתונה והזווית X הן זוויות מתאימות ולכן שוות");
+			else if (kind == 5)
+			{
+				drawIntersection(parallelAngle, intersectAngle, acuteAngle, givenAngle, askAngle, hintAngle);
+				return("הזווית הנתונה והזווית Y הן זוויות מתחלפות ולכן שוות. " + "<br>" + 
+					"הזווית X והזווית Y הן צמודות ולכן סכומן " + '180°' + ".");
+			}				
+		}	
+
+/*
+        canvas.addEventListener('click', function(event) {
+			drawCoordinateSystem();
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+			const times = 1;
+
+            pointedX = Math.round((x - 178.5) / 18 * times); // 11 / 10);
+            pointedY = Math.round((178.5 - y) / 18 * times); // 11 / 10);
+			drawPoint(pointedX, pointedY, 'red');
+
+//            coordinates.textContent = `קואורדינטות: (${svgX}, ${svgY})`;
+        });
+			*/
+			
+		let waitingConfirm = false;
+		let givingHint = false;
+        buttonCanvas.addEventListener('click', (event) => {
+			if (waitingConfirm)
+				return;
+            const rect = buttonCanvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            for (let i = 0; i < rectangles.length; i++) {
+                const rectangle = rectangles[i];
+                const { x, y, width, height, text } = rectangle.bounds;
+				let message = '';
+                if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+                    if (i === 0) { // "פתרון בבקשה"
+						waitingConfirm = true;
+						message = setHint(true) + "<br>";
+						message += "הזווית X היא " + solutionAngle + '°';
+                        solutionText.innerHTML = message;
+                        solutionModal.style.display = 'block';
+
+						potentialScore += 10 * kind;
+						potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+						
+                } else if (i === 1) { // "רמז"
+						waitingConfirm = true;
+						givingHint = true;
+//						solutionModal.textContent = formula;
+						message = setHint(false);
+                        solutionText.innerHTML = message;
+                        solutionModal.style.display = 'block';
+						cumulativeScore-= 3 * kind;
+						cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+				} else if (i === 2) { // "יש לי תשובה"
+						waitingConfirm = true;
+						potentialScore += 10 * kind;
+						potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+						
+						points = 0;
+						if (textInput2.value == solutionAngle)
+							points += 10 * kind;
+						cumulativeScore += points;
+						cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+						if (points == 10 * kind)
+						{
+							correctModal.style.display = 'block';
+						} else if (points == 0) {
+//							alert("a");
+							message = "תשובה לא נכונה." + "<br>";
+							message += setHint(true) + "<br>";
+							message += "הזווית X היא " + solutionAngle + '°';
+							errorText.innerHTML = message;
+							errorModal.style.display = 'block';
+//							alert("b");
+						}
+	                }
+                    return;
+                }
+            }
+        });
+
+        levelSelect.addEventListener('change', () => {
+        currentLevel = levelSelect.selectedIndex + 1; //parseInt(levelSelect.value) || 1;
+        drawAll();
+//		currevntLevelInfo.textContent = `רמה : ${currentLevel}`;
+});
+
+        kindSelect.addEventListener('change', () => {
+        onlyCurrent = (kindSelect.selectedIndex == 0);
+        drawAll();
+});
+
+
+    document.getElementById('solutionConfirm').onclick = function() {
+		waitingConfirm = false;
+        solutionModal.style.display = "none";
+		if (givingHint)
+			givingHint = false;
+		else
+			drawAll();
+    }
+
+    document.getElementById('hintConfirm').onclick = function() {
+		waitingConfirm = false;
+        hintModal.style.display = "none";
+    }
+
+    document.getElementById('errorConfirm').onclick = function() {
+		waitingConfirm = false;
+        errorModal.style.display = "none";
+        drawAll();
+    }
+
+    document.getElementById('correctConfirm').onclick = function() {
+		waitingConfirm = false;
+        correctModal.style.display = "none";
+        drawAll();
+    }
+
+/*
+    document.getElementById('hintConfirm').onclick = function() {
+        hintModal.style.display = "none";
+    }
+
+    document.getElementById('otherConfirm').onclick = function() {
+        otherModal.style.display = "none";
+    }
+
+    document.getElementById('partialConfirm').onclick = function() {
+        partialModal.style.display = "none";
+        drawAll();
+    }
+*/
+
+	// קריאה לפונקציות בעת טעינת הדף ושינוי גודל החלון
+	window.addEventListener('load', () => {
+		drawAll();
+		setInterval(updateTimer, 1000); // עדכון הטיימר כל שנייה
+	});
+//    window.addEventListener('resize', initializeCanvas);
+
+    // קריאה מיידית לפונקציית האתחול
+//    if (document.readyState === 'complete') {
+//        initializeCanvas();
+//    } else {
+//        window.addEventListener('load', initializeCanvas);
+//	    }
+        // initializeCanvas();
+</script>
+</body>
+</html>

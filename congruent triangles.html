@@ -1,0 +1,1709 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 5px;
+            background-color: #f0f0f0;
+        }
+        
+        .timer {
+            font-size: 24px;
+            font-weight: bold;
+        }
+        
+        .select-bar {
+            display: flex;
+            justify-content: right;
+            gap: 10px;
+            padding: 10px;
+            background-color: #e0e0e0;
+            margin-bottom: 10px;
+        }
+
+        .select-wrapper {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .select-wrapper select {
+            padding: 5px;
+            border-radius: 4px;
+            border: 1px solid #ccc;
+            font-size: 16px;
+        }
+        
+        .main-content {
+            display: flex;
+            justify-content: space-between;
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 0 10px;
+            gap: 10px;
+        }
+
+        .central-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        .inputs {
+            width: 100%;
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .rotation-inputs, 
+        .side-inputs {
+            display: flex;
+            gap: 5px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .side-panel {
+            background-color: #f5f5f5;
+            padding: 2px;
+            border-radius: 2px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: fit-content;
+            width: 260px;
+            margin-left: auto;
+        }
+
+        .right-panel {
+<!--             background-color: #f5f5f5;
+ -->            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            height: fit-content;
+            width: 200px;
+            margin-right: auto;
+        }
+
+        .radio-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+            margin: 5px 0;
+        }
+        
+        .radio-option {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        .congruence-inputs-blue {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 5px;
+<!--             color: blue;
+ -->        }
+        
+        .congruence-inputs-red {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-top: 5px;
+<!--             color: red;
+ -->        }
+        
+        .input-with-triangle {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-direction: row-reverse;
+        }
+        
+        .small-triangle-svg-blue {
+            width: 30px;
+            height: 30px;
+<!--             background-color: blue;
+ -->        }
+        
+        .small-triangle-svg-red {
+            width: 30px;
+            height: 30px;
+<!--             background-color: red;
+ -->        }
+        
+        .text-input-blue {
+            width: 40px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+            background-color: lightblue;
+            <!-- color: blue; -->
+        }
+        
+        .text-input-red {
+            width: 40px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 14px;
+            text-align: center;
+			background-color: red;
+<!--             color: red;
+ -->
+        }
+        
+        .congruence-symbol {
+            position: relative;
+            font-size: 28px;
+            margin: 0 10px;
+            height: 35px;
+            display: flex;
+            align-items: flex-end;
+        }
+
+        .congruence-symbol::before {
+            content: "∽";
+            position: absolute;
+            font-size: 14px;
+            top: 0;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+        .drawing-container {
+            position: relative;
+            width: 400px;
+            height: 400px;
+        }
+
+        .drawing-area {
+            width: 100%;
+            height: 100%;
+            border: 1px solid #ccc;
+            background-color: white;
+            border-radius: 4px;
+        }
+
+		.action-buttons {
+			position: fixed; /* שינוי מ-absolute ל-fixed */
+			right: 20px;     /* צמוד לצד ימין עם מרווח קטן */
+			bottom: 20px;
+			display: flex;
+			flex-direction: row;
+			gap: 10px;
+			z-index: 1000;
+		}
+        .action-button {
+            width: 100px;
+            height: 50px;
+            padding: 0;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            color: white;
+            font-size: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        }
+
+        .action-button:hover {
+            opacity: 0.9;
+        }
+
+        input[type="number"] {
+            width: 60px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        label {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            white-space: nowrap;
+        }
+
+        button {
+            padding: 5px 10px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            background-color: #f0f0f0;
+            cursor: pointer;
+        }
+
+        button:hover {
+            background-color: #e0e0e0;
+        }
+
+        .draw-button {
+            padding: 8px 20px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 10px;
+            transition: background-color 0.3s;
+        }
+
+        .draw-button:hover {
+            background-color: #45a049;
+        }
+        .angle-inputs-group {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            margin-top: 20px;
+        }
+
+        .angle-input-row {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .angle-symbol {
+            font-family: 'Arial', sans-serif;
+            font-size: 10px;
+        }
+
+        .angle-input-blue {
+            width: 40px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+            background-color: lightblue;
+       }
+
+        .angle-input-red {
+            width: 40px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+            background-color: red;
+       }
+
+        .equals-sign {
+            margin: 0 8px;
+            font-size: 20px;
+        }
+
+       .green-text {
+            color: green;
+        }
+        .red-text {
+            color: red;
+        }
+    </style>
+</head>
+<body>
+    <div class="top-bar">
+        <div id="pScore">ניקוד אפשרי : 0</div>
+        <div id="timer" class="timer">00:00</div>
+        <div id="aScore">ניקוד מצטבר : 0</div>
+    </div>
+
+    <div class="select-bar">
+        <div class="select-wrapper">
+            <!-- בחירה 1: -->
+            <select id="select1">
+                <option value="1">חופפים לפי איזה משפט ?</option>
+                <option value="2">האם חופפים, ואם כן - לפי איזה משפט ?</option>
+                <option value="3">משולשים דומים</option>
+            </select>
+        </div>
+        <div class="select-wrapper">
+            <!-- בחירה 2: -->
+            <select id="select2">
+                <option value="a">רק זוויות פנימיות</option>
+                <option value="b">גם זוויות חיצוניות</option>
+            </select>
+        </div>
+    </div>
+
+    <div class="main-content">
+        <div class="right-panel">
+            <div id="answerText"></div>
+        </div>
+<!-- 		<div>
+			<button class="action-button" style="background-color: orange" id="newExercise1" onclick="drawAll()">תרגיל חדש</button>
+		</div>
+ -->
+        <div class="central-content">
+            <div class="drawing-container">
+                <div class="drawing-area" id="drawingArea"></div>
+                <div class="action-buttons">
+                    <button class="action-button" style="background-color: blue" onclick="checkSolution()">יש לי פתרון</button>
+                    <button class="action-button" style="background-color: green" id="getHint" onclick="showHint()">אפשר רמז ?</button>
+                    <button class="action-button" style="background-color: red" onclick="showSolution()">פתרון בבקשה</button>
+					<button class="action-button" style="background-color: orange" id="newExercise" onclick="drawAll()">תרגיל חדש</button>
+               </div>
+            </div>
+
+<!--             <div class="inputs">
+                <div class="rotation-inputs">
+                    <label>
+                        סיבוב משולש עליון (מעלות):
+                        <input type="number" id="topRotation" value="0" min="-360" max="360">
+                    </label>
+                    <label>
+                        סיבוב משולש תחתון (מעלות):
+                        <input type="number" id="bottomRotation" value="0" min="-360" max="360">
+                    </label>
+                </div>
+                <div class="side-inputs">
+                    <label>
+                        צלע א:
+                        <input type="number" id="sideA" value="100" min="0" max="200">
+                    </label>
+                    <label>
+                        צלע ב:
+                        <input type="number" id="sideB" value="100" min="0" max="200">
+                    </label>
+                    <label>
+                        צלע ג:
+                        <input type="number" id="sideC" value="100" min="0" max="200">
+                    </label>
+                </div>
+                <button class="draw-button" onclick="drawTriangles()">שרטט</button>
+            </div>
+ -->        
+		</div>
+
+		<div>
+			<div id="question11">לפי איזה משפט שני המשולשים חופפים ?</div>
+			<div id="question21">לפי איזה משפט שני המשולשים חופפים (אם בכלל) ?</div>
+			<div id="question31">כיתבו את הדמיון בין המשולשים לפי סדר תואם של קודקודים</div>
+			<div class="side-panel">
+				<div class="radio-group" id="radioGroup">
+					<label class="radio-option" id="radio1" >
+						<input type="radio" name="option" value="1" onclick="showRadioAlert(this)">
+						<span>משפט חפיפה ראשון - צלע זווית צלע</span>
+					</label>
+					<label class="radio-option" id="radio2" >
+						<input type="radio" name="option" value="2" onclick="showRadioAlert(this)">
+						<span>משפט חפיפה שני - זווית צלע זווית</span>
+					</label>
+					<label class="radio-option" id="radio3">
+						<input type="radio" name="option" value="3" onclick="showRadioAlert(this)">
+						<span>משפט חפיפה שלישי - צלע צלע צלע</span>
+					</label>
+					<label class="radio-option" id="radio4">
+						<input type="radio" name="option" value="4" onclick="showRadioAlert(this)">
+						<span>לא חופפים</span>
+					</label>
+				</div>
+			</div>
+			<div id="question121">כיתבו את החפיפה בין המשולשים לפי סדר תואם של קודקודים</div>
+			 <div class="side-panel" id="userCongruence">
+				<div class="congruence-inputs-blue">
+					<div class="input-with-triangle">
+						<svg class="small-triangle-svg-blue" viewBox="0 0 30 30">
+							<path d="M15 5 L25 25 L5 25 Z" fill="none" stroke="black" />
+						</svg>
+						<input type="text" id="leftUserCongruence" class="text-input-blue" maxlength="3">
+					</div>
+					<div id="equals1" class="congruence-symbol">=</div>
+					<div id="nonEquals1" class="congruence-symbol"></div>
+					<div class="input-with-triangle">
+						<svg class="small-triangle-svg-blue" viewBox="0 0 30 30">
+							<path d="M15 5 L25 25 L5 25 Z" fill="none" stroke="black" />
+						</svg>
+						<input type="text" id="rightUserCongruence" class="text-input-blue" maxlength="3">
+					</div>
+				</div>
+			</div>
+			<div class="side-panel" id="answerCongruence">
+				<div class="congruence-inputs-red">
+					<div class="input-with-triangle">
+						<svg class="small-triangle-svg-red" viewBox="0 0 30 30">
+							<path d="M15 5 L25 25 L5 25 Z" fill="none" stroke="black" />
+						</svg>
+						<input type="text" id="leftAnswerCongruence" class="text-input-red" maxlength="3">
+					</div>
+					<div id="equals2" class="congruence-symbol">=</div>
+					<div id="nonEquals2" class="congruence-symbol"></div>
+					<div class="input-with-triangle">
+						<svg class="small-triangle-svg-red" viewBox="0 0 30 30">
+							<path d="M15 5 L25 25 L5 25 Z" fill="none" stroke="black" />
+						</svg>
+						<input type="text" id="rightAnswerCongruence" class="text-input-red" maxlength="3">
+					</div>
+				</div>
+			</div>
+			<div id="question122">לאיזו צלע במשולש אחד שווה הצלע הנתונה מהמשולש השני ?</div>
+			<div id="question32">מהו יחס הדמיון בין המשולשים ?</div>
+			<div class="side-panel"  id="userEdge">
+				<div class="angle-inputs-group">
+					<div class="angle-input-row">
+						<input type="text" id="leftUserEdge" class="angle-input-blue" maxlength="3">
+						<span id="equals3" class="equals-sign">=</span>
+						<span id="nonEquals3" class="equals-sign">:</span>
+						<input type="text" id="rightUserEdge" class="angle-input-blue" maxlength="3">
+					</div>
+				</div>
+			</div>
+			<div class="side-panel" id="answerEdge">
+				<div class="angle-inputs-group">
+					<div class="angle-input-row">
+						<input type="text" id="leftAnswerEdge" class="angle-input-red" maxlength="3">
+						<span id="equals4" class="equals-sign">=</span>
+						<span id="nonEquals4" class="equals-sign">:</span>
+						<input type="text" id="rightAnswerEdge" class="angle-input-red" maxlength="3">
+					</div>
+				</div>
+			</div>
+			<div id="question123">לאיזו זווית במשולש אחד שווה הזווית הנתונה מהמשולש השני ?</div>
+			<div id="question33">מהו אורך הצלע ?</div>
+			<div class="side-panel" id="userAngle">
+				<div class="angle-inputs-group">
+					<div class="angle-input-row">
+						<input type="text" id="leftUserAngle" class="angle-input-blue" maxlength="3">
+						<svg class="angle-symbol-svg" viewBox="0 0 20 20" id="leftUserAngle1">
+							<!-- שוק אופקית -->
+							<path d="M18 10 L 2 10" stroke="black" fill="none" stroke-width="1"/>
+							<!-- שוק אלכסונית - בזווית 45 מעלות וארוכה פי 2 -->
+							<path d="M2 10 L 14 -2" stroke="black" fill="none" stroke-width="1"/>
+							<!-- קשת שמתחילה ונגמרת לפני/אחרי אמצעי השוקיים -->
+							<path d="M 12 10 A 8 10 5 0 0 5 7" stroke="black" fill="none" stroke-width="1"/>
+						</svg>
+						<span class="equals-sign">=</span>
+						<input type="text" id="rightUserAngle" class="angle-input-blue" maxlength="3">
+						<svg class="angle-symbol-svg" viewBox="0 0 20 20" id="rightUserAngle1">
+							<path d="M18 10 L 2 10" stroke="black" fill="none" stroke-width="1"/>
+							<path d="M2 10 L 14 -2" stroke="black" fill="none" stroke-width="1"/>
+							<path d="M 12 10 A 8 10 5 0 0 5 7" stroke="black" fill="none" stroke-width="1"/>
+						</svg>
+					</div>
+				</div>
+			</div>
+			<div class="side-panel"  id="answerAngle">
+				<div class="angle-inputs-group">
+					<div class="angle-input-row">
+						<input type="text" id="leftAnswerAngle" class="angle-input-red" maxlength="3">
+						<svg class="angle-symbol-svg" viewBox="0 0 20 20" id="leftAnswerAngle1">
+							<path d="M18 10 L 2 10" stroke="black" fill="none" stroke-width="1"/>
+							<path d="M2 10 L 14 -2" stroke="black" fill="none" stroke-width="1"/>
+							<path d="M 12 10 A 8 10 5 0 0 5 7" stroke="black" fill="none" stroke-width="1"/>
+						</svg>
+						<span class="equals-sign">=</span>
+						<input type="text" id="rightAnswerAngle" class="angle-input-red" maxlength="3">
+						<svg class="angle-symbol-svg" viewBox="0 0 20 20" id="rightAnswerAngle1">
+							<path d="M18 10 L 2 10" stroke="black" fill="none" stroke-width="1"/>
+							<path d="M2 10 L 14 -2" stroke="black" fill="none" stroke-width="1"/>
+							<path d="M 12 10 A 8 10 5 0 0 5 7" stroke="black" fill="none" stroke-width="1"/>
+						</svg>
+					</div>
+				</div>
+			</div><br>
+			<div id="question34"></div>
+		</div>
+	</div>
+<script>
+	let seconds = 0;
+	const newExercise = document.getElementById('newExercise');
+	let expectingNewExercise = false;
+	const question11 = document.getElementById('question11');
+	const question21 = document.getElementById('question21');
+	const question121 = document.getElementById('question121');
+	const question122 = document.getElementById('question122');
+	const question123 = document.getElementById('question123');
+	const question31 = document.getElementById('question31');
+	const question32 = document.getElementById('question32');
+	const question33 = document.getElementById('question33');
+	const question34 = document.getElementById('question34');
+
+	const equals1 = document.getElementById('equals1');
+	const equals2 = document.getElementById('equals2');
+	const nonEquals1 = document.getElementById('nonEquals1');
+	const nonEquals2 = document.getElementById('nonEquals2');
+
+	const radio1 = document.getElementById('radio1');
+	const radio2 = document.getElementById('radio2');
+	const radio3 = document.getElementById('radio3');
+	const radio4 = document.getElementById('radio4');
+
+	const userAngle = document.getElementById('userAngle');
+	const leftUserAngle = document.getElementById('leftUserAngle');
+	const leftUserAngle1 = document.getElementById('leftUserAngle1');
+	const rightUserAngle = document.getElementById('rightUserAngle');
+	const rightUserAngle1 = document.getElementById('rightUserAngle1');
+
+	const answerAngle = document.getElementById('answerAngle');
+	const leftAnswerAngle = document.getElementById('leftAnswerAngle');
+	const leftAnswerAngle1 = document.getElementById('leftAnswerAngle1');
+	const rightAnswerAngle = document.getElementById('rightAnswerAngle');
+	const rightAnswerAngle1 = document.getElementById('rightAnswerAngle1');
+
+
+	const questions1 = [leftAnswerAngle1, rightAnswerAngle1, leftUserAngle1, rightUserAngle1, radio1, radio2, radio3, equals1, equals2, equals3, equals4, question11, question121, question122, question123];
+	const questions2 = [leftAnswerAngle1, rightAnswerAngle1, leftUserAngle1, rightUserAngle1, radio1, radio2, radio3, radio4, equals1, equals2, equals3, equals4, question21, question121, question122, question123];
+	const questions3 = [nonEquals1, nonEquals2, nonEquals3, nonEquals4, question31, question32, question33, question34];
+	
+	const getHint = document.getElementById('getHint');
+	const answerText = document.getElementById('answerText');
+	const answerCongruence = document.getElementById('answerCongruence');
+
+	const userEdge = document.getElementById('userEdge');
+	const leftUserEdge = document.getElementById('leftUserEdge');
+	const rightUserEdge = document.getElementById('rightUserEdge');
+
+	const answerEdge = document.getElementById('answerEdge');
+	const leftAnswerEdge = document.getElementById('leftAnswerEdge');
+	const rightAnswerEdge = document.getElementById('rightAnswerEdge');
+
+	const timerElement = document.getElementById('timer');
+
+	const pScore = document.getElementById('pScore');
+	const aScore = document.getElementById('aScore');
+	const leftUserCongruence = document.getElementById('leftUserCongruence');
+	const rightUserCongruence = document.getElementById('rightUserCongruence');
+	const leftAnswerCongruence = document.getElementById('leftAnswerCongruence');
+	const rightAnswerCongruence = document.getElementById('rightAnswerCongruence');
+	
+
+	const timer = setInterval(() => {
+		seconds++;
+		const minutes = Math.floor(seconds / 60);
+		const remainingSeconds = seconds % 60;
+		timerElement.textContent = 
+			`${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+	}, 1000);
+
+    const select1 = document.getElementById('select1');
+	let currentSelect1 = 1;
+	let currentSelect2 = 1;
+	let sentenceChosen = 0;
+	
+	function blackRadios()
+	{
+		radio1.style.color = "black";		
+		radio2.style.color = "black";		
+		radio3.style.color = "black";		
+		radio4.style.color = "black";
+		let radioButtons = document.getElementsByName('option');
+		for (let radio of radioButtons) {
+			radio.checked = false;
+		}
+	}
+
+    function showRadioAlert(radio) {
+        sentenceChosen = radio.value;
+		if (radio.value == "1")
+			radio1.style.color = "blue";		
+		else if (radio.value == "2")
+			radio2.style.color = "blue";		
+		else if (radio.value == "3")
+			radio3.style.color = "blue";		
+		else if (radio.value == "4")
+			radio4.style.color = "blue";		
+    }
+
+    // מערך האותיות האפשריות לקודקודים
+    const possibleVertexLetters = ['K', 'L', 'M', 'N', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y', 'Z'];
+
+    // פונקציה שבוחרת אותיות אקראיות ייחודיות
+    function generateRandomVertexLetters() {
+        const letters = [...possibleVertexLetters]; // יצירת העתק של המערך המקורי
+        const result = [];
+        
+        // בחירת שלוש אותיות אקראיות שונות
+        for (let i = 0; i < 3; i++) {
+            const randomIndex = Math.floor(Math.random() * letters.length);
+            const selectedLetter = letters.splice(randomIndex, 1)[0]; // הוצאת האות שנבחרה מהמערך
+            result.push(selectedLetter);
+        }
+
+        return result;
+    }
+
+    function calculateAngle(p1, p2, p3) {
+        const angle1 = Math.atan2(p1.y - p2.y, p1.x - p2.x);
+        const angle2 = Math.atan2(p3.y - p2.y, p3.x - p2.x);
+        let angle = (angle2 - angle1) * 180 / Math.PI;
+        if (angle < 0) angle += 360;
+        return Math.min(angle, 360 - angle);
+    }
+
+    function calculateBisectorAngle(p1, p2, p3) {
+        const angle1 = Math.atan2(p1.y - p2.y, p1.x - p2.x);
+        const angle2 = Math.atan2(p3.y - p2.y, p3.x - p2.x);
+        return (angle1 + angle2) / 2;
+    }
+
+    function isValidTriangle(a, b, c) {
+        return (a + b > c) && (b + c > a) && (a + c > b);
+    }
+
+    function calculateTriangleCoordinates(centerX, centerY, sideA, sideB, sideC, rotation) {
+        if (!isValidTriangle(sideA, sideB, sideC)) {
+            alert("לא ניתן ליצור משולש עם צלעות באורכים אלו!");
+            return null;
+        }
+
+        // חישוב זוויות המשולש
+        const cosA = (sideB * sideB + sideC * sideC - sideA * sideA) / (2 * sideB * sideC);
+        const angleA = Math.acos(Math.max(-1, Math.min(1, cosA)));
+
+        // נקודות המשולש לפני הסיבוב
+        let points = [
+            { x: -sideC/2, y: -sideB * Math.sin(angleA) / 3 },
+            { x: sideC/2, y: -sideB * Math.sin(angleA) / 3 },
+            { x: sideB * Math.cos(angleA) - sideC/2, y: sideB * Math.sin(angleA) * 2/3 }
+        ];
+
+        // סיבוב הנקודות סביב מרכז הכובד
+        const rotationRad = rotation * Math.PI / 180;
+        points = points.map(p => ({
+            x: p.x * Math.cos(rotationRad) - p.y * Math.sin(rotationRad),
+            y: p.x * Math.sin(rotationRad) + p.y * Math.cos(rotationRad)
+        }));
+
+        // העברת הנקודות למיקום הסופי
+        return points.map(p => ({
+            x: p.x + centerX,
+            y: p.y + centerY
+        }));
+    }
+	
+	let randomLetters = [[],[]];
+	let randomEdge = '';
+	let randomAngle = '';
+	
+	function sameLetters()
+	{
+		for (let i = 0; i < 3; i++)
+			for (let j = 0; j < 3; j++)
+				if (randomLetters[0][i] == randomLetters[1][j])
+				{
+//					alert(randomLetters[0] + " " + randomLetters[1]);
+					return true;
+				}
+		return false;
+	}
+	let internalAngles = [[],[]];
+	let oppositeAngles =  [];
+	let complementaryAngles = [];
+	let angles = [];	
+
+    function drawSingleTriangle(svg, centerY, sideA, sideB, sideC, rotation, vertexOffset = 0) {
+        const scale = 0.75;
+        const centerX = 200;
+        const points = calculateTriangleCoordinates(
+            centerX, 
+            centerY, 
+            sideA * scale, 
+            sideB * scale, 
+            sideC * scale, 
+            rotation
+        );
+
+        if (!points) return;
+
+        // ציור המשולש
+        const triangle = document.createElementNS("http://www.w3.org/2000/svg", "path");
+        const pathData = `M ${points[0].x} ${points[0].y} L ${points[1].x} ${points[1].y} L ${points[2].x} ${points[2].y} Z`;
+        triangle.setAttribute("d", pathData);
+        triangle.setAttribute("fill", "none");
+        triangle.setAttribute("stroke", "black");
+        triangle.setAttribute("stroke-width", "2");
+        svg.appendChild(triangle);
+
+        // המשך הקווים
+        const lineExtension = 25;
+		if (currentSelect2 == 2)
+		{
+			points.forEach((point, i) => {
+				const nextPoint = points[(i + 1) % 3];
+				const angle = Math.atan2(nextPoint.y - point.y, nextPoint.x - point.x);
+				
+				const line = document.createElementNS("http://www.w3.org/2000/svg", "line");
+				line.setAttribute("x1", point.x - lineExtension * Math.cos(angle));
+				line.setAttribute("y1", point.y - lineExtension * Math.sin(angle));
+				line.setAttribute("x2", nextPoint.x + lineExtension * Math.cos(angle));
+				line.setAttribute("y2", nextPoint.y + lineExtension * Math.sin(angle));
+				line.setAttribute("stroke", "black");
+				line.setAttribute("stroke-width", "1");
+				svg.appendChild(line);
+			});
+		}
+
+        // אותיות בקודקודים
+		do
+		{
+			randomLetters[vertexOffset] = generateRandomVertexLetters();
+		} while (vertexOffset == 1 && sameLetters());
+        
+        points.forEach((point, i) => {
+            const label = document.createElementNS("http://www.w3.org/2000/svg", "text");
+            
+            // וקטור מהמרכז לקודקוד
+            const centerToVertex = {
+                x: point.x - centerX,
+                y: point.y - centerY
+            };
+            
+            // נרמול הוקטור
+            const length = Math.sqrt(centerToVertex.x * centerToVertex.x + centerToVertex.y * centerToVertex.y);
+            const normalizedVector = {
+                x: centerToVertex.x / length,
+                y: centerToVertex.y / length
+            };
+            
+            // מיקום האות מחוץ למשולש
+            const labelOffset = 20;
+            label.setAttribute("x", point.x + normalizedVector.x * labelOffset);
+            label.setAttribute("y", point.y + normalizedVector.y * labelOffset);
+            
+            label.setAttribute("text-anchor", "middle");
+            label.setAttribute("dominant-baseline", "middle");
+            label.textContent = randomLetters[vertexOffset][i];
+            label.setAttribute("font-size", "16");
+            label.setAttribute("font-weight", "bold");
+            svg.appendChild(label);
+        });
+
+        // אורכי צלעות
+        points.forEach((point, i) => {
+			if (drawEdges[vertexOffset][i])
+			{
+				const nextPoint = points[(i + 1) % 3];
+				const sideLength = i === 0 ? sideC : (i === 1 ? sideA : sideB); // סדר נכון של הצלעות
+				const midX = (point.x + nextPoint.x) / 2;
+				const midY = (point.y + nextPoint.y) / 2;
+				
+				const lengthText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+				lengthText.setAttribute("x", midX);
+				lengthText.setAttribute("y", midY - 8);
+				lengthText.setAttribute("text-anchor", "middle");
+				lengthText.setAttribute("dominant-baseline", "middle");
+				lengthText.setAttribute("fill", "blue");
+				lengthText.setAttribute("font-size", "12");
+				if (areCongruent || nonCongruent != 0)
+					lengthText.textContent = sideLength.toString();
+				else
+					lengthText.textContent = (sideLength + 1).toString();
+				nonCongruent--;
+					
+				svg.appendChild(lengthText);
+			}
+        });
+
+        // הוספת כל הזוויות
+        points.forEach((point, i) => {
+            const prev = points[(i + 2) % 3];
+            const next = points[(i + 1) % 3];
+			
+			if (i <= 1)
+				tempAngle = angles[i] = Math.round(calculateAngle(prev, point, next));
+			else
+				tempAngle = 180 - angles[0] - angles[1];
+			const angle = tempAngle;
+            
+            function addAngleText(offsetMultiplier, additionalAngle = 0, isInternal = false, isOpposite = false, isComplementary = false) {
+                const angleText = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                const innerOffset = 20 * offsetMultiplier;
+                const bisectorAngle = calculateBisectorAngle(prev, point, next) + additionalAngle;
+				if (isInternal && !drawAngles[vertexOffset][i])
+					return;
+				if (isOpposite && !drawOppositeAngles[vertexOffset][i])
+					return;
+				if (isComplementary && !drawComplementaryAngles[vertexOffset][i])
+					return;
+				if (isInternal)
+					internalAngles[vertexOffset].push(Math.round(angle));
+				if (isOpposite)
+				{
+					oppositeAngles.push(Math.round(angle));
+					internalAngles[vertexOffset].push(Math.round(angle));
+				}
+				if (isComplementary)
+				{
+					complementaryAngles.push(Math.round(180 - angle));
+					internalAngles[vertexOffset].push(Math.round(angle));
+				}
+				
+				if (isInternal && point.x + innerOffset * Math.cos(bisectorAngle) > 245)
+				{
+					drawOppositeAngles[vertexOffset][i]= true;
+					addAngleText(offsetMultiplier, Math.PI, false, true);
+					drawOppositeAngles[vertexOffset][i]= false;
+					return;
+				}
+
+                angleText.setAttribute("x", point.x + innerOffset * Math.cos(bisectorAngle));
+                angleText.setAttribute("y", point.y + innerOffset * Math.sin(bisectorAngle));
+                angleText.setAttribute("text-anchor", "middle");
+                angleText.setAttribute("dominant-baseline", "middle");
+				if (areCongruent || nonCongruent != 0)
+					angleText.textContent = `${Math.round(isComplementary ? 180 - angle : angle)}°`;
+				else
+					angleText.textContent = `${Math.round(isComplementary ? 181 - angle : (angle + 1))}°`;
+				nonCongruent--;
+				angleText.setAttribute("fill", "red");
+                angleText.setAttribute("font-size", "12");
+                svg.appendChild(angleText);
+            }
+
+//			alert(i + " " + drawAngles);
+			addAngleText(1, 0, true);            // פנימית
+			addAngleText(1.5, Math.PI, false, true); // קודקודית
+			if (Math.floor(Math.random() * 2) == 0)
+				addAngleText(1.5, Math.PI/2, false, false, true);    // צמודה 1 - משלימה ל-180
+			else
+				addAngleText(1.5, -Math.PI/2, false, false, true);   // צמודה 2 - משלימה ל-180
+        });
+    }
+	
+	let kind = 1;
+	let drawEdges = [[false, false, false][false, false, false]];
+	let drawAngles = [[false, false, false][false, false, false]];
+	let drawOppositeAngles = [[false, false, false][false, false, false]];
+	let drawComplementaryAngles = [[false, false, false][false, false, false]];
+	let chosenEdge1 = -1;
+	let chosenEdge2 = -1;
+	let chosenEdge3 = -1;
+	let chosenAngle1 = -1;
+	let chosenAngle2 = -1;
+	let sideA = [0,0];
+	let sideB = [0,0];
+	let sideC = [0,0];
+    let topRotation = 0;
+    let bottomRotation = 0;
+	let maxHintNumber = 1;
+	let hintNumber = 0;
+	
+	let firstTimeHere = true;
+	
+	function showRelevantQuestions()
+	{
+		for(let i = 0; i < questions2.length; i++)
+			questions2[i].style.display = 'none';
+		for(let i = 0; i < questions3.length; i++)
+			questions3[i].style.display = 'none';
+		for(let i = 0; i < questions1.length; i++)
+			questions1[i].style.display = 'none';
+		switch (currentSelect1)
+		{
+			case 1 :
+				for(let i = 0; i < questions1.length; i++)
+					questions1[i].style.display = 'block';
+				break;
+			case 2 :
+				for(let i = 0; i < questions2.length; i++)
+					questions2[i].style.display = 'block';
+				break;
+			case 3 :	
+				for(let i = 0; i < questions3.length; i++)
+					questions3[i].style.display = 'block';
+				break;
+		}
+	}
+	
+	function init()
+	{
+		console.log("================");
+		drawEdges = [[false, false, false],[false, false, false]];
+		drawAngles = [[false, false, false],[false, false, false]];
+		drawOppositeAngles = [[false, false, false],[false, false, false]];
+		drawComplementaryAngles = [[false, false, false],[false, false, false]];
+			
+		chosenEdge1 = -1;
+		chosenEdge2 = -1;
+		chosenAngle1 = -1;
+		chosenAngle2 = -1;
+		chosenAngle01 = -1;
+		chosenAngle02 = -1;
+		chosenAngle11 = -1;
+		chosenAngle12 = -1;
+		blackRadios();
+		currentPoints = currentSelect1 * currentSelect2;
+		sentenceChosen = 0;
+        answerCongruence.style.display = 'none';
+        userEdge.style.display = 'block';
+		userAngle.style.display = 'block';
+		
+        answerEdge.style.display = 'none';
+        answerAngle.style.display = 'none';
+		
+        newExercise.style.display = 'none';
+		expectingNewExercise = false;
+		leftAnswerCongruence.value = '';
+		rightAnswerCongruence.value = '';
+		leftUserCongruence.value = '';
+		rightUserCongruence.value = '';
+
+		leftAnswerEdge.value = '';
+		rightAnswerEdge.value = '';
+		leftUserEdge.value = '';
+		rightUserEdge.value = '';
+
+		leftAnswerAngle.value = '';
+		rightAnswerAngle.value = '';
+		leftUserAngle.value = '';
+		rightUserAngle.value = '';
+
+		answerText.innerHTML = "";
+		internalAngles = [[],[]];
+		oppositeAngles = [];
+		complementaryAngles = [];
+		maxHintNumber = 1;
+		hintNumber = 0;
+		angles = [];
+		randomEdge = '';
+		randomAngle = '';
+		
+		if (firstTimeHere)
+		{
+			firstTimeHere = false;
+			showRelevantQuestions();
+		}
+	}
+	
+	function setSides(triangle1)
+	{
+		scales[triangle1] = 1;
+		proportion = scales[1 - triangle1] = 2 + Math.floor(Math.random() * 4);
+		do
+		{
+			sideA[triangle1] = 60 + Math.floor(Math.random() * 54);
+			sideB[triangle1] = 60 + Math.floor(Math.random() * 54);
+			sideC[triangle1] = 60 + Math.floor(Math.random() * 54);
+		} while (!isValidTriangle(sideA[triangle1], sideB[triangle1], sideC[triangle1]));
+		sideA[1 - triangle1] = sideA[triangle1] * proportion;
+		sideB[1 - triangle1] = sideB[triangle1] * proportion;
+		sideC[1 - triangle1] = sideC[triangle1] * proportion;
+	}
+	
+	let scales = [0, 0];
+	let proportion = 0;
+	let chosenTriangle1 = 0;
+	let chosenTriangle2 = 0;
+	let expectedEdge = 0;
+	
+	function buildSimilarity()
+	{
+		chosenTriangle1 = Math.floor(Math.random() * 2);
+		setSides(chosenTriangle1);
+		
+		chosenEdge1 = Math.floor(Math.random() * 3);
+		drawEdges[0][chosenEdge1] = true;
+		drawEdges[1][chosenEdge1] = true;
+		do
+		{
+			chosenEdge2 = Math.floor(Math.random() * 3);
+		} while (chosenEdge2 == chosenEdge1);
+		chosenTriangle2 = Math.floor(Math.random() * 2);
+		drawEdges[chosenTriangle2][0] = drawEdges[chosenTriangle2][1] = drawEdges[chosenTriangle2][2] = true;
+		
+		if (currentSelect2 == 1)
+		{
+			chosenAngle1 = Math.floor(Math.random() * 3);
+			chosenAngle2 = (chosenAngle1 + 1) % 3;
+		}
+		else
+		{
+			chosenAngle01 = Math.floor(Math.random() * 3);
+			do
+			{
+				chosenAngle02 = Math.floor(Math.random() * 3);
+			} while (chosenAngle01 == chosenAngle02);
+			chosenAngle11 = Math.floor(Math.random() * 3);
+			do
+			{
+				chosenAngle12 = Math.floor(Math.random() * 3);
+			} while (chosenAngle11 == chosenAngle12);
+		}					
+			
+		if (currentSelect2 == 1)
+		{
+			drawAngles[0][chosenAngle1] = true;
+			drawAngles[1][chosenAngle1] = true;
+			drawAngles[0][chosenAngle2] = true;
+			drawAngles[1][chosenAngle2] = true;
+		}
+		else
+		{
+			switch (Math.floor(Math.random() * 3))
+			{
+				case 0 :
+					drawAngles[0][chosenAngle01] = true;
+					break;
+				case 1 :
+					drawOppositeAngles[0][chosenAngle01] = true;
+					break;
+				case 2 :
+					drawComplementaryAngles[0][chosenAngle01] = true;
+					break;
+			}					
+			switch (Math.floor(Math.random() * 3))
+			{
+				case 0 :
+					drawAngles[1][chosenAngle11] = true;
+					break;
+				case 1 :
+					drawOppositeAngles[1][chosenAngle11] = true;
+					break;
+				case 2 :
+					drawComplementaryAngles[1][chosenAngle11] = true;
+					break;
+			}					
+			switch (Math.floor(Math.random() * 3))
+			{
+				case 0 :
+					drawAngles[0][chosenAngle02] = true;
+					break;
+				case 1 :
+					drawOppositeAngles[0][chosenAngle02] = true;
+					break;
+				case 2 :
+					drawComplementaryAngles[0][chosenAngle02] = true;
+					break;
+			}					
+			switch (Math.floor(Math.random() * 3))
+			{
+				case 0 :
+					drawAngles[1][chosenAngle12] = true;
+					break;
+				case 1 :
+					drawOppositeAngles[1][chosenAngle12] = true;
+					break;
+				case 2 :
+					drawComplementaryAngles[1][chosenAngle12] = true;
+					break;
+			}
+		}
+		
+		if (chosenTriangle1 == chosenTriangle2)
+		{
+			switch (chosenEdge2)
+			{
+				case 0 :
+					expectedEdge = sideC[chosenTriangle1] * proportion;
+					break;
+				case 1 :
+					expectedEdge = sideA[chosenTriangle1] * proportion;
+					break;
+				case 2 :
+					expectedEdge = sideB[chosenTriangle1] * proportion;
+					break;
+			}
+		}
+		else
+		{
+			switch (chosenEdge2)
+			{
+				case 0 :
+					expectedEdge = sideC[1 - chosenTriangle1] / proportion;
+					break;
+				case 1 :
+					expectedEdge = sideA[1 - chosenTriangle1] / proportion;
+					break;
+				case 2 :
+					expectedEdge = sideB[1 - chosenTriangle1] / proportion;
+					break;
+			}
+		}
+	}
+
+	
+	let currentPoints = 0;
+	let nonCongruent = -1;
+	let areCongruent = true;
+	
+	function buildCongruence()
+	{
+		maxKind = 3;
+
+		areCongruent = true;
+		nonCongruent = -1;
+		if (currentSelect1 == 2)
+		{
+			areCongruent = (Math.floor(Math.random() * 4) != 0);
+			if (!areCongruent)
+				nonCongruent = Math.floor(Math.random() * 3);
+		}
+			
+		kind = Math.floor(Math.random() * maxKind) + 1;
+		do
+		{
+			sideA[0] = sideA[1] = 80 + Math.floor(Math.random() * 71);
+			sideB[0] = sideB[1] = 80 + Math.floor(Math.random() * 71);
+			sideC[0] = sideC[1] = 80 + Math.floor(Math.random() * 71);
+		} while (!isValidTriangle(sideA[0], sideB[0], sideC[0]));
+		
+		switch (kind) 
+		{
+			case 1 : // edge angle edge
+				chosenEdge1 = Math.floor(Math.random() * 3);
+				chosenEdge2 = (chosenEdge1 + 1) % 3;
+				chosenAngle1 = (chosenEdge1 + 1) % 3;
+				drawEdges[0][chosenEdge1] = true;
+				drawEdges[0][chosenEdge2] = true;
+				drawEdges[1][chosenEdge1] = true;
+				drawEdges[1][chosenEdge2] = true;
+				if (currentSelect2 == 1)
+				{
+					drawAngles[0][chosenAngle1] = true;
+					drawAngles[1][chosenAngle1] = true;
+				}
+				else
+				{
+					for (let tri = 0; tri < 2; tri++)
+					{
+						switch (Math.floor(Math.random() * 2))
+						{
+							case 0 :
+								switch (Math.floor(Math.random() * 3))
+								{
+									case 0 :
+										drawAngles[tri][chosenAngle1] = true;
+										break;
+									case 1 :
+										drawOppositeAngles[tri][chosenAngle1] = true;
+										break;
+									case 2 :
+										drawComplementaryAngles[tri][chosenAngle1] = true;
+										break;
+								}
+								break;
+							case 1 :
+								switch (Math.floor(Math.random() * 3))
+								{
+									case 0 :
+										drawAngles[tri][(chosenAngle1 + 1) % 3] = true;
+										break;
+									case 1 :
+										drawOppositeAngles[tri][(chosenAngle1 + 1) % 3] = true;
+										break;
+									case 2 :
+										drawComplementaryAngles[tri][(chosenAngle1 + 1) % 3] = true;
+										break;
+								}					
+								switch (Math.floor(Math.random() * 3))
+								{
+									case 0 :
+										drawAngles[tri][(chosenAngle1 + 2) % 3] = true;
+										break;
+									case 1 :
+										drawOppositeAngles[tri][(chosenAngle1 + 2) % 3] = true;
+										break;
+									case 2 :
+										drawComplementaryAngles[tri][(chosenAngle1 + 2) % 3] = true;
+										break;
+								}
+								break;
+						}
+					}
+				}
+					
+				break;
+			case 2 : // angle edge angle
+				if (currentSelect2 == 1)
+				{
+					chosenAngle1 = Math.floor(Math.random() * 3);
+					chosenEdge1 = chosenAngle1;
+					chosenAngle2 = (chosenAngle1 + 1) % 3;
+				}
+				else
+				{
+					chosenEdge1 = Math.floor(Math.random() * 3);
+					chosenAngle01 = Math.floor(Math.random() * 3);
+					do
+					{
+						chosenAngle02 = Math.floor(Math.random() * 3);
+					} while (chosenAngle01 == chosenAngle02);
+					chosenAngle11 = Math.floor(Math.random() * 3);
+					do
+					{
+						chosenAngle12 = Math.floor(Math.random() * 3);
+					} while (chosenAngle11 == chosenAngle12);
+				}					
+					
+				drawEdges[0][chosenEdge1] = true;
+				drawEdges[1][chosenEdge1] = true;
+				if (currentSelect2 == 1)
+				{
+					drawAngles[0][chosenAngle1] = true;
+					drawAngles[1][chosenAngle1] = true;
+					drawAngles[0][chosenAngle2] = true;
+					drawAngles[1][chosenAngle2] = true;
+				}
+				else
+				{
+					switch (Math.floor(Math.random() * 3))
+					{
+						case 0 :
+							drawAngles[0][chosenAngle01] = true;
+							break;
+						case 1 :
+							drawOppositeAngles[0][chosenAngle01] = true;
+							break;
+						case 2 :
+							drawComplementaryAngles[0][chosenAngle01] = true;
+							break;
+					}					
+					switch (Math.floor(Math.random() * 3))
+					{
+						case 0 :
+							drawAngles[1][chosenAngle11] = true;
+							break;
+						case 1 :
+							drawOppositeAngles[1][chosenAngle11] = true;
+							break;
+						case 2 :
+							drawComplementaryAngles[1][chosenAngle11] = true;
+							break;
+					}					
+					switch (Math.floor(Math.random() * 3))
+					{
+						case 0 :
+							drawAngles[0][chosenAngle02] = true;
+							break;
+						case 1 :
+							drawOppositeAngles[0][chosenAngle02] = true;
+							break;
+						case 2 :
+							drawComplementaryAngles[0][chosenAngle02] = true;
+							break;
+					}					
+					switch (Math.floor(Math.random() * 3))
+					{
+						case 0 :
+							drawAngles[1][chosenAngle12] = true;
+							break;
+						case 1 :
+							drawOppositeAngles[1][chosenAngle12] = true;
+							break;
+						case 2 :
+							drawComplementaryAngles[1][chosenAngle12] = true;
+							break;
+					}
+				}
+				break;
+			case 3 : // edge edge edge
+				drawEdges[0][0] = true;
+				drawEdges[0][1] = true;
+				drawEdges[0][2] = true;
+				drawEdges[1][0] = true;
+				drawEdges[1][1] = true;
+				drawEdges[1][2] = true;
+				break;
+		}
+	}
+	
+	function drawAll()
+	{
+		init();
+		if (currentSelect1 == 3)
+			buildSimilarity();
+		else
+			buildCongruence();
+		
+		topRotation = Math.floor(Math.random() * 360);
+		bottomRotation = Math.floor(Math.random() * 360);
+		
+		drawTriangles();
+		setHints();
+	}
+	
+	let pScorePoints = 0;
+	let aScorePoints = 0;
+	let options = [[],[]];	
+	function checkSolution()
+	{
+		if (expectingNewExercise)
+		{
+			alert("יש לבקש תרגיל חדש.");
+			return;
+		}
+			
+		pScorePoints += currentPoints * 10;
+		if (currentSelect1 != 3 && sentenceChosen == 0)
+		{
+			alert("לא בחרת אף תשובה ! נא לבחור תשובה או לבקש פתרון.");
+			return;
+		}
+		
+		correctSentence = false;
+		correctCongruence = false;
+		correctEdge = false;
+		correctAngle = false;
+		
+		if (areCongruent || currentSelect1 == 3)
+		{
+			for (let i = 0; i < 2; i++)
+			{
+				options[i][0] = randomLetters[i][0] + randomLetters[i][1] + randomLetters[i][2];
+				options[i][1] = randomLetters[i][0] + randomLetters[i][2] + randomLetters[i][1];
+				options[i][2] = randomLetters[i][1] + randomLetters[i][0] + randomLetters[i][2];
+				options[i][3] = randomLetters[i][1] + randomLetters[i][2] + randomLetters[i][0];
+				options[i][4] = randomLetters[i][2] + randomLetters[i][0] + randomLetters[i][1];
+				options[i][5] = randomLetters[i][2] + randomLetters[i][1] + randomLetters[i][0];
+			}
+			
+			leftText = leftUserCongruence.value;
+			rightText = rightUserCongruence.value;
+			for (let i = 0; i < 6; i++)
+			{
+				if ((leftText == options[0][i] && rightText == options[1][i]) || 
+					(leftText == options[1][i] && rightText == options[0][i]))
+				{
+					correctCongruence= true;
+					break
+				}
+			}
+			
+			if (!correctCongruence)
+			{
+				answerCongruence.style.display = 'block';
+				leftAnswerCongruence.value = options[1][0];
+				rightAnswerCongruence.value = options[0][0];
+			}
+		}
+			
+		if (currentSelect1 == 3)
+		{
+			correctEdge = (leftUserEdge.value == '' + proportion);
+			if (!correctEdge)
+				answerEdge.style.display = 'block';
+			correctAngle = (leftUserAngle.value == expectedEdge);
+			if (!correctAngle)
+				answerAngle.style.display = 'block';
+
+			if (correctCongruence && correctEdge && correctAngle)
+			{
+				answerText.innerHTML += "<span class='red-text'>" + "תשובה מלאה ! כל הכבוד !" + "</span>";
+				aScorePoints += currentPoints * 10;
+			}
+			else
+			{
+				if (correctCongruence)
+					aScorePoints += currentPoints * 4;
+				if (correctEdge)
+					aScorePoints += currentPoints * 3;
+				if (correctAngle)
+					aScorePoints += currentPoints * 3;
+				
+				if (correctCongruence || correctEdge || correctAngle)
+					answerText.innerHTML += "<span class='red-text'>" + "התשובה שלך אינה מלאה. התשובה הנכונה מופיעה באדום."  + "</span>";
+				else
+					answerText.innerHTML += "<span class='red-text'>" + "התשובה שלך אינה נכונה. התשובה הנכונה מופיעה באדום."  + "</span>";
+			}				
+		}
+		else
+		{
+			if (areCongruent)
+			{	
+				correctEdge = (leftUserEdge.value == expectedEdge1 || leftUserEdge.value == expectedEdge2);
+				console.log("B");
+				if (!correctEdge)
+				{
+					console.log("A");
+					answerEdge.style.display = 'block';
+				}
+				correctAngle = (leftUserAngle.value == expectedAngle);
+				if (!correctAngle)
+					answerAngle.style.display = 'block';
+			}
+			
+			if ((!areCongruent && sentenceChosen == 4) || (areCongruent && sentenceChosen == ("" + kind)))
+				correctSentence = true;
+			else
+			{
+				if (!areCongruent)
+					radio4.style.color = "red";				
+				else if (kind == 1)
+					radio1.style.color = "red";		
+				else if (kind == 2)
+					radio2.style.color = "red";		
+				else if (kind == 3)
+					radio3.style.color = "red";		
+			}
+			
+			
+			if (correctSentence && (!areCongruent || (correctCongruence && correctEdge && correctAngle)))
+			{
+					answerText.innerHTML += "<span class='red-text'>" + "תשובה מלאה ! כל הכבוד !" + "</span>";
+					aScorePoints += currentPoints * 10;
+			}
+			else
+			{
+				if (correctSentence)
+					aScorePoints += currentPoints * 3;
+				if (correctCongruence)
+					aScorePoints += currentPoints * 3;
+				if (correctEdge)
+					aScorePoints += currentPoints * 2;
+				if (correctAngle)
+					aScorePoints += currentPoints * 2;
+				
+				if (correctSentence || correctCongruence || correctEdge || correctAngle)
+					answerText.innerHTML += "<span class='red-text'>" + "התשובה שלך אינה מלאה. התשובה הנכונה מופיעה באדום."  + "</span>";
+				else
+					answerText.innerHTML += "<span class='red-text'>" + "התשובה שלך אינה נכונה. התשובה הנכונה מופיעה באדום."  + "</span>";
+			}				
+		}
+		
+		pScore.textContent = `ניקוד אפשרי : ${pScorePoints}`;
+		aScore.textContent = `ניקוד מצטבר : ${aScorePoints}`;
+        newExercise.style.display = 'block';
+		expectingNewExercise = true;
+	}
+	
+	let hints = [];
+	function setHints()
+	{
+		answerText.innerHTML = "";
+		hints = [];
+		if (currentSelect2 == 1)
+		{
+			switch (kind)
+			{
+				case 1 :
+					hints.push("<span class='green-text'>" + "צלע במשולש אחד שווה לצלע במשולש השני, " + "<br>" +
+						"ועוד צלע במשולש אחד שווה לעוד צלע במשולש השני, " + "<br>" +
+						"והזווית שביניהם שווה בשני המשולשים." + "</span>");
+						break;
+				case 2 :
+					hints.push("<span class='green-text'>" + "זווית במשולש אחד שווה לזווית במשולש השני, " + "<br>" +
+						"ועוד זווית במשולש אחד שווה לעוד זווית במשולש השני, " + "<br>" +
+						"והצלע שמחברת בין שתי הזוויות שווה בשני המשולשים." + "</span>");
+						break;
+				case 3 :
+					hints.push("<span class='green-text'>" + "צלע במשולש אחד שווה לצלע במשולש השני, " + "<br>" +
+						"ועוד צלע במשולש אחד שווה לעוד צלע במשולש השני, " + "<br>" +
+						"וגם הצלע השלישית במשולש אחד שווה לצלע השלישית במשולש השני." + "</span>");
+						break;
+			}
+		}
+		else
+		{
+			for (let i = 0; i < oppositeAngles.length; i++)
+			{
+				if (oppositeAngles[i] != -1)
+				{
+					for (let j = i + 1; j < oppositeAngles.length; j++)
+						if (oppositeAngles[j] == oppositeAngles[i])
+							oppositeAngles[j] = -1;
+					hints.push("<span class='green-text'>" + "הזווית הקודקודית לזווית " + 
+						oppositeAngles[i] + '°' + " היא גם כן " + oppositeAngles[i] + '°' + "</span>");
+				}
+			}
+			for (let i = 0; i < complementaryAngles.length; i++)
+			{
+				if (complementaryAngles[i] != -1)
+				{
+					for (let j = i + 1; j < complementaryAngles.length; j++)
+						if (complementaryAngles[j] == complementaryAngles[i])
+							complementaryAngles[j] = -1;
+					hints.push("<span class='green-text'>" + "הזווית הצמודה לזווית " + 
+						complementaryAngles[i] + '°' + " היא " + (180 - complementaryAngles[i]) + '°' + "</span>");
+				}
+			}
+			if (internalAngles[0].length == 2)
+			{
+				hints.push("<span class='green-text'>" + "במשולש שבו שתי זוויות " + "<br>" + internalAngles[0][0] + '°' + " ו- " + internalAngles[0][1] + '°' + "<br>" + 
+					" הזווית השלישית היא " + "<br>" + 
+					"<span dir='ltr'>" + 180 + '°' + "-" + internalAngles[0][0] + '°' + "-" + internalAngles[0][1] + '°' + " = " +
+					(180 - internalAngles[0][0] - internalAngles[0][1]) + '°' + "</span></span>");
+			}
+			if (internalAngles[1].length == 2 && 
+				internalAngles[0][0] + internalAngles[0][1] != internalAngles[1][0] + internalAngles[1][1])
+			{
+				hints.push("<span class='green-text'>" + "במשולש שבו שתי זוויות " + "<br>" + internalAngles[1][0] + '°' + " ו- " + internalAngles[1][1] + '°' + "<br>" +
+					" הזווית השלישית היא " + "<br>" + 
+					"<span dir='ltr'>" + 180 + '°' + "-" + internalAngles[1][0] + '°' + "-" + internalAngles[1][1] + '°' + " = " +
+					(180 - internalAngles[1][0] - internalAngles[1][1]) + '°' + "<span></span>");
+			}		
+		}
+		maxHintNumber = hints.length;
+		if (maxHintNumber == 0)
+			getHint.innerText = "אין יותר רמזים";
+		if (maxHintNumber == 1)
+			getHint.innerText = "אפשר רמז ? (נשאר 1)";
+		else
+			getHint.innerText = "אפשר רמז ? (נשארו " + maxHintNumber + ")";
+	}
+	
+	function showHint()
+	{
+		if (expectingNewExercise)
+		{
+			alert("יש לבקש תרגיל חדש.");
+			return;
+		}
+			
+		if (hintNumber == maxHintNumber)
+		{
+			alert("אין יותר רמזים !");
+			return;
+		}
+		
+		answerText.innerHTML += hints[hintNumber++];
+		answerText.innerHTML += "<br>";
+		aScorePoints -= currentPoints / maxHintNumber / 2;
+		aScore.textContent = `ניקוד מצטבר : ${aScorePoints}`;
+
+		if (maxHintNumber - hintNumber == 0)
+			getHint.innerText = "אין יותר רמזים";
+		else if (maxHintNumber - hintNumber == 1)
+			getHint.innerText = "אפשר רמז ? (נשאר 1)";
+		else
+			getHint.innerText = "אפשר רמז ? (נשארו " + (maxHintNumber - hintNumber) + ")";
+
+	}
+	
+	function showSolution()
+	{
+		if (expectingNewExercise)
+		{
+			alert("יש לבקש תרגיל חדש.");
+			return;
+		}
+			
+		pScorePoints += currentPoints * 10;
+		if (!areCongruent && currentSelect1 != 3)
+			radio4.style.color = "red";	
+		else
+		{
+			options[0][0] = randomLetters[0][0] + randomLetters[0][1] + randomLetters[0][2];
+			options[1][0] = randomLetters[1][0] + randomLetters[1][1] + randomLetters[1][2];
+			
+			answerCongruence.style.display = 'block';
+			answerEdge.style.display = 'block';
+			answerAngle.style.display = 'block';
+			leftAnswerCongruence.value = options[1][0];
+			rightAnswerCongruence.value = options[0][0];
+			if (kind == 1)
+				radio1.style.color = "red";		
+			else if (kind == 2)
+				radio2.style.color = "red";		
+			else if (kind == 3)
+				radio3.style.color = "red";
+		}
+		
+		answerText.innerHTML += "<span class='red-text'>" + "התשובה מופיעה באדום." + "</span>";
+			
+		pScore.textContent = `ניקוד אפשרי : ${pScorePoints}`;
+        newExercise.style.display = 'block';
+		expectingNewExercise = true;
+	}
+	
+    function drawTriangles() {
+        const drawingArea = document.getElementById('drawingArea');
+/*        
+        const topRotation = parseInt(document.getElementById('topRotation').value) || 0;
+        const bottomRotation = parseInt(document.getElementById('bottomRotation').value) || 0;
+        const sideA = parseFloat(document.getElementById('sideA').value) || 100;
+        const sideB = parseFloat(document.getElementById('sideB').value) || 100;
+        const sideC = parseFloat(document.getElementById('sideC').value) || 100;
+*/        
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("width", "100%");
+        svg.setAttribute("height", "100%");
+        svg.setAttribute("viewBox", "0 0 400 400");
+        
+        // ציור המשולשים
+        drawSingleTriangle(svg, 100, sideA[0], sideB[0], sideC[0], topRotation, 0);
+        drawSingleTriangle(svg, 300, sideA[1], sideB[1], sideC[1], bottomRotation, 1);
+		console.log("קודקודי המשולשים : " + randomLetters[0] + " (משולש עליון) " + 
+			randomLetters[1] + " (משולש תחתון) ");
+			
+		console.log(randomLetters[0] + " " + randomLetters[1]);
+		let tempLetters0 = [];
+		for (let i = 0; i < 3; i++)
+			tempLetters0[i] = randomLetters[0][i];
+		tempLetters0.sort();
+		
+		let tempLetters1 = [];
+		for (let i = 0; i < 3; i++)
+			tempLetters1[i] = randomLetters[1][i];
+		tempLetters1.sort();
+		
+		console.log(randomLetters[0] + " " + randomLetters[1]);
+			
+		question34.textContent = "קודקודי המשולשים : " + tempLetters0 + " (משולש עליון) " + 
+			tempLetters1 + " (משולש תחתון) ";
+		
+        chosenTriangle = Math.floor(Math.random() * 2);
+        chosenVertex1 = Math.floor(Math.random() * 3);
+		chosenVertex2 = (chosenVertex1 + 1) % 3;
+		chosenVertex3 = Math.floor(Math.random() * 3);
+		if (currentSelect1 == 3)
+		{
+			rightUserEdge.value = '1';
+			rightUserAngle.value = randomLetters[1 - chosenTriangle2][chosenEdge2] + randomLetters[1 - chosenTriangle2][(chosenEdge2 + 1) % 3];
+
+			rightAnswerEdge.value = '1';
+			rightAnswerAngle.value = randomLetters[1 - chosenTriangle2][chosenEdge2] + randomLetters[1 - chosenTriangle2][(chosenEdge2 + 1) % 3];
+			leftAnswerEdge.value = '' + proportion;
+			leftAnswerAngle.value = expectedEdge;
+		}
+		else
+		{
+			rightUserEdge.value = randomLetters[chosenTriangle][chosenVertex1] + randomLetters[chosenTriangle][chosenVertex2];
+			rightUserAngle.value = randomLetters[chosenTriangle][chosenVertex3];
+			
+			expectedEdge1 = randomLetters[1 - chosenTriangle][chosenVertex1] + randomLetters[1 - chosenTriangle][chosenVertex2];
+			expectedEdge2 = randomLetters[1 - chosenTriangle][chosenVertex2] + randomLetters[1 - chosenTriangle][chosenVertex1];
+			expectedAngle = randomLetters[1 - chosenTriangle][chosenVertex3];
+
+			rightAnswerEdge.value = randomLetters[chosenTriangle][chosenVertex1] + randomLetters[chosenTriangle][chosenVertex2];
+			rightAnswerAngle.value = randomLetters[chosenTriangle][chosenVertex3];
+			leftAnswerEdge.value = expectedEdge1;
+			leftAnswerAngle.value = expectedAngle;
+		}
+
+		
+        drawingArea.innerHTML = '';
+        drawingArea.appendChild(svg);
+    }
+
+        select1.addEventListener('change', () => {
+			currentSelect1 = select1.selectedIndex + 1; //parseInt(levelSelect.value) || 1;
+			showRelevantQuestions();
+			
+			drawAll();
+//		currevntLevelInfo.textContent = `רמה : ${currentLevel}`;
+		});
+
+        select2.addEventListener('change', () => {
+        currentSelect2 = select2.selectedIndex + 1; //parseInt(levelSelect.value) || 1;
+        drawAll();
+//		currevntLevelInfo.textContent = `רמה : ${currentLevel}`;
+		});
+
+    // ציור ראשוני
+	window.addEventListener('load', () => {
+		drawAll();
+	});
+//    document.addEventListener('DOMContentLoaded', drawTriangles);
+</script>
+</body>
+</html>

@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>חיבור וחיסור זוויות</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+        .header {
+            background-color: #ccc;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 01px;
+        }
+        .controls {
+            background-color: #ccc;
+            padding: 10px;
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+        .main-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            position: relative;
+        }
+        .angle-info {
+            width: 50px;
+            position: absolute;
+            left: 150px;
+            top: 100px;
+        }
+        .input-section {
+            margin-top: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .angle-input {
+            width: 50px;
+        }
+        .color-boxes {
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            display: flex;
+            flex-direction: row;
+            gap: 10px;
+        }
+        .color-box {
+            width: 100px;
+            height: 30px;
+            cursor: pointer;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 1px rgba(0,0,0,0.5);
+        }
+
+		.angle-input-group {
+			width : 100px;
+            display: inline-block;
+            align-items: right;
+            gap: 10px;
+            flex-direction: row;
+            margin-top: 20px;
+        }
+        .angle-input-row {
+			width : 180px;
+            display: inline-block;
+            align-items: center;
+            gap: 10px;
+            flex-direction: row;
+        }
+
+        .angle-input {
+            width: 50px;
+            padding: 4px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            text-align: center;
+            font-size: 14px;
+       }
+
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div id="pScore">ניקוד אפשרי : 0</div>
+        <div id="timer" class="timer">00:00</div>
+        <div id="aScore">ניקוד מצטבר : 0</div>
+<!--         <span>טקסט שמאל</span>
+        <span id="timer">00:00:00</span>
+        <span>טקסט ימין</span>
+ -->    </div>
+
+    <div class="controls">
+        <select id="numSelect">
+            <option value="2">2 זוויות</option>
+            <option value="3">3 זוויות</option>
+            <option value="4">4 זוויות</option>
+            <option value="5">5 זוויות</option>
+            <option value="6">6 זוויות</option>
+            <option value="7">2-6 זוויות</option>
+            <!-- <option value="5">6 זוויות</option> -->
+        </select>
+        <select id="levelSelect">
+            <option value="1">זוויות צמודות</option>
+            <option value="2">זוויות קודקודיות</option>
+            <option value="3">סכום זוויות</option>
+            <option value="4">חיסור זוויות</option>
+            <option value="5">כל הסוגים</option>
+        </select>
+        <select id="varSelect">
+            <option value="1">רק מספרים</option>
+            <option value="2">זווית יחידה עם משתנה</option>
+            <option value="2">כל הזוויות עם משתנים</option>
+            <option value="3">גם מספרים וגם משתנים</option>
+        </select>
+<!--         <select id="kindSelect">
+            <option value="1">רק הסוג הנוכחי</option> 
+            <option value="2">כל הסוגים עד הנוכחי</option> 
+        </select>
+ -->    </div>
+
+    <div class="main-content">
+        <div class="angle-info">
+            <!-- <h3>הזנת זוויות:</h3> -->
+            <div class="input-section">
+				<div class="angle-input-row" id="inputBlock0">
+				כמה שווה X ?
+					<div display="flex" flexDirection="row">
+                    <!-- <label id="label0"></label> -->
+						<br><input type="text" class="angle-input" maxlength="4" size="20" id="input0" placeholder="???">
+					</div>
+				</div>
+				<div class="angle-input-row" id="inputBlock1">
+					<div display="flex" flexDirection="row">
+                    <label id="label1"></label>
+						<br><input type="text" class="angle-input" maxlength="4" size="20" id="input1" placeholder="???">
+					</div>
+				</div>
+				<div class="angle-input-row" id="inputBlock2">
+					<div display="flex" flexDirection="row">
+                    <label id="label2"></label>
+						<br><input type="text" class="angle-input" maxlength="4" size="20" id="input2" min="0" max="360" placeholder="???">
+					</div>
+				</div>
+                <div id="error-message" style="color: red; margin-top: 10px;"></div>
+            </div>
+        </div>
+        <canvas id="angleCanvas" width="1000" height="300"></canvas>
+        <div class="color-boxes">
+            <div class="color-box" style="background-color: green;" onclick="checkSolution()">יש לי פתרון</div>
+            <div class="color-box" style="background-color: blue;" onclick="setHint()">אפשר רמז ?</div>
+            <div class="color-box" style="background-color: red;" onclick="showSolution()">פתרון בבקשה</div>
+        </div>
+    </div>
+
+    <script>
+		const inputBlock0 = document.getElementById('inputBlock0');
+		const inputBlock1 = document.getElementById('inputBlock1');
+		const inputBlock2 = document.getElementById('inputBlock2');
+//		const label0 = document.getElementById('label0');
+		const label1 = document.getElementById('label1');
+		const label2 = document.getElementById('label2');
+		let input0 = document.getElementById('input0');
+		let input1 = document.getElementById('input1');
+		let input2 = document.getElementById('input2');
+		let pScorePoints = 0;
+		let aScorePoints = 0;
+		const pScore = document.getElementById('pScore');
+		const aScore = document.getElementById('aScore');
+        // טיימר
+        const numSelect = document.getElementById('numSelect');
+        const varSelect = document.getElementById('varSelect');
+        const levelSelect = document.getElementById('levelSelect');
+        const kindSelect = document.getElementById('kindSelect');
+		let anglesNum = 2;
+		const NUMS = 0;
+		const SINGLE_VAR = 1;
+		const VARS = 2;
+		const ALL_NUMS_OR_VARS = 3;
+		let numsOrVars = NUMS;
+		let currentLevel = 1;
+		let onlyCurrent = true;
+		var angleSign = String.fromCharCode(10656);
+		var degreesSign = String.fromCharCode(176);
+
+		function checkSolution()
+		{
+			if (numsOrVars != NUMS)
+				answerX = parseFloat(input0.value);
+			else
+				answerX = chosenX;
+			answerName = input1.value;
+			answerValue = parseFloat(input2.value);
+/*			
+			if (isNaN(answer))
+			{
+				alert("לא כתבת תשובה !");
+				return;
+			}
+*/
+//			alert("answer = " + answer);
+			pScorePoints += currentLevel * anglesNum * (2 + numsOrVars);
+			pScore.textContent = `ניקוד אפשרי : ${pScorePoints}`;
+			if (answerX == chosenX &&
+				answerValue == missingAngleValue && 
+				((answerName == missingAngleName) || (answerName == missingAngleName1)))
+			{
+				alert("תשובה נכונה !");
+				aScorePoints += currentLevel * anglesNum * (2 + numsOrVars);
+			}
+			else if (numsOrVars != NUMS)
+			{
+				if (answerX == chosenX)
+				{
+					if ((answerName == missingAngleName) || (answerName == missingAngleName1))
+					{
+						alert("\u200f\u200f" + "X " + "נכון. שם הזווית נכון. גודל הזווית שגוי : הגודל הנכון הוא " + missingAngleValue + degreesSign);
+						aScorePoints += currentLevel * anglesNum * 2;
+					}
+					else if (answerValue == missingAngleValue)
+					{
+						alert("\u200f\u200f" + "X " + "נכון. גודל הזווית נכון. שם הזווית שגוי : השם הנכון הוא " + missingAngleName + angleSign);
+						aScorePoints += currentLevel * anglesNum * 2;
+					}
+					else
+					{
+						alert("\u200f\u200f" + "X " + "נכון. שאר התשובה שגויה. שם הזווית : " + missingAngleName + angleSign + " גודל הזווית : " + missingAngleValue + degreesSign);
+					}
+				}
+				else
+				{
+					if ((answerValue == missingAngleValue) && ((answerName == missingAngleName) || (answerName == missingAngleName1)))
+					{
+						alert("\u200f\u200f" + "X " + "לא נכון, ערכו הוא " + chosenX + ". שם הזווית נכון. גודל הזווית נכון.");
+						aScorePoints += currentLevel * anglesNum * 2;
+					}
+					else if (answerValue == missingAngleValue)
+					{
+						alert("\u200f\u200f" + "X " + "לא נכון, ערכו הוא " + chosenX + ". גודל הזווית נכון. שם הזווית שגוי : השם הנכון הוא " + missingAngleName + angleSign);
+						aScorePoints += currentLevel * anglesNum * 2;
+					}
+					else if ((answerName == missingAngleName) || (answerName == missingAngleName1))
+					{
+						alert("\u200f\u200f" + "X " + "לא נכון, ערכו הוא " + chosenX + ". שם הזווית נכון. גודל הזווית שגוי : הגודל הנכון הוא " + missingAngleValue + degreesSign);
+					}
+					else
+					{
+						alert("\u200f\u200f" + "תשובה שגויה. " + "ערכו של X הוא " + chosenX + ". שם הזווית : " + missingAngleName + angleSign + " גודל הזווית : " + missingAngleValue + degreesSign);
+					}
+				}
+			}
+			else
+			{
+				if ((answerName == missingAngleName) || (answerName == missingAngleName1))
+				{
+					alert("שם הזווית נכון. גודל הזווית שגוי : הגודל הנכון הוא " + missingAngleValue + degreesSign);
+					aScorePoints += currentLevel * anglesNum;
+				}
+				else if (answerValue == missingAngleValue)
+				{
+					alert("גודל הזווית נכון. שם הזווית שגוי : השם הנכון הוא " + missingAngleName + angleSign);
+					aScorePoints += currentLevel * anglesNum;
+				}
+				else
+				{
+					alert("תשובה שגויה. שם הזווית : " + missingAngleName + angleSign + " גודל הזווית : " + missingAngleValue + degreesSign);
+				}
+			}
+			
+			input0.value = "";
+			input1.value = "";
+			input2.value = "";
+			aScore.textContent = `ניקוד מצטבר : ${aScorePoints}`;
+			drawAll();
+		}
+			
+		function setHint()
+		{
+			console.log("***** A " + numsOrVars);
+			if (hintsLeft == 0)
+			{
+				alert("אין יותר רמזים !");
+				return;
+			}
+
+			hintsLeft--;
+			
+			pixelX = canvas.width / expectedSum / 3;
+			pixelY = canvas.width / 500;
+//			alert(canvas.width + " " + expectedSum + " " + pixel);
+			offsetX = canvas.width / 3;
+			offsetY = canvas.width / 500 + 10 * pixelY;
+			
+			switch (currentLevel)
+			{
+				case 1 :
+					if (numsOrVars == NUMS)
+					{
+						ctx.fillStyle = 'black';
+						ctx.font = "12px Arial";
+						ctx.fillText(
+							"180",
+							offsetX + 100 * pixelX, 
+							offsetY
+						);
+					
+						ctx.beginPath();
+						ctx.strokeStyle = 'black';
+						ctx.lineWidth = 1;
+						ctx.moveTo(offsetX + 10 * pixelX, offsetY + 2 * pixelY);
+						ctx.lineTo(
+							offsetX + 190 * pixelX,
+							offsetY + 2 * pixelY
+						);
+	//						alert(10 * pixel + " " + 190 * pixel);
+						ctx.stroke();
+						
+						let sum = 10;
+						for (let i = 1; i <= anglesNum; i++)
+						{
+							ctx.beginPath();
+							ctx.strokeStyle = angleColors[i];
+							ctx.lineWidth = 1;
+							start = offsetX + sum * pixelX
+							ctx.moveTo(start, offsetY + 9 * pixelY);
+							finish = offsetX + (sum + actualAngles[i]) * pixelX;
+							ctx.lineTo(
+								finish,
+								offsetY + 9 * pixelY
+							);
+//							alert("A " + (offsetX + sum * pixel) + " " + offsetX + (sum + actualAngles[i]) * pixel);
+							ctx.stroke();
+
+							ctx.fillStyle = angleColors[i];
+							ctx.font = "12px Arial";
+							if (i == missingAngleLocation)
+								ctx.fillText(
+									"?",
+									(start + finish) / 2, 
+									offsetY + 8 * pixelY
+								);
+							else
+								ctx.fillText(
+									actualAngles[i],
+									(start + finish) / 2, 
+									offsetY + 8 * pixelY
+								);
+
+							sum += actualAngles[i];
+						}
+					}
+					else
+					{
+						sum = 0;
+						ctx.direction = 'ltr';
+						ctx.textAlign = 'left';
+						ctx.fillStyle = 'black';
+						ctx.font = "16px Arial";
+						ctx.fillText(
+							"פיתרו את המשוואה",
+							offsetX + 100 * pixelX, 
+							offsetY
+						);
+
+						const texts = [];
+						texts.push("" + anglesX[1]);
+						for (let i = 2; i <= anglesNum; i++)
+							texts.push(" + " + anglesX[i]);
+						texts.push(" = 180");
+						
+						// שרשר את כל הטקסטים למחרוזת אחת
+						const hint = texts.join('');
+//						alert(hint);
+						
+						ctx.fillText(
+							hint,
+							offsetX + 20 * pixelX, 
+							offsetY + 12 * pixelY
+						);
+					}
+					break;
+				case 2 :
+					if (anglesNum <= 4 && numsOrVars == NUMS)
+					{	
+						alert("אין רמזים לכזו בעייה פשוטה !");
+					}
+					else if (hintsLeft == 1)
+						drawVerticalAngles();
+					else
+					{
+						if(numsOrVars == NUMS)
+						{
+							let sum = 10;
+							for (let j = 0; j < anglesNum - 2; j++)
+							{
+								let i = verticalAngles[j];
+								ctx.beginPath();
+								ctx.strokeStyle = angleColors[i];
+								ctx.lineWidth = 1;
+								start = offsetX + sum * pixelX;
+								ctx.moveTo(start, offsetY + pixelY);
+								finish = offsetX + (sum + actualAngles[i]) * pixelX;
+								ctx.lineTo(
+									finish,
+									offsetY + pixelY
+								);
+	//							alert("A " + (offsetX + sum * pixel) + " " + offsetX + (sum + actualAngles[i]) * pixel);
+								ctx.stroke();
+
+								ctx.fillStyle = angleColors[i];
+								ctx.font = "12px Arial";
+								if (i == missingAngleLocation)
+									ctx.fillText(
+										"?",
+										(start + finish) / 2, 
+										offsetY
+									);
+								else
+									ctx.fillText(
+										actualAngles[i],
+										(start + finish) / 2, 
+										offsetY
+									);
+
+								sum += actualAngles[i];
+								if ((anglesNum == 5 && j == 1) || (anglesNum == 6 && j == 2))
+								{
+									sum = 10;
+									offsetY += 8 * pixelY;
+								}
+							}
+						}
+						else
+						{
+							sum = 0;
+							ctx.direction = 'ltr';
+							ctx.textAlign = 'left';
+							ctx.fillStyle = 'black';
+							ctx.font = "16px Arial";
+							ctx.fillText(
+								"פיתרו את המשוואה",
+								offsetX + 100 * pixelX, 
+								offsetY
+							);
+
+							const texts = [];
+							
+							texts.push("" + anglesX[verticalAngles[0]]);
+							if (anglesNum <= 4)
+								texts.push(" = " + anglesX[verticalAngles[1]]);
+							else
+							{
+								texts.push(" + " + anglesX[verticalAngles[1]]);
+								texts.push(" = " + anglesX[verticalAngles[2]]);
+								if (anglesNum == 6)
+									texts.push(" + " + anglesX[verticalAngles[3]]);
+							}
+							
+							// שרשר את כל הטקסטים למחרוזת אחת
+							const hint = texts.join('');
+	//						alert(hint);
+							
+							ctx.fillText(
+								hint,
+								offsetX + 20 * pixelX, 
+								offsetY + 12 * pixelY
+							);
+						}
+					}
+					break;
+				case 3 :
+					if (numsOrVars == NUMS)
+					{
+						ctx.fillStyle = 'black';
+						ctx.font = "12px Arial";
+						ctx.fillText(
+							"?",
+							offsetX + 10 + missingAngleValue / 2 * pixelX, 
+							offsetY
+						);
+					
+						ctx.beginPath();
+						ctx.strokeStyle = 'black';
+						ctx.lineWidth = 1;
+						ctx.moveTo(offsetX + 10 * pixelX, offsetY + 2 * pixelY);
+						ctx.lineTo(
+							offsetX + (10 + missingAngleValue) * pixelX,
+							offsetY + 2 * pixelY
+						);
+	//						alert(10 * pixel + " " + 190 * pixel);
+						ctx.stroke();
+						
+						let sum = 10;
+						for (let i = accumulatedStart; i <= accumulatedEnd; i++)
+						{
+//							if (angleRelevant[i] != ACCUMULATE_ASK_ADD)
+//								continue;
+							ctx.beginPath();
+							ctx.strokeStyle = angleColors[i];
+							ctx.lineWidth = 1;
+							start = offsetX + sum * pixelX;
+							ctx.moveTo(start, offsetY + 9 * pixelY);
+							finish = offsetX + (sum + actualAngles[i]) * pixelX;
+							ctx.lineTo(
+								finish,
+								offsetY + 9 * pixelY
+							);
+//							alert("A " + (offsetX + sum * pixel) + " " + offsetX + (sum + actualAngles[i]) * pixel);
+							ctx.stroke();
+
+							ctx.fillStyle = angleColors[i];
+							ctx.font = "12px Arial";
+							ctx.fillText(
+								actualAngles[i],
+								(start + finish) / 2, 
+								offsetY + 8 * pixelY
+							);
+
+							sum += actualAngles[i];
+						}
+					}
+					else
+					{
+						sum = 0;
+						ctx.direction = 'ltr';
+						ctx.textAlign = 'left';
+						ctx.fillStyle = 'black';
+						ctx.font = "16px Arial";
+						ctx.fillText(
+							"פיתרו את המשוואה",
+							offsetX + 100 * pixelX, 
+							offsetY
+						);
+
+						const texts = [];
+						texts.push("" + anglesX[accumulatedStart]);
+						for (let i = accumulatedStart + 1; i <= accumulatedEnd; i++)
+//							if (angleRelevant[i] == ACCUMULATE_ASK_ADD)
+								texts.push(" + " + anglesX[i]);
+						texts.push(" = " + accumulatedAngleX);
+						
+						// שרשר את כל הטקסטים למחרוזת אחת
+						const hint = texts.join('');
+//						alert(hint);
+						
+						ctx.fillText(
+							hint,
+							offsetX + 20 * pixelX, 
+							offsetY + 12 * pixelY
+						);
+					}
+					break;	
+				case 4 :
+					if (numsOrVars == NUMS)
+					{
+						ctx.fillStyle = 'black';
+						ctx.font = "12px Arial";
+						ctx.fillText(
+							accumulatedAngleValue,
+							offsetX + 10 + accumulatedAngleValue / 2 * pixelX, 
+							offsetY
+						);
+					
+						ctx.beginPath();
+						ctx.strokeStyle = 'black';
+						ctx.lineWidth = 1;
+						ctx.moveTo(offsetX + 10 * pixelX, offsetY + 2 * pixelY);
+						ctx.lineTo(
+							offsetX + (10 + accumulatedAngleValue) * pixelX,
+							offsetY + 2 * pixelY
+						);
+	//						alert(10 * pixel + " " + 190 * pixel);
+						ctx.stroke();
+						
+						let sum = 10;
+						for (let i = accumulatedStart; i <= accumulatedEnd; i++)
+						{
+//							if (angleRelevant[i] != ACCUMULATE_ASK_SUBTRACT && 
+//								angleRelevant[i] != ACCUMULATE_ASK_SUBTRACT_MISSING)
+//								continue;
+							ctx.beginPath();
+							ctx.strokeStyle = angleColors[i];
+							ctx.lineWidth = 1;
+							start = offsetX + sum * pixelX;
+							ctx.moveTo(start, offsetY + 9 * pixelY);
+							finish = offsetX + (sum + actualAngles[i]) * pixelX;
+							ctx.lineTo(
+								finish,
+								offsetY + 9 * pixelY
+							);
+//							alert("A " + (offsetX + sum * pixel) + " " + offsetX + (sum + actualAngles[i]) * pixel);
+							ctx.stroke();
+
+							ctx.fillStyle = angleColors[i];
+							ctx.font = "12px Arial";
+							ctx.font = "12px Arial";
+							if (i == missingAngleLocation)
+								ctx.fillText(
+									"?",
+									(start + finish) / 2, 
+									offsetY + 8 * pixelY
+								);
+							else
+								ctx.fillText(
+									actualAngles[i],
+									(start + finish) / 2, 
+									offsetY + 8 * pixelY
+								);
+							sum += actualAngles[i];
+						}
+					}
+					else
+					{
+						sum = 0;
+						ctx.direction = 'ltr';
+						ctx.textAlign = 'left';
+						ctx.fillStyle = 'black';
+						ctx.font = "16px Arial";
+						ctx.fillText(
+							"פיתרו את המשוואה",
+							offsetX + 100 * pixelX, 
+							offsetY
+						);
+
+						const texts = [];
+
+						texts.push("" + anglesX[accumulatedStart]);
+						for (let i = accumulatedStart + 1; i <= accumulatedEnd; i++)
+//							if (angleRelevant[i] == ACCUMULATE_ASK_SUBTRACT ||
+//							angleRelevant[i] == ACCUMULATE_ASK_SUBTRACT_MISSING)
+								texts.push(" + " + anglesX[i]);
+						texts.push(" = " + accumulatedAngleX);
+						
+						// שרשר את כל הטקסטים למחרוזת אחת
+						const hint = texts.join('');
+//						alert(hint);
+						
+						ctx.fillText(
+							hint,
+							offsetX + 20 * pixelX, 
+							offsetY + 12 * pixelY
+						);
+					}
+						
+			}
+		}
+
+		function showSolution()
+		{
+			pScorePoints += currentLevel * anglesNum * (2 + numsOrVars);
+			if (numsOrVars != NUMS)
+				alert("\u200f\u200f" + "ערכו של X הוא " + chosenX + ". שם הזווית : " + missingAngleName + angleSign + " גודל הזווית : " + missingAngleValue + degreesSign);
+			else
+				alert("שם הזווית : " + missingAngleName + angleSign + " גודל הזווית : " + missingAngleValue + degreesSign);
+			pScore.textContent = `ניקוד אפשרי : ${pScorePoints}`;
+			drawAll();
+		}
+		
+		let chosenAnglesNum = 0;
+		let chosenCurrentLevel = 0;
+		let chosenNumsOrVars = 0;
+        numSelect.addEventListener('change', () => {
+        chosenAnglesNum = numSelect.selectedIndex;
+        drawAll();
+});
+
+        varSelect.addEventListener('change', () => {
+        chosenNumsOrVars = varSelect.selectedIndex;
+        drawAll();
+});
+
+        levelSelect.addEventListener('change', () => {
+        chosenCurrentLevel = levelSelect.selectedIndex;
+        drawAll();
+});
+
+/*
+        kindSelect.addEventListener('change', () => {
+        onlyCurrent = (kindSelect.selectedIndex == 0);
+        drawAll();
+});
+*/
+
+        let startTime = new Date();
+        function updateTimer() {
+            const now = new Date();
+            const diff = now - startTime;
+            const seconds = Math.floor((diff / 1000) % 60);
+            const minutes = Math.floor((diff / 1000 / 60) % 60);
+            const hours = Math.floor(diff / 1000 / 60 / 60);
+            
+            const timeStr = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            document.getElementById('timer').textContent = timeStr;
+        }
+        setInterval(updateTimer, 1000);
+        updateTimer();
+
+		let actualAngles = [];
+		let angles = {};
+		let angleName0 = '', angleName1 = '', angleName2 = '', angleName3 = '', angleName4 = '', angleName5 = '', angleName6 = ''; 
+		let angleNames = {};
+		let angleColors = ['olive', 'lime', 'blue', 'green', 'purple', 'orange', 'brown'];
+        let arcStyles = {};
+		let letterChosen = [];
+		let actualLetters = [];
+		let angleRelevant = [];
+		let anglesX = {};
+		let chosenX = 0;
+		
+		function randomLetter()
+		{
+			let i = -1;
+			do
+			{
+				i = Math.floor(Math.random() * 26);
+			} while (letterChosen[i]);
+			if (String.fromCharCode(i + 65) == 'O')
+				return randomLetter();
+			letterChosen[i] = true;	
+			return String.fromCharCode(i + 65);
+		}
+
+		const NO = 0;
+		const YES = 1;
+		const ASK = 2;
+		const ACCUMULATE_ASK_ADD = 3;
+		const ACCUMULATE_ASK_SUBTRACT = 4;
+		const ACCUMULATE_ASK_SUBTRACT_MISSING = 5;
+		let missingAngleValue = 0;
+		let accumulatedAngleValue = 0;
+		let missingAngleName = '';
+		let missingAngleName1 = '';
+		let accumulatedAngleX = '';
+		let missingAngleLocation = -1;
+		let accumulatedLength = 0;
+		let accumulatedStart = 0;
+		let accumulatedEnd = 0;
+		let verticalAngles = [-1, -1, -1, -1];
+		
+		function chooseVerticalAngles()
+		{
+//			alert("currentLevel = " + currentLevel);
+			angleRelevant = [YES, YES, YES, YES, YES, YES];
+			tempAngles = [0, 0, 0, 0, 0, 0];
+			actualAngles = [0, 0, 0, 0, 0, 0];
+			let anglesSum = 0;
+			switch (anglesNum)
+			{
+				case 4 :
+					actualAngles[0] = actualAngles[2] = 20 + Math.floor(Math.random() * 140);
+					actualAngles[1] = actualAngles[3] = 180 - actualAngles[0];
+					missingAngleLocation = Math.floor(Math.random() * anglesNum);
+					verticalAngles[0] = missingAngleLocation;
+						
+					missingAngleValue = actualAngles[missingAngleLocation];
+					missingAngleName = angleNames[missingAngleLocation];
+					missingAngleName1 = missingAngleName[2] + missingAngleName[1] + missingAngleName[0];
+					
+					angleRelevant = [NO, NO, NO, NO, NO, NO];
+					angleRelevant[missingAngleLocation] = ASK;
+					if (missingAngleLocation > 1)
+					{
+						angleRelevant[missingAngleLocation - 2] = YES;
+						verticalAngles[1] = missingAngleLocation - 2;
+					}
+					else
+					{
+						angleRelevant[missingAngleLocation + 2] = YES;
+						verticalAngles[1] = missingAngleLocation + 2;
+					}
+					break;
+				case 5 :
+					tempAngles[0] = tempAngles[3] = 20 + Math.floor(Math.random() * 100);
+					tempAngles[1] = 20 + (Math.floor(Math.random() * (140 - tempAngles[0])));
+					tempAngles[2] = 180 - tempAngles[0] - tempAngles[1];
+					tempAngles[4] = tempAngles[1] + tempAngles[2];
+					do
+					{
+						missingAngleLocation = Math.floor(Math.random() * anglesNum);
+					} while (missingAngleLocation % 3 == 0);
+					shift = Math.floor(Math.random() * 5);
+					for (let i = 0; i < 5; i++)
+					{
+						actualAngles[(i + shift) % 5] = tempAngles[i];
+					}
+					console.log(tempAngles + " " + actualAngles);
+
+					verticalAngles[0] = (1 + shift) % 5;
+					verticalAngles[1] = (2 + shift) % 5;
+					verticalAngles[2] = (4 + shift) % 5;
+					missingAngleLocation = (missingAngleLocation + shift) % 5;
+					angleRelevant[shift] = NO;
+					angleRelevant[(3 + shift) % 5] = NO;
+					
+					missingAngleValue = actualAngles[missingAngleLocation];
+					missingAngleName = angleNames[missingAngleLocation];
+					missingAngleName1 = missingAngleName[2] + missingAngleName[1] + missingAngleName[0];
+					angleRelevant[missingAngleLocation] = ASK;
+					break;
+				case 6 :
+					tempAngles[0] = tempAngles[3] = 20 + Math.floor(Math.random() * 100);
+					tempAngles[1] = 20 + (Math.floor(Math.random() * (140 - tempAngles[0])));
+					tempAngles[2] = 180 - tempAngles[0] - tempAngles[1];
+					tempAngles[4] = 20 + (Math.floor(Math.random() * (140 - tempAngles[0])));
+					tempAngles[5] = 180 - tempAngles[0] - tempAngles[4];
+					if (Math.abs(tempAngles[1] - tempAngles[4]) < 20)
+					{
+						chooseVerticalAngles();
+						return;
+					}
+					do
+					{
+						missingAngleLocation = Math.floor(Math.random() * anglesNum);
+					} while (missingAngleLocation % 3 == 0);
+					shift = Math.floor(Math.random() * 6);
+					for (let i = 0; i < 6; i++)
+					{
+						actualAngles[(i + shift) % 6] = tempAngles[i];
+					}
+					verticalAngles[0] = (1 + shift) % 6;
+					verticalAngles[1] = (2 + shift) % 6;
+					verticalAngles[2] = (4 + shift) % 6;
+					verticalAngles[3] = (5 + shift) % 6;
+					console.log(tempAngles + " " + actualAngles);
+					missingAngleLocation = (missingAngleLocation + shift) % 6;
+					angleRelevant[shift] = NO;
+					angleRelevant[(3 + shift) % 6] = NO;
+					
+					missingAngleValue = actualAngles[missingAngleLocation];
+					missingAngleName = angleNames[missingAngleLocation];
+					missingAngleName1 = missingAngleName[2] + missingAngleName[1] + missingAngleName[0];
+					angleRelevant[missingAngleLocation] = ASK;
+					break;
+			}
+
+			console.log("actual angles " + actualAngles +
+				"angleRelevant " + angleRelevant + " " +
+				"accumulatedLength " + accumulatedLength + " " +
+				"accumulatedStart " + accumulatedStart + " " +
+				"accumulatedEnd " + accumulatedEnd);
+
+//			alert("actual = " + actualAngles);
+//			alert("relevant = " + angleRelevant);
+		} // chooseVerticalAngles
+		
+		function chooseAngles()
+		{
+//			alert("currentLevel = " + currentLevel);
+			angleRelevant = [NO, NO, NO, NO, NO, NO];
+			actualAngles = [0, 0, 0, 0, 0, 0];
+			let anglesSum = 0;
+			let temp = 0;
+			let tempAngles = [];
+			for (let i = 0; i < anglesNum - 1; i++)
+			{
+				temp = 20 + Math.floor(Math.random() * 80);
+				tempAngles.push(temp);
+				anglesSum += temp;
+			}
+//			alert("temp1 = " + tempAngles);
+			if (expectedSum - anglesSum < 20)
+			{
+				chooseAngles();
+//				alert("Error : " + 	tempAngles);
+			}
+			else
+			{
+				tempAngles.push(expectedSum - anglesSum);
+				let shift = 0;
+				if (currentLevel == 1)
+				{
+					shift = 1;
+					actualAngles[0] = 180;
+					angleRelevant[0] = NO;
+				}
+				for (let i = 0; i < anglesNum; i++)
+				{
+					let j = 0;
+					do
+					{
+						j = Math.floor(Math.random() * anglesNum);
+					} while (tempAngles[j] == 0);
+					actualAngles[i + shift] = tempAngles[j];
+					switch (currentLevel)
+					{
+						case 1 :
+						case 2 :
+							angleRelevant[i + shift] = YES;
+							break;
+						case 3 :
+						case 4 :
+							angleRelevant[i + shift] = NO;
+							break;
+					}
+					tempAngles[j] = 0;
+				}
+				if (currentLevel == 1)
+				{
+					missingAngleLocation = 1 + Math.floor(Math.random() * anglesNum);
+					angleRelevant[missingAngleLocation] = ASK	;
+	//				alert("Missing angle : " + actualAngles[missingAngleLocation]);
+					missingAngleValue = actualAngles[missingAngleLocation];
+					missingAngleName = angleNames[missingAngleLocation];
+					missingAngleName1 = missingAngleName[2] + missingAngleName[1] + missingAngleName[0];
+				}
+				else if (currentLevel == 3)
+				{
+					missingAngleLocation = -1;
+					accumulatedLength = 2 + Math.floor(Math.random() * (anglesNum - 2));
+					accumulatedStart = Math.floor(Math.random() * (anglesNum - accumulatedLength + 1));
+					accumulatedEnd = accumulatedStart + accumulatedLength - 1;
+					missingAngleValue = 0;
+					accumulatedAngleValue = 0;
+					for (let i = accumulatedStart; i <= accumulatedEnd; i++)
+					{
+						angleRelevant[i] = ACCUMULATE_ASK_ADD;
+						missingAngleValue += actualAngles[i];
+						accumulatedAngleValue += actualAngles[i];
+					}
+					missingAngleName = angleNames[accumulatedStart][0] + 'O' + angleNames[accumulatedEnd][2];
+					missingAngleName1 = missingAngleName[2] + missingAngleName[1] + missingAngleName[0];
+/*
+					alert("angleRelevant " + angleRelevant + " " +
+						"accumulatedLength " + accumulatedLength + " " +
+						"accumulatedStart " + accumulatedStart + " " +
+						"accumulatedEnd " + accumulatedEnd);
+*/
+				}
+				else if (currentLevel == 4)
+				{
+					accumulatedLength = 2 + Math.floor(Math.random() * (anglesNum - 2));
+					accumulatedStart = 1 + Math.floor(Math.random() * (anglesNum - accumulatedLength));
+					accumulatedEnd = accumulatedStart + accumulatedLength - 1;
+					missingAngleLocation = accumulatedStart + Math.floor(Math.random() * accumulatedLength);
+					accumulatedAngleValue = 0;
+					for (let i = accumulatedStart; i <= accumulatedEnd; i++)
+					{
+						angleRelevant[i] = ACCUMULATE_ASK_SUBTRACT;
+						accumulatedAngleValue += actualAngles[i];
+					}
+					angleRelevant[missingAngleLocation] = ACCUMULATE_ASK_SUBTRACT_MISSING;
+					missingAngleValue = actualAngles[missingAngleLocation];
+					missingAngleName = angleNames[missingAngleLocation];
+					missingAngleName1 = missingAngleName[2] + missingAngleName[1] + missingAngleName[0];
+				}
+			} 
+
+			console.log("actual angles " + actualAngles +
+				"angleRelevant " + angleRelevant + " " +
+				"accumulatedLength " + accumulatedLength + " " +
+				"accumulatedStart " + accumulatedStart + " " +
+				"accumulatedEnd " + accumulatedEnd);
+
+//			alert("actual = " + actualAngles);
+//			alert("relevant = " + angleRelevant);
+		} // chooseAngles
+		
+		let m = 0;
+		let b = 0;
+		
+		function buildAngleX(angle, allowM0)
+		{
+			if (numsOrVars == SINGLE_VAR && allowM0)
+				m = 0;
+			else
+				m = Math.floor(Math.random() * 10);
+			b = angle - m * chosenX;
+			if (m == 0)
+			{
+				if (allowM0)
+					return "" + b;
+				else
+					return buildAngleX(angle, allowM0);
+			}
+			else if (m == 1)
+			{
+				if (b == 0)
+					return "x";
+				else if (b < 0)
+					return "x" + b;
+				else
+					return "x+" + b;
+			}
+			else
+			{
+				if (b == 0)
+					return m + "x";
+				else if (b < 0)
+					return m + "x" + b;
+				else
+					return m + "x+" + b;
+			}
+		}
+
+		function buildAnglesX()
+		{
+			
+			chosenX = Math.floor(Math.random() * 20);
+//			alert(chosenX);
+			let shift = 0;
+			if (currentLevel == 1)
+				shift = 1;
+			for (let i = 0; i < 6 + shift; i++)
+			{
+				do
+				{
+					again = false;
+					anglesX[i] = buildAngleX(actualAngles[i], (i != missingAngleLocation));
+					for (let j = 0; j < i; j++)
+						if (anglesX[i] == angles[j])
+						{
+							alert(i + " " + j + " " + anglesX[i] + " " + anglesX[j]);
+							again = true;
+							break;
+						}					
+				} while (again);
+			}
+		}
+		
+		let expectedSum = 0;
+		const ALL_ANGLES_NUM = 5;
+		const ALL_CURRENT_LEVEL = 4;
+		let hintsLeft = 1;
+		function init()
+		{
+//			alert("inputAngles = " + inputAngles);
+			if (chosenAnglesNum == ALL_ANGLES_NUM)
+				anglesNum = 2 + Math.floor(Math.random() * 5);
+			else
+				anglesNum = 2 + chosenAnglesNum;
+			if (chosenNumsOrVars == ALL_NUMS_OR_VARS)
+				numsOrVars = Math.floor(Math.random() * ALL_NUMS_OR_VARS);
+			else
+				numsOrVars = chosenNumsOrVars;
+			if (chosenCurrentLevel == ALL_CURRENT_LEVEL)
+				currentLevel = 1 + Math.floor(Math.random() * 4);
+			else
+				currentLevel = 1 + chosenCurrentLevel;
+			if ((currentLevel == 3 || currentLevel == 4) && (anglesNum == 2))
+				anglesNum++;
+			if (currentLevel == 2 && anglesNum < 4)
+			{
+				if (chosenAnglesNum == ALL_ANGLES_NUM)
+					anglesNum = 4 + Math.floor(Math.random() * 3);
+				else
+					anglesNum = 4;
+			}
+			
+			console.log("chosen : " + chosenAnglesNum + chosenNumsOrVars + chosenCurrentLevel);
+			console.log("actual : " + anglesNum + numsOrVars + currentLevel);
+			
+			if (currentLevel == 1)
+				expectedSum = 180;
+			else
+				expectedSum = 360;
+				
+			if (currentLevel != 2)
+				hintsLeft = 1;
+			else
+			{
+				if (anglesNum == 4)
+					hintsLeft = 1;
+				else
+					hintsLeft = 2;
+			}
+
+			letterChosen = [];
+			actualLetters = [];
+			for (let i = 0; i < 26; i++)
+				letterChosen.push(false);
+				
+			for (let i = 0; i < 7; i++)
+				actualLetters.push(randomLetter());
+			
+			if (expectedSum == 180)
+				actualLetters[anglesNum + 1] = actualLetters[0];
+			else
+				actualLetters[anglesNum] = actualLetters[0];
+			
+			angleName0 = angleNames[0] = actualLetters[0] + 'O' + actualLetters[1];
+			angleName1 = angleNames[1] = actualLetters[1] + 'O' + actualLetters[2];
+			angleName2 = angleNames[2] = actualLetters[2] + 'O' + actualLetters[3];
+			angleName3 = angleNames[3] = actualLetters[3] + 'O' + actualLetters[4];
+			angleName4 = angleNames[4] = actualLetters[4] + 'O' + actualLetters[5];
+			angleName5 = angleNames[5] = actualLetters[5] + 'O' + actualLetters[6];
+			angleName6 = angleNames[6] = actualLetters[6] + 'O' + actualLetters[0];
+				
+			if (currentLevel == 2)
+				chooseVerticalAngles();
+			else
+				chooseAngles();
+			console.log("***** C " + numsOrVars);
+			if (numsOrVars != NUMS)
+				buildAnglesX();
+			
+			if (currentLevel == 3)
+			{
+				label1.textContent = "מה שמה של הזווית השחורה (שלוש אותיות) ?";
+				label2.innerHTML = "מה גודלה של הזווית השחורה (מעלות) ?";
+			}
+			else
+			{
+				if (numsOrVars != NUMS)
+				{
+					label1.textContent = "מה שמה של הזווית " + anglesX[missingAngleLocation] + " ?";
+					label2.textContent = "מה גודלה של הזווית " + anglesX[missingAngleLocation] + " ?";
+				}
+				else
+				{
+					label1.textContent = "מה שמה של הזווית החסרה (שלוש אותיות) ?";
+					label2.innerHTML = "מה גודלה של הזווית החסרה (מעלות) ?";
+				}
+			}
+        // מצב התחלתי של הזוויות
+				angles = {
+				angleName0: actualAngles[0],
+				angleName1: actualAngles[1],
+				angleName2: actualAngles[2],
+				angleName3: actualAngles[3],
+				angleName4: actualAngles[4],
+				angleName5: actualAngles[5],
+				angleName6: actualAngles[6]
+			};
+
+			
+			// צבעים ורדיוסים של הקשתות
+			 arcStyles = {
+				angleName0: { color: 'olive', radius: 20 },
+				angleName1: { color: 'lime', radius: 30 },
+				angleName2: { color: 'blue', radius: 40 },
+				angleName3: { color: 'green', radius: 25 },
+				angleName4: { color: 'purple', radius: 35 },
+				angleName5: { color: 'orange', radius: 45 },
+				angleName6: { color: 'brown', radius: 30 }
+			};
+			
+			if (numsOrVars != NUMS)
+				inputBlock0.style.display = 'block';
+			else
+				inputBlock0.style.display = 'none';
+			if (currentLevel == 3)
+			{
+				inputBlock1.style.color = 'black';
+				inputBlock2.style.color = 'black';
+			}
+			else
+			{
+				inputBlock1.style.color = angleColors[missingAngleLocation];
+				inputBlock2.style.color = angleColors[missingAngleLocation];
+			}
+		}
+
+		let accumulateRadius = 70;
+        const canvas = document.getElementById('angleCanvas');
+        const ctx = canvas.getContext('2d');
+        // פונקציה לציור הזוויות
+		
+		function drawVerticalAngles()
+		{
+			console.log("***** B " + anglesNum + " " + angleRelevant);
+			let offsetY = 30;
+//            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 100;
+            
+            let currentAngle = 0;
+			let counter = 0;
+			let arcStartAngle = 0;
+			let arcAngleSize = 0;
+            
+            // ציור הזוויות
+            let prevEndAngle = 0;
+            
+			console.log(arcStyles);
+            for (const [name, angle] of Object.entries(angles)) {
+//				console.log(angleName0);
+				console.log(name + " " + angle);
+				let currentLetter = actualLetters[counter];
+				console.log("ZZZ1 " + angle);
+                if (angle === 0 || isNaN(angle))
+					continue;
+										
+                const endAngle = currentAngle + (angle * Math.PI / 180);
+				
+				if ((counter == 0 && angleRelevant[anglesNum - 1] == NO) ||
+					(counter != 0 && angleRelevant[counter - 1] == NO) ||
+					(angleRelevant[counter] == NO))
+				{
+					console.log("ZZZ2 " + angle);
+					// ציור הקו
+					ctx.beginPath();
+					ctx.strokeStyle = 'red';
+					ctx.lineWidth = 2;
+					ctx.moveTo(centerX, offsetY + centerY);
+					ctx.lineTo(
+						centerX + radius * Math.cos(currentAngle),
+						offsetY + centerY + radius * Math.sin(currentAngle)
+					);
+					ctx.stroke();
+				}
+                prevEndAngle = currentAngle;
+                currentAngle = endAngle;
+				counter++;
+			}
+		}
+		
+        function drawAngles() {
+			let offsetY = 30;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const radius = 100;
+            
+            let currentAngle = 0;
+			let counter = 0;
+			let arcStartAngle = 0;
+			let arcAngleSize = 0;
+            
+            // ציור הזוויות
+            let prevEndAngle = 0;
+            
+			console.log(arcStyles);
+            for (const [name, angle] of Object.entries(angles)) {
+//				console.log(angleName0);
+				console.log(name + " " + angle);
+				let currentLetter = actualLetters[counter];
+				console.log("ZZZ " + angle);
+                if (angle === 0 || isNaN(angle))
+					continue;
+                
+                const endAngle = currentAngle + (angle * Math.PI / 180);
+                
+                // ציור הקו
+                ctx.beginPath();
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 1;
+                ctx.moveTo(centerX, offsetY + centerY);
+                ctx.lineTo(
+                    centerX + radius * Math.cos(currentAngle),
+                    offsetY + centerY + radius * Math.sin(currentAngle)
+                );
+                ctx.stroke();
+                
+                // ציור הקשת הצבעונית
+                if (angle > 0 && angle != expectedSum) {
+					if (angleRelevant[counter] != NO)
+					{
+						ctx.beginPath();
+						ctx.strokeStyle = arcStyles[name].color;
+						ctx.lineWidth = 2;
+						ctx.arc(centerX, offsetY + centerY, arcStyles[name].radius, currentAngle, endAngle);
+						ctx.stroke();
+					}
+
+					if (angleRelevant[counter] == ACCUMULATE_ASK_ADD || 
+						angleRelevant[counter] == ACCUMULATE_ASK_SUBTRACT || 
+						angleRelevant[counter] == ACCUMULATE_ASK_SUBTRACT_MISSING)
+					{
+						ctx.beginPath();
+						ctx.strokeStyle = 'black';
+						ctx.lineWidth = 3;
+						ctx.arc(centerX, offsetY + centerY, accumulateRadius, currentAngle, endAngle);
+						ctx.stroke();
+						if (counter == 0 || 
+							(angleRelevant[counter - 1] != ACCUMULATE_ASK_ADD && 
+							angleRelevant[counter - 1] != ACCUMULATE_ASK_SUBTRACT && 
+							angleRelevant[counter - 1] != ACCUMULATE_ASK_SUBTRACT_MISSING))						
+							arcStartAngle = currentAngle;
+						arcAngleSize += angle;
+					}
+/*					else if (counter != 0 && 
+						angleRelevant[counter - 1] == ACCUMULATE_ASK_ADD || 
+						angleRelevant[counter - 1] == ACCUMULATE_ASK_SUBTRACT || 
+						angleRelevant[counter - 1] == ACCUMULATE_ASK_SUBTRACT_MISSING)
+						arcEndAngle = currentAngle;
+*/						
+                    // הוספת מספר המעלות על חוצה הזווית
+                    let middleAngle = currentAngle + (angle * Math.PI / 360);  // חוצה הזווית
+                    let textRadius = radius / 1.75;  // מרחק מהקודקוד - חצי מאורך השוק
+                    let textX = centerX + textRadius * Math.cos(middleAngle);
+                    let textY = centerY + textRadius * Math.sin(middleAngle);
+                    
+                    ctx.fillStyle = arcStyles[name].color;  // צבע הטקסט זהה לצבע הקשת
+                    ctx.font = "12px Arial";
+                    ctx.textAlign = 'center';  // מרכוז הטקסט
+					console.log("angleRelevant = " + angleRelevant);
+					if (angleRelevant[counter] == ASK ||
+						angleRelevant[counter] == ACCUMULATE_ASK_SUBTRACT_MISSING)
+					{
+//						alert("A " + counter);
+						textRadius = radius / 1.75;  // מרחק מהקודקוד - חצי מאורך השוק
+						textX = centerX + textRadius * Math.cos(middleAngle);
+						textY = centerY + textRadius * Math.sin(middleAngle);
+						if (numsOrVars != NUMS)
+							ctx.fillText(anglesX[counter], textX, offsetY + textY);
+						else
+							ctx.fillText('?', textX, offsetY + textY);
+					}
+					if (angleRelevant[counter] == YES || angleRelevant[counter] == ACCUMULATE_ASK_SUBTRACT)
+					{
+//						alert("E " + counter);
+						textRadius = radius / 1.75;  // מרחק מהקודקוד - חצי מאורך השוק
+						textX = centerX + textRadius * Math.cos(middleAngle);
+						textY = centerY + textRadius * Math.sin(middleAngle);
+						if (numsOrVars != NUMS)
+							ctx.fillText(anglesX[counter], textX, offsetY + textY);
+						else
+							ctx.fillText(Math.round(angle) + '°', textX, offsetY + textY);
+					}
+					if (angleRelevant[counter] == ACCUMULATE_ASK_ADD)
+					{
+//						alert("B " + counter);
+						textRadius = radius / 1.75;  // מרחק מהקודקוד - חצי מאורך השוק
+						textX = centerX + textRadius * Math.cos(middleAngle);
+						textY = centerY + textRadius * Math.sin(middleAngle);
+						if (numsOrVars != NUMS)
+							ctx.fillText(anglesX[counter], textX, offsetY + textY);
+						else
+							ctx.fillText(Math.round(angle) + '°', textX, offsetY + textY);
+					}
+                    ctx.textAlign = 'start';  // החזרת ההגדרה למצב המקורי
+                }
+                
+                // כתיבת האות בנקודת המפגש של הקו עם המעגל
+                ctx.fillStyle = '#000';
+                ctx.font = "12px Arial";
+                const labelRadius = radius + 5;
+                ctx.fillText(
+                    currentLetter,
+                    centerX + labelRadius * Math.cos(currentAngle),
+                    offsetY + centerY + labelRadius * Math.sin(currentAngle)
+                );
+                
+                prevEndAngle = currentAngle;
+                currentAngle = endAngle;
+				counter++;
+            }
+            
+            middleAngle = arcStartAngle + (arcAngleSize * Math.PI / 360);  // חוצה הזווית
+			console.log("AAA " + arcStartAngle + " " + arcAngleSize + " " + middleAngle);
+			if (currentLevel == 3)
+			{
+				ctx.fillStyle = 'black';
+				textRadius = accumulateRadius + 10;  // מרחק מהקודקוד - חצי מאורך השוק
+				textX = centerX + textRadius * Math.cos(middleAngle);
+				textY = centerY + textRadius * Math.sin(middleAngle);
+				if (numsOrVars != NUMS)
+				{
+					accumulatedAngleX = buildAngleX(accumulatedAngleValue, false);
+					ctx.fillText(accumulatedAngleX, textX, offsetY + textY);
+				}
+				else
+					ctx.fillText('??', textX, offsetY + textY);
+			}
+			if (currentLevel == 4)
+			{
+				ctx.fillStyle = 'black';
+				textRadius = accumulateRadius + 10;  // מרחק מהקודקוד - חצי מאורך השוק
+				textX = centerX + textRadius * Math.cos(middleAngle);
+				textY = centerY + textRadius * Math.sin(middleAngle);
+				if (numsOrVars != NUMS)
+				{
+					accumulatedAngleX = buildAngleX(accumulatedAngleValue, true);
+					ctx.fillText(accumulatedAngleX, textX, offsetY + textY);
+				}
+				else
+					ctx.fillText(Math.round(accumulatedAngleValue) + '°', textX, offsetY + textY);
+			}
+            // הוספת האות האחרונה בקצה הקשת האחרונה
+/*            if (currentAngle > 0 && currentAngle != 360) {
+				alert(currentAngle + " " + currentLetter);
+                ctx.fillText(
+                    currentLetter,
+                    centerX + (radius + 20) * Math.cos(currentAngle),
+                    centerY + (radius + 20) * Math.sin(currentAngle)
+                );
+            }
+*/
+            
+            // כתיבת האות במרכז
+            ctx.fillStyle = '#000';
+            ctx.fillText('O', centerX + 5, offsetY + centerY + 15);
+        }
+		
+		function drawAll(){
+			// ציור התחלתי
+			init();
+			drawAngles();
+		}
+		
+		drawAll();
+    </script>
+</body>
+</html>

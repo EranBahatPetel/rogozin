@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            text-align: center;
+        }
+        h1 {
+            font-size: 48px;
+            margin-bottom: 40px;
+        }
+        .container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .box {
+            height: 200px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            border-radius: 10px;
+            transition: transform 0.2s;
+        }
+        .box:hover {
+            transform: scale(1.05);
+        }
+        .large-text {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .small-text {
+            font-size: 18px;
+        }
+    </style>
+</head>
+<body>
+    <h1>הגיע הזמן?</h1>
+    
+    <div class="container">
+        <a href="It's About Time - Roey.html" class="box" style="background-color: #3498db;">
+            <div class="large-text">רועי</div>
+            <div class="small-text">לחצו וסיפרו למשך כמה זמן המסך נשאר אדום</div>
+        </a>
+        
+        <a href="It's About Time - Reut.html" class="box" style="background-color: #e74c3c;">
+            <div class="large-text">רעות</div>
+            <div class="small-text">לחצו פעם ועוד פעם והעריכו כמה זמן עבר בין שתי לחיצותיכם</div>
+        </a>
+        
+        <a href="It's About Time - Ori.html" class="box" style="background-color: #f39c12;">
+            <div class="large-text">אורי</div>
+            <div class="small-text">לחצו שוב ושוב במרווחי זמן לפי הגדרתכם</div>
+        </a>
+        
+        <a href="It's About Time - Erel.html" class="box" style="background-color: #2ecc71;">
+            <div class="large-text">אראל</div>
+            <div class="small-text">לחצו ואז לחצו שוב אחרי משך הזמן שהגדרתם</div>
+        </a>
+    </div>
+</body>
+</html>

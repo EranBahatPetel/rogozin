@@ -1,0 +1,885 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>נקודות במערכת צירים</title>
+    <style>
+        body, html {
+            margin: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        .text-content {
+            font-size: 24px;
+            margin-bottom: 20px;
+        }
+        .red-text {
+            color: red;
+        }
+        .green-text {
+            color: green;
+        }
+        #topBar {
+            display: flex;
+            justify-content: space-betweenenen
+			;
+            padding: 10px;
+            background-color: #e0e0e0;
+        }
+        .score-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            background-color: white;
+            padding: 2px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            transform: scale(0.2);
+            transform-origin: top right;
+        }
+        .score-box {
+            text-align: center;
+            padding: 2px;
+        }
+        .score-box:first-child {
+            border-left: 1px solid #ccc;
+        }
+        #timer {
+            font-size: 10px;
+            margin: 0px 0;
+            background-color: #fff;
+            padding: 5px 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin: 0 0 1px 0;
+            color: #333;
+            font-size: 0.8em;
+        }
+        .score {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        #currentLevelInfo, #potentialScoreInfo, #cumulativeScoreInfo {
+            flex: 1;
+            text-align: center;
+        }
+        #textContainer {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #textInput2-container {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            left: 10px;
+            top: 30%;
+            transform: translateY(-50%);
+        }
+        #inputArea {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f0f0f0;
+            align: left;
+        }
+        select {
+            padding: 5px;
+            width: 150px;
+            margin-right: 10px;
+        }
+        .coordinate-system {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            position: relative;
+        }
+        canvas {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #buttonCanvas {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+        }
+<!--         #errorConfirm {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: white;
+            color: red;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+ -->        #text-boxes {
+            position: absolute;
+            right: 100px;
+            top: 100px;
+        }
+        .text-box {
+            width: 150px;
+            height: 20px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+			direction: ltr;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+			padding-top: 150px; /* Location of the box */
+			padding-left: 350px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.1);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            max-width: 300px;
+            text-align: center;
+			dir : ltr;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        #coordinates, #randomPoint {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        #coordinates {
+            top: 10px;
+            left: 10px;
+        }
+        #randomPoint {
+            top: 10px;
+            right: 10px;
+        }
+}
+    </style>
+</head>
+<body>
+    <div id="topBar">
+        <!-- <div id="currentLevelInfo">רמה : 1</div> -->
+        <div id="potentialScoreInfo">ניקוד אפשרי : 0</div>
+        <div id="xxx">&nbsp;&nbsp;&nbsp;</div>
+		<div id="timer">0 שניות</div>
+        <div id="xxx">&nbsp;&nbsp;&nbsp;</div>
+        <div id="cumulativeScoreInfo">ניקוד מצטבר: 0</div>
+    </div>
+    <div id="inputArea" direction="ltr">
+        <select id="levelSelect">
+            <option value="1">רביע ראשון</option>
+            <option value="2">כל הרביעים</option>
+            <option value="3">גם על הצירים</option>
+<!--            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+            <option value="6">6</option>
+            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option>
+--!>			
+        </select>
+        <select id="kindSelect">
+            <option value="1">מצא נקודה לפי (x,y)</option>
+            <option value="2">מצא (x,y) לפי נקודה</option>
+        </select>
+    </div>
+    <div id="text-boxes"></div>
+    <div id="textContainer">
+        <!-- <input type="text" id="textInputY" placeholder="Y ?" dir="ltr"> -->
+        <!-- <input type="text" id="textInputX" dir="ltr"> -->
+		<div id="textContent1" class="text-content">
+			<span class="red-text"></span><br>
+			<span class="green-text"></span>
+		</div>
+    </div>
+    
+	<div class="coordinate-system">
+        <canvas id="coordinateSystem" width="357" height="357"></canvas>
+        <div id="coordinates"></div>
+        <div id="randomPoint"></div>
+		<div id="textInput2-container">
+			<input type="text" id="textInput2" placeholder="כתוב כאן את התוצאה" dir="ltr">
+		</div>
+    </div>
+
+    <canvas id="buttonCanvas" width="300" height="200">
+	</canvas>
+	<div id="correctModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>יפה מאוד ! תשובה מדוייקת !</p>
+            <button id="correctConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="hintModal" class="modal" dir="ltr">
+        <div class="modal-content" dir="ltr">
+            <span class="close">&times;</span>
+            <p id="hintText"></p>
+            <button id="hintConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="solutionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="solutionText"></p>
+            <button id="solutionConfirm">אישור</button>
+    </div>
+<!-- 	<div id="partialModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>נכון חלקית. לחץ כדי להמשיך.</p>
+            <button id="partialConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>תשובה לא נכונה<br>הנקודה הנכונה מסומנת בירוק<br>לחץ כדי להמשיך</p>
+            <button id="errorConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="otherModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>אחר</p>
+            <button id="otherConfirm">אישור</button>
+		</div>	
+	</div>	
+ -->
+ <script>
+        const canvas = document.getElementById('coordinateSystem');
+        const ctx = canvas.getContext('2d');
+        const coordinates = document.getElementById('coordinates');
+        const randomPointDisplay = document.getElementById('randomPoint');
+        const buttonCanvas = document.getElementById('buttonCanvas');
+        const buttonCtx = buttonCanvas.getContext('2d');
+
+        const textBoxes = document.getElementById('text-boxes');
+//        const currentLevelInfo = document.getElementById('currentLevelInfo');
+        const potentialScoreInfo = document.getElementById('potentialScoreInfo');
+        const textInput2 = document.getElementById('textInput2');
+		textInput2.style.display = 'none';
+//		textInputX.style.width = 50 + "px";
+//        const textInputY = document.getElementById('textInputY');
+//		textInputY.style.width = 30 + "px";
+        const textContent1 = document.getElementById('textContent1');
+        const levelSelect = document.getElementById('levelSelect');
+        const kindSelect = document.getElementById('kindSelect');
+        const cumulativeScoreInfo = document.getElementById('cumulativeScoreInfo');
+        const correctModal = document.getElementById('correctModal');
+        const solutionModal = document.getElementById('solutionModal');
+        const hintModal = document.getElementById('hintModal');
+/*        const otherModal = document.getElementById('otherModal');
+        const partialModal = document.getElementById('partialModal');
+        const errorModal = document.getElementById('errorModal'); */
+        const hintText = document.getElementById('hintText');
+        const solutionText = document.getElementById('solutionText');
+
+        const rectangles = [
+            { text: 'פתרון בבקשה', color: 'red' },
+            { text: 'אפשר רמז ?', color: 'blue' },
+            { text: 'יש לי תשובה', color: 'green' }
+        ];
+
+        const timerElement = document.getElementById('timer');
+
+        let seconds = 0;
+
+        // פונקציה לעדכון הטיימר
+        function updateTimer() {
+            seconds++;
+            timerElement.textContent = seconds + (seconds === 1 ? ' שנייה' : ' שניות');
+        }        let cumulativeScore = 0;
+		let potentialScore = 0;
+        let currentLevel = 1;
+        let currentKind = 1;
+		let maxNumber = 10;
+		let maxLevel = 6;
+		let pointedX = -11;
+		let pointedY = -11;
+	
+        function drawCoordinateSystem() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // רשת
+            ctx.strokeStyle = 'lightgray';
+            for (let i = 0; i <= canvas.width; i += 18) {
+                ctx.beginPath();
+                ctx.moveTo(i, 0);
+                ctx.lineTo(i, canvas.height);
+                ctx.stroke();
+                ctx.moveTo(0, i);
+                ctx.lineTo(canvas.width, i);
+                ctx.stroke();
+            }
+
+            // צירים
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(0, canvas.height / 2);
+            ctx.lineTo(canvas.width, canvas.height / 2);
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+
+            // חיצים
+            ctx.fillStyle = 'black';
+            ctx.beginPath();
+            ctx.moveTo(canvas.width, canvas.height / 2);
+            ctx.lineTo(canvas.width - 10, canvas.height / 2 - 5);
+            ctx.lineTo(canvas.width - 10, canvas.height / 2 + 5);
+            ctx.fill();
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2 - 5, 10);
+            ctx.lineTo(canvas.width / 2 + 5, 10);
+            ctx.fill();
+
+            // מספרים
+            ctx.fillStyle = 'blue';
+            ctx.font = '6.67px Arial';
+            ctx.textAlign = 'center';
+            ctx.direction = 'ltr';
+            for (let i = -11; i <= 11; i++) {
+                if (i !== 0) {
+                    // ציר X
+                    ctx.fillText(i, canvas.width / 2 + i * 18/* * 10 / 11*/, canvas.height / 2 + 15);
+                    // ציר Y
+                    ctx.fillText(i, canvas.width / 2 - 15, canvas.height / 2 - i * 18/* * 10 / 11*/);
+                }
+            }
+
+            // אפס בראשית הצירים
+            ctx.fillText('0', canvas.width / 2 + 10, canvas.height / 2 - 5);
+
+            // תיאור הצירים
+            ctx.font = '8px Arial';
+            ctx.fillText('X', canvas.width - 10, canvas.height / 2 + 20);
+            ctx.fillText('Y', canvas.width / 2 + 20, 10);
+        }
+
+        function generateRandomPoint() {
+            const x = Math.floor(Math.random() * 21) - 10;
+            const y = Math.floor(Math.random() * 21) - 10;
+            return { x, y };
+        }
+
+//        hintButton.addEventListener('click', function() {
+//            const randomPoint = generateRandomPoint();
+//            randomPointDisplay.textContent = `נקודה אקראית: (${randomPoint.x}, ${randomPoint.y})`;
+//            randomPointCircle.setAttribute('cx', randomPoint.x * 18 * 10 / 11);
+//            randomPointCircle.setAttribute('cy', -randomPoint.y * 18 * 10 / 11);
+//            randomPointCircle.setAttribute('visibility', 'visible');
+//        });
+
+        function drawRectangleWithText(x, y, width, height, text1, text2, color) {
+            buttonCtx.fillStyle = color;
+            buttonCtx.fillRect(x, y, width, height);
+            
+            buttonCtx.strokeStyle = 'black';
+            buttonCtx.lineWidth = 2;
+            buttonCtx.strokeRect(x, y, width, height);
+			buttonCtx.direction = "rtl";
+
+            buttonCtx.font = 'bold 10px Arial';
+            buttonCtx.fillStyle = 'white';
+            buttonCtx.textAlign = 'center';
+            buttonCtx.textBaseline = 'middle';
+			if (text2 == "")
+				buttonCtx.fillText(text1, x + width / 2, y + height / 2);
+			else
+			{
+				buttonCtx.fillText(text1, x + width / 2, y + height / 6);
+				buttonCtx.fillText(text2, x + width / 2, y + 3 * height / 6);
+			}
+
+            return { x, y, width, height, text1, color };
+        }
+
+        function drawBottomRectangles() {
+            const rectWidth = Math.min(buttonCanvas.width * 0.25, 200);
+            const rectHeight = Math.min(buttonCanvas.height * 0.5, 60);
+            const totalWidth = rectWidth * 3 + 20 * 2;
+            const startX = (buttonCanvas.width - totalWidth) / 2;
+            const y = buttonCanvas.height - rectHeight - 10;
+
+            rectangles.forEach((rect, i) => {
+                const x = startX + (rectWidth + 20) * i;
+                rect.bounds = drawRectangleWithText(x, y, rectWidth, rectHeight, rect.text, '', rect.color);
+            });
+        }
+		
+		let answer = "";
+		function chosePoint() {
+			answer = "";
+			textInput2.value = '';
+			if(currentLevel == 1)
+			{
+				chosenX = 1 + Math.floor(Math.random() * 9);
+				chosenY = 1 + Math.floor(Math.random() * 9);
+			}
+			else if(currentLevel == 2)
+			{
+				do
+				{
+					chosenX = -9 + Math.floor(Math.random() * 19);
+					chosenY = -9 + Math.floor(Math.random() * 19);
+				} while (chosenX == 0 || chosenY == 0);
+			}
+			else if(currentLevel == 3)
+			{
+				chosenX = -9 + Math.floor(Math.random() * 19);
+				chosenY = -9 + Math.floor(Math.random() * 19);
+			}
+			
+//            textContent1.innerHTML = '<span class="red-text">' + " לחץ   על   הנקודה   " + 
+//				"(" + '<dir="rtl">' + `${chosenX}` + "," + `${chosenY}` + '</dir>' + ")" + '</span><br><br><span class="green-text">' + 
+			let cx = '  ';
+			let cy = '  ';
+			let actualX = Math.abs(chosenX);
+			let actualY = Math.abs(chosenY);
+			if (chosenX >= 0 && chosenY >= 0)
+			{
+				cx = ' ';
+				cy = ' ';
+			}
+			else if (chosenX >= 0)
+			{
+				cy = '-';
+			}
+			else if (chosenY >= 0)
+			{
+				cx = '-';
+			}
+			else
+			{
+				cx = '-';
+				cy = '-';
+			}
+			
+			if (currentKind == 1)
+				textContent1.innerHTML = '<span class="red-text" dir="rtl">' + " לחץ   על   הנקודה   " + 
+					"(" + actualY + cy + "," + actualX + cx + ")" + '</dir>' + 
+					'</span><br><br><br><br><span class="green-text">' + 
+					"הקואורדינטות : (X,Y)" + "<br>" +
+					"X : ימינה שמאלה מציר ה-Y" + "<br>" +
+					"Y : מעלה מטה מציר ה-X" + "</span>";
+			else
+			{
+				answer = "(";
+				answer += chosenX;
+				answer += ",";
+				answer += chosenY;
+				answer += ")";
+				
+//				answer = "(" + chosenX + "," + chosenY + ")";
+				textContent1.innerHTML = '<span class="red-text" dir="rtl">' + 
+					" כתוב את הקואורדינטות" + "<br>" +
+					" של הנקודה האדומה " +
+					'</span><br><br><br><br><span class="green-text">' + 
+					"הקואורדינטות : (X,Y)" + "<br>" +
+					"X : ימינה שמאלה מציר ה-Y" + "<br>" +
+					"Y : מעלה מטה מציר ה-X" + "</span>";
+				drawPoint(chosenX, chosenY, 'red');
+			}
+
+//			textInputX.value = "(" + chosenX + "," +
+//				chosenY + ")";
+		}
+		
+        function drawAll() {
+            if (!ctx) return;  // בדיקה שהקונטקסט קיים
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+			drawCoordinateSystem();
+            drawBottomRectangles();
+			chosePoint();
+        }
+				
+/*
+        function createTextBoxes() {
+            const texts = ['1.   רביע ראשון', '2.   כל הרביעים'];
+            texts.forEach(text => {
+                const box = document.createElement('div');
+                box.className = 'text-box';
+                box.textContent = text;
+                textBoxes.appendChild(box);
+            });
+        }
+
+*/
+        function initializeCanvas() {
+//			alert(canvas.width + " " + window.innerWidth + " " + canvas.height + " " + window.innerHeight);
+//			createTextBoxes();
+            drawAll();
+        }
+
+        function drawPoint(x, y, color) {
+            ctx.beginPath();
+            ctx.arc(canvas.width / 2 + x * 18, canvas.height / 2 - y * 18, 5, 0, 2 * Math.PI);
+            ctx.fillStyle = color;
+            ctx.fill();
+        }
+		
+		function setHint()
+		{
+			if (currentKind == 1)
+			{
+				hint = "X=" + chosenX + " Y=" + chosenY + "<br>";
+				
+				if (chosenX == 0 && chosenY == 0)
+					hint += " לכן הנקודה היא ראשית הצירים "
+				else if (chosenX == 0)
+				{
+					hint += "לכן מראשית הצירים צריך ללכת " + 
+						Math.abs(chosenY) + " צעדים ";
+					if (chosenY > 0)
+						hint += " למעלה ";
+					else
+						hint += " למטה ";
+				}
+				else if (chosenY == 0)
+				{
+					hint += "לכן מראשית הצירים צריך ללכת " + 
+						Math.abs(chosenX) + " צעדים ";
+					if (chosenX > 0)
+						hint += " ימינה ";
+					else
+						hint += " שמאלה ";
+				}
+				else 
+				{
+					hint += "לכן מראשית הצירים צריך ללכת " + 
+						Math.abs(chosenX) + " צעדים ";
+					if (chosenX > 0)
+						hint += " ימינה ";
+					else
+						hint += " שמאלה ";
+					hint += "<br>" + " ואז " + 
+						Math.abs(chosenY) + " צעדים ";
+					if (chosenY > 0)
+						hint += " למעלה ";
+					else
+						hint += " למטה ";
+				}
+			}
+			else // currentKind == 2
+			{
+				if (chosenX == 0 && chosenY == 0)
+					hint = "הנקודה היא ראשית הצירים"
+				else if (chosenX == 0)
+				{
+					hint = "מראשית הצירים הלכנו " + 
+						Math.abs(chosenY) + " צעדים ";
+					if (chosenY > 0)
+						hint += " למעלה ";
+					else
+						hint += " למטה ";
+				}
+				else if (chosenY == 0)
+				{
+					hint = "מראשית הצירים הלכנו " + 
+						Math.abs(chosenX) + " צעדים ";
+					if (chosenX > 0)
+						hint += " ימינה ";
+					else
+						hint += " שמאלה ";
+				}
+				else 
+				{
+					hint = "מראשית הצירים הלכנו " + 
+						Math.abs(chosenX) + " צעדים ";
+					if (chosenX > 0)
+						hint += " ימינה ";
+					else
+						hint += " שמאלה ";
+					hint += "<br>" + " ואז " + 
+						Math.abs(chosenY) + " צעדים ";
+					if (chosenY > 0)
+						hint += " למעלה ";
+					else
+						hint += " למטה ";
+				}
+			}
+			hint += ".";
+
+/*
+			let currentX = chosenX;
+			let minusX = ' ';
+			if (chosenX < 0)
+			{
+				minusX = '-';
+				currentX = -chosenX;
+			}
+			let currentY = chosenY;
+			let minusY = ' ';
+			if (chosenY < 0)
+			{
+				minusY = '-';
+				currentY = -chosenY;
+			}
+			hint = " המקום שבו " + currentX + minusX + " ו- " + currentY + minusY + " נפגשים ";
+*/
+		}	
+
+        canvas.addEventListener('click', function(event) {
+			drawCoordinateSystem();
+            const rect = canvas.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+			const times = 1;
+
+            pointedX = Math.round((x - 178.5) / 18 * times); // 11 / 10);
+            pointedY = Math.round((178.5 - y) / 18 * times); // 11 / 10);
+			drawPoint(pointedX, pointedY, 'red');
+//            coordinates.textContent = `קואורדינטות: (${svgX}, ${svgY})`;
+        });
+
+		let waitingConfirm = false;
+        buttonCanvas.addEventListener('click', (event) => {
+			if (waitingConfirm)
+				return;
+            const rect = buttonCanvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            for (let i = 0; i < rectangles.length; i++) {
+                const rectangle = rectangles[i];
+                const { x, y, width, height, text } = rectangle.bounds;
+                if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+                    if (i === 0) { // "פתרון בבקשה"
+						waitingConfirm = true;
+						setHint();
+						if (currentKind == 1)
+						{
+							hint += "<br>" + "התשובה מסומנת בירוק.";
+							drawPoint(chosenX, chosenY, 'green');
+						}
+						else
+							hint += "<br>" + " לכן הנקודה היא " + 
+								"<br><span dir='ltr'>" + answer + "</span>";
+                        solutionText.innerHTML = hint; // `${mmm} * ${xNumbers[0]} + ${bbb} = ${yNumbers[0]}`;
+                        solutionModal.style.display = 'block';
+
+						potentialScore += 10 * currentLevel;
+						potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+						
+                    } else if (i === 1) { // "רמז"
+						waitingConfirm = true;
+                        hintModal.style.display = 'block';
+						setHint();
+                        hintText.innerHTML = hint; // `${mmm} * ${xNumbers[0]} + ${bbb} = ${yNumbers[0]}`;
+						if (cumulativeScore >= 5 * currentLevel)
+						{
+							cumulativeScore-= 5 * currentLevel;
+							cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+						}
+                    } else if (i === 2) { // "יש לי תשובה"
+						waitingConfirm = true;
+						potentialScore += 10 * currentLevel;
+						potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+						
+						points = 0;
+						
+						if (currentKind == 1)
+						{
+							if (pointedX === chosenX)
+								points += 5 * currentLevel;
+							if (pointedY === chosenY)
+								points += 5 * currentLevel;
+							cumulativeScore += points;
+							cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+							if (points == 10 * currentLevel)
+							{
+								correctModal.style.display = 'block';
+							} else if (points == 0) {
+								setHint();
+								hint += "<br>" + "תשובה לא נכונה." + "<br>" +
+									"התשובה הנכונה מסומנת בירוק.";
+								solutionText.innerHTML = hint; // `${mmm} * ${xNumbers[0]} + ${bbb} = ${yNumbers[0]}`;
+								solutionModal.style.display = 'block';
+								drawPoint(chosenX, chosenY, 'green');
+							} else {
+								setHint();
+								if (pointedX === chosenX)
+									hint += "<br>X נכון, Y לא נכון";
+								else
+									hint += "<br>Y נכון, X לא נכון";
+								hint += '.';
+								hint += "<br>" + "תשובה לא מדוייקת." + "<br>" +
+									"התשובה המדוייקת מסומנת בירוק.";
+								solutionText.innerHTML = hint; // `${mmm} * ${xNumbers[0]} + ${bbb} = ${yNumbers[0]}`;
+								solutionModal.style.display = 'block';
+								drawPoint(chosenX, chosenY, 'green');
+							}
+						}
+						else // kind == 2
+						{
+							if (answer == textInput2.value)
+							{
+								cumulativeScore += 10 * currentLevel;
+								cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+								correctModal.style.display = 'block';
+							}
+							else
+							{
+								setHint();
+								hint += "<br>" + " לכן הנקודה היא " + 
+								"<br><span dir='ltr'>" + answer + "</span>";
+								solutionText.innerHTML = "תשובה לא נכונה." + "<br>" + hint; // `${mmm} * ${xNumbers[0]} + ${bbb} = ${yNumbers[0]}`;
+								solutionModal.style.display = 'block';
+							}
+						}
+	                }
+                    return;
+                }
+            }
+        });
+
+//        textInput.addEventListener('keyup', (event) => {
+//            if (event.key === 'Enter') {
+//                const text = textInput.value;
+//                
+//                potentialScore += currentLevel;
+//                potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+//				showAnswer();
+//                if (text === formula) {
+//                    cumulativeScore += currentLevel;
+//                    cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+//					correctModal.style.display = 'block';
+//				} else {
+//					errorModal.style.display = 'block';
+//
+//                    errorMessage.style.display = 'block';
+//                }
+//                
+//                textInput.value = '';
+//            }
+//        });
+
+    levelSelect.addEventListener('change', () => {
+        currentLevel = levelSelect.selectedIndex + 1;
+        drawAll();
+//		currevntLevelInfo.textContent = `רמה : ${currentLevel}`;
+});
+    kindSelect.addEventListener('change', () => {
+        currentKind = kindSelect.selectedIndex + 1;
+		if (currentKind == 1)
+			textInput2.style.display = 'none';
+		else
+			textInput2.style.display = 'block';
+
+        drawAll();
+//		currevntLevelInfo.textContent = `רמה : ${currentLevel}`;
+});
+   // Close modals when clicking on the close button or outside the modal
+/*    window.onclick = function(event) {
+		if (event.target == solutionModal || event.target == hintModal || event.target == otherModal || event.target == partialModal || event.target == correctModal || event.target == errorModal) {
+			correctModal.style.display = "none";
+			partialModal.style.display = "none";
+			errorModal.style.display = "none";
+			solutionModal.style.display = "none";
+            hintModal.style.display = "none";
+            otherModal.style.display = "none";
+        }
+    }
+
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.onclick = function() {
+			correctModal.style.display = "none";
+			partialModal.style.display = "none";
+			errorModal.style.display = "none";
+            solutionModal.style.display = "none";
+            hintModal.style.display = "none";
+            otherModal.style.display = "none";
+        }
+    });
+*/
+    document.getElementById('solutionConfirm').onclick = function() {
+		waitingConfirm = false;
+        solutionModal.style.display = "none";
+        drawAll();
+    }
+
+    document.getElementById('hintConfirm').onclick = function() {
+		waitingConfirm = false;
+        hintModal.style.display = "none";
+    }
+
+    document.getElementById('correctConfirm').onclick = function() {
+		waitingConfirm = false;
+        correctModal.style.display = "none";
+        drawAll();
+    }
+/*
+    document.getElementById('partialConfirm').onclick = function() {
+        partialModal.style.display = "none";
+        drawAll();
+    }
+
+    document.getElementById('otherConfirm').onclick = function() {
+        otherModal.style.display = "none";
+    }
+
+    document.getElementById('errorConfirm').onclick = function() {
+        errorModal.style.display = "none";
+        drawAll();
+    }
+*/
+	// קריאה לפונקציות בעת טעינת הדף ושינוי גודל החלון
+	window.addEventListener('load', () => {
+		initializeCanvas();
+		setInterval(updateTimer, 1000); // עדכון הטיימר כל שנייה
+	});
+    window.addEventListener('resize', initializeCanvas);
+
+    // קריאה מיידית לפונקציית האתחול
+//    if (document.readyState === 'complete') {
+//        initializeCanvas();
+//    } else {
+//        window.addEventListener('load', initializeCanvas);
+//	    }
+        // initializeCanvas();
+</script>
+</body>
+</html>

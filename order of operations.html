@@ -1,0 +1,949 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Math Expression Display</title>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+        }
+
+        .header {
+            background-color: #808080;
+            color: white;
+            padding: 10px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        #timer {
+            font-size: 10px;
+            margin: 0px 0;
+            background-color: #fff;
+            padding: 5px 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        .timer1 {
+            background-color: #666;
+            padding: 5px 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 18px;
+        }
+
+        .menu-bar {
+            background-color: #f0f0f0;
+            padding: 10px 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: right;
+        }
+
+        select {
+            padding: 5px;
+            width: 150px;
+        }
+
+        /* [שאר הסגנונות נשארו זהים] */
+        .main-content {
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            height: calc(100vh - 100px);
+            box-sizing: border-box;
+            position: relative;
+            width: 100%;
+        }
+
+        .input-container { width: 350px; }
+
+        input {
+            width: 100%;
+            padding: 5px;
+            margin: 5px 0;
+        }
+
+        .output-container {
+            border: 1px solid #ccc;
+            padding: 10px;
+            flex-grow: 0.47;
+            height: 300px;
+            overflow-y: auto;
+            font-family: monospace;
+            white-space: pre-wrap;
+            background-color: white;
+            margin-left: 30px; /* הזזה ימינה */
+        }
+
+        .highlight-red { color: red; }
+        .highlight-green { color: green; }
+
+        .right-boxes {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+            margin-left: 20px;
+        }
+
+        .gray-box {
+            background-color: #f0f0f0;
+            padding: 15px;
+            border-radius: 5px;
+            width: 150px;
+            text-align: center;
+        }
+
+
+        .color-squares {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+        }
+
+        .square {
+            width: 100px;
+            height: 70px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.5);
+			dir : rtl;
+            text-align: center;
+        }
+
+        #orange-square { background-color: orange; }
+        #red-square { background-color: red; }
+        #blue-square { background-color: blue; }
+        #green-square { background-color: green; }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div id="potentialScoreInfo">ניקוד אפשרי : 0</div>
+        <div class="timer">00:00</div>
+        <div id="currentScoreInfo">ניקוד מצטבר: 0</div>
+    </div>
+    
+    <div class="menu-bar" dir="rtl">
+        <select id="opSelect">
+            <option>רק חיבור וחיסור</option>
+            <option>גם כפל וחלוקה</option>
+            <option>עם סוגריים</option>
+            <option>עם שני זוגות סוגריים</option>
+            <option>עם חזקות</option>
+        </select>
+        <select id = "lengthSelect">
+            <option>2 פעולות</option>
+            <option>3 פעולות</option>
+            <option>4 פעולות</option>
+            <option>5 פעולות</option>
+            <option>6 פעולות</option>
+            <option>7 פעולות</option>
+            <option>8 פעולות</option>
+            <option>9 פעולות</option>
+            <option>10 פעולות</option>
+        </select>
+        <select id = "negativeSelect">
+            <option>בלי שליליים</option>
+            <option>עם שליליים</option>
+        </select>
+        <select id = "varsSelect">
+            <option>רק מספרים</option>
+            <option>גם X</option>
+            <option>גם X Y</option>
+        </select>
+    </div>
+
+    <div class="main-content">
+        <!-- [שאר התוכן נשאר זהה] -->
+        <div class="input-container">
+            <div>
+                <label id="exercise"></label><br>
+                <input type="text" id="answer" value="2*3+4">
+            </div>
+<!--
+            <div>
+                <label>התחלה:</label><br>
+                <input type="number" id="startPos" value="0">
+            </div>
+            <div>
+                <label>סיום:</label><br>
+                <input type="number" id="endPos" value="3">
+            </div>
+--!>
+        </div>
+
+        <div id="output" class="output-container"></div>
+
+
+ <!--       <div class="right-boxes">
+            <div class="gray-box">התרגיל הבא</div>
+            <div class="gray-box">הסבר על חזקות</div>
+            <div class="gray-box">טיפים ועצות</div>
+            <div class="gray-box">צור קשר</div>
+--!>
+        </div>
+
+
+        <div class="color-squares"  dir="rtl">
+            <div class="square" id="green-square" onclick="checkSolution()">יש לי תשובה</div>
+            <div class="square" id="blue-square" onclick="setHint(false, false)">אפשר רמז ?</div>
+            <div class="square" id="red-square" onclick="showSolution()">פתרון בבקשה</div>
+            <div class="square" id="orange-square" onclick="nextExercise()">התרגיל הבא</div>
+       </div>
+    </div>
+
+    <script>
+        const orangeSquare = document.getElementById('orange-square');
+        const opSelect = document.getElementById('opSelect');
+        const lengthSelect = document.getElementById('lengthSelect');
+        const negativeSelect = document.getElementById('negativeSelect');
+        const varsSelect = document.getElementById('varsSelect');
+        const potentialScoreInfo = document.getElementById('potentialScoreInfo');
+        const currentScoreInfo = document.getElementById('currentScoreInfo');
+        const exercise = document.getElementById('exercise');
+		const outputText = document.getElementById('output'); 
+		let waitingConfirm = false;
+		
+        // טיימר
+        let seconds = 0;
+        setInterval(() => {
+            seconds++;
+            const minutes = Math.floor(seconds / 60);
+            const remainingSeconds = seconds % 60;
+            document.querySelector('.timer').textContent = 
+                `${minutes.toString().padStart(2, '0')}:${remainingSeconds.toString().padStart(2, '0')}`;
+        }, 1000);
+
+		let currentOp = 1;
+		let currentLength = 2;
+		let actualLength = 2;
+        let currentLevel = 2;
+		
+		let allowNegative = false;
+		let allowVars = 1;
+		let potentialScore = 0;
+		let currentScore = 0;
+		let maxNumber = 10;
+		let maxLevel = 6;
+
+        let output = "";
+		
+		let result = 0;
+		let originalExercise = '';
+		let exerciseWithoutVars = '';
+		let currentExercise = '';
+
+        function calculate(expr) {
+            try {
+                return eval(expr);
+            } catch {
+				alert("error : " + expr);
+                return "שגיאה בתרגיל";
+            }
+        }
+		
+		function stronger(i ,j)
+		{
+			if (tempExercise[i] == '+' ||
+				tempExercise[i] == '-')
+				i1 = 1;
+			if (tempExercise[i] == '*' ||
+				tempExercise[i] == '/')
+				i1 = 2;
+			if (tempExercise[j] == '+' ||
+				tempExercise[j] == '-')
+				j1 = 1;
+			if (tempExercise[j] == '*' ||
+				tempExercise[j] == '/')
+				j1 = 2;
+			return (i1 > j1);
+		}
+
+		let tempExercise = "";
+
+		let paramLocation = -1;
+		let lastLocation = 0;
+		let firstLocation = 0;
+		
+		function isOp(c)
+		{
+			return c == '+' ||
+					c == '-' ||
+					c == '*' ||
+					c == '/';
+		}
+
+		function findLocations()
+		{
+			let startLocation = 0;
+			let endLocation = tempExercise.length;
+			for (let i = 0; i < tempExercise.length; i++)
+				if (tempExercise[i] == ')')
+				{
+					console.log("AAA " + i);
+					for (let j = i - 1; j > -1; j--)
+						if (tempExercise[j] == '(')
+						{
+							startLocation = j + 1;
+							endLocation = i;
+							console.log("BBB " + j);
+							break;
+						}
+					break;
+				}
+						
+			console.log("startLocation " + startLocation);
+			console.log("endLocation " + endLocation);
+			paramLocation = -1;
+			for (let i = startLocation; i < endLocation; i++)
+			{
+				if (isOp(tempExercise[i]))
+				{
+					if (paramLocation == -1)
+						paramLocation = i;
+					else if (stronger(i, paramLocation))
+						paramLocation = i;
+				}
+			}
+			console.log("paramLocation " + paramLocation);
+
+			if (paramLocation == -1)
+			{
+				return false;
+			}
+			
+			lastLocation = endLocation;
+			for (let i = paramLocation + 2; i < endLocation; i++)
+			{
+				if (tempExercise[i] == ' ')
+				{
+					lastLocation = i;
+					break;
+				}
+			}
+			console.log("lastLocation " + lastLocation);
+
+			firstLocation = startLocation;
+			for (let i = paramLocation - 2; i > startLocation; i--)
+			{
+				if (tempExercise[i] == ' ')
+				{
+					firstLocation = i + 1;
+					break;
+				}
+			}
+			console.log("firstLocation " + firstLocation);
+			return true;
+		}
+		
+		let before = "";
+		let highlightedPart = "";
+		let after = "";
+		
+		function closeParans(start)
+		{
+			for (let i = start; i >= 1; i--)
+				if (originalExercise[i] == '(')
+					if (originalExercise[i - 1] == '(')
+						return true;
+					else
+						return false;
+			return false;
+		}
+
+		function paransProblematic(start)
+		{
+			let i = 0;
+			for (i = start; i < originalExercise.length; i++)
+			{
+				if (originalExercise[i] == ')')
+				{
+					if (paransProblematic(i + 1))
+						return true;
+					if (originalExercise[i - 1] == ')' && closeParans(i - 2))
+						return true;
+					let j = 0;
+					for (j = i - 1; j >= 0; j--)
+					{
+						if (isOp(originalExercise[j]))
+							break;
+						if (originalExercise[j] == '(' || originalExercise[j] == ')')
+							return true;
+					}
+				}
+			}
+			if (i >= originalExercise.length)
+				return false;
+		}
+		
+		let MAX_RESULT = 1000;
+		function exerciseProblematic()
+		{
+			if (!findLocations())
+			{
+//				alert("A " + tempExercise);
+				return false;
+			}
+			
+            before = tempExercise.slice(0, firstLocation);
+			console.log("EP before = " + before);
+            highlightedPart = tempExercise.slice(firstLocation, lastLocation);
+			console.log("EP highlightedPart = " + highlightedPart);
+            after = tempExercise.slice(lastLocation);
+			console.log("EP after = " + after);
+
+//			alert("C " + highlightedPart);
+            const partialResult = calculate(highlightedPart);
+			if ((partialResult == 0) || (partialResult > MAX_RESULT) ||
+				(partialResult < 0 && !allowNegative) ||
+				partialResult != Math.floor(partialResult))
+			{
+				return true;
+			}
+            
+			console.log("CP1 tempExercise = " + tempExercise);
+			removeUnneededParans();
+
+			tempExercise = before + partialResult + after;
+			console.log("CP2 tempExercise = " + tempExercise);
+			return exerciseProblematic();
+		}
+		
+		function removeVars()
+		{
+			exerciseWithoutVars = "";
+			let i = 0;
+			for (i = 0; i < originalExercise.length - 1; i++)
+			{
+				if (originalExercise[i + 1] == 'x')
+				{
+					exerciseWithoutVars += "(" + originalExercise[i] + " * " + xValue + ")";
+					i++;
+				}
+				else if (originalExercise[i + 1] == 'y')
+				{
+					exerciseWithoutVars += "(" + originalExercise[i] + " * " + yValue + ")";
+					i++;
+				}
+				else
+					exerciseWithoutVars += originalExercise[i];
+			}
+			if (i == originalExercise.length - 1)
+				exerciseWithoutVars += originalExercise[i];
+		}
+		
+		let opStr = [];
+		let opNum = 0;
+		let varsExist = [0, 0, 0];
+		let xValue = 0;
+		let yValue = 0;
+		
+		function buildExercise() {
+			console.log("E " + currentOp);
+			
+			varsExist = [0, 0, 0];
+			let leftParan1 = 0;
+			let leftParan2 = 0;
+			let rightParan1 = 0;
+			let rightParan2 = 0;
+//			let opInParan1 = 0;
+//			let opInParan2 = 0;
+			let paranNum = 0;
+			let doParan = 0;
+
+			originalExercise = '';
+			answer.value = '';
+			let i = 0, num = 0, op = 0, vars = 0;
+			let varsStr = ['', 'x','y'];
+			if (currentOp == 1)
+			{
+				opStr = ['-','+'];
+				opNum = 2;
+			}
+			else if (currentOp >= 2)
+			{
+				opStr = ['-','+','*','/'];
+				opNum = 4;
+			}
+			
+			if (currentOp >= 3)
+				paranNum = 2;
+/*			else
+				paranNum = 3; */
+				
+			let plus = 1, minus = 0;
+
+			if (currentOp >= 3)
+			{
+				doParan = Math.floor(Math.random() * paranNum);
+				if (doParan == 1)
+				{
+					leftParan1++;
+					originalExercise += "(";
+				}
+			}
+
+			if (allowNegative)
+			{
+				do
+				{
+					num = -9 + Math.floor(Math.random() * 19);
+				} while (num == 0);
+			}
+			else
+				num = 1 + Math.floor(Math.random() * 9);
+
+			if (allowVars > 1 && Math.abs(num) != 1)
+			{
+				vars = Math.floor(Math.random() * allowVars);
+				if (vars > 0)
+				{
+					if (num == 1)
+						originalExercise += varsStr[vars];
+					else if (num == -1)
+						originalExercise += "-" + varsStr[vars];
+					else
+						originalExercise += num + varsStr[vars];
+					varsExist[vars]++;
+				}
+				else
+					originalExercise += num;
+			}
+			else					
+				originalExercise += num;
+			
+			while (i < currentLength)
+			{
+/*
+				if (leftParan1 == rightParan1 - 1)
+					opInParan1++;
+				else if (leftParan1 == rightParan1 - 2)
+					opInParan2++;
+*/
+						
+				console.log("A " + originalExercise);
+				op = Math.floor(Math.random() * opNum);
+				originalExercise += " " + opStr[op] + " ";
+
+				if (currentOp >= 3)
+				{
+					doParan = Math.floor(Math.random() * paranNum);
+					if ((doParan == 1) && (leftParan1 == rightParan1))
+					{
+						leftParan1++;
+						originalExercise += "(";
+					}
+				}
+				if (currentOp >= 4)
+				{
+					doParan = Math.floor(Math.random() * paranNum);
+//					alert("A " + originalExercise + " " + doParan + " " + leftParan1 + " " + rightParan1);
+					if ((doParan == 1) && (leftParan1 == rightParan1 + 1))
+					{
+						leftParan1++;
+						originalExercise += "(";
+//						alert("B " + originalExercise + " " + doParan + " " + leftParan1 + " " + rightParan1);
+					}
+				}
+				
+				if (allowNegative)
+					do
+					{
+							num = -9 + Math.floor(Math.random() * 19);
+					} while (num == 0);
+				else
+					num = 1 + Math.floor(Math.random() * 9);
+					
+				if (allowVars > 1 && Math.abs(num) != 1)
+				{
+					vars = Math.floor(Math.random() * allowVars);
+					if (vars > 0)
+					{
+						if (num == 1)
+							originalExercise += varsStr[vars];
+						else if (num == -1)
+							originalExercise += "(-" + varsStr[vars] + ")";
+						else if (num > 0)
+							originalExercise += num + varsStr[vars];
+						else
+							originalExercise += "(" + num + varsStr[vars] + ")";
+						varsExist[vars]++;
+					}
+					else
+					{
+						if (num > 0)
+							originalExercise += num;
+						else 
+							originalExercise += "("+ num + ")";				
+					}
+				}
+				else					
+				{
+					if (num > 0)
+						originalExercise += num;
+					else 
+						originalExercise += "("+ num + ")";
+				}
+				i++;
+				
+				if (currentOp >= 3)
+				{
+					doParan = Math.floor(Math.random() * paranNum);
+					if (doParan == 1 && leftParan1 == rightParan1 + 1 /* && opInParan1 >= 1 */)
+					{
+						rightParan1++;
+						originalExercise += ")";
+						console.log("A " + originalExercise);
+//						opInParan1 = 0;
+					}
+					else if (currentOp >= 4 && doParan == 1 && leftParan1 == rightParan1 + 2 /* && opInParan2 >= 1 */)
+					{
+						rightParan1++;
+						originalExercise += ")";
+						console.log("A " + originalExercise);
+//						opInParan2 = 0;
+					}
+				}
+			}
+			
+			if (currentOp >= 3 && leftParan1 > rightParan1)
+			{
+				rightParan1++;
+				originalExercise += ")";
+			}
+		
+			if (currentOp >= 4 && leftParan1 > rightParan1)
+			{
+				rightParan1++;
+				originalExercise += ")";
+			}
+		
+			console.log("B " + originalExercise);
+			if (currentOp >= 3)
+			{
+/*				if (rightParan1 == 0)
+					alert("B1 " + originalExercise + " " + leftParan1 + " " + rightParan1);
+				if (leftParan1 != rightParan1)
+					alert("B2 " + originalExercise + " " + leftParan1 + " " + rightParan1);
+				if (originalExercise[0] == '(' &&
+					originalExercise[originalExercise.length - 1] == ')')
+					alert("B3 " + originalExercise + " " + leftParan1 + " " + rightParan1); */
+				if ((rightParan1 == 0) || 
+				(leftParan1 != rightParan1) ||
+				(originalExercise[0] == '(' &&
+					originalExercise[originalExercise.length - 1] == ')'))
+				{
+//					alert("B " + originalExercise + " " + leftParan1 + " " + rightParan1);
+					buildExercise();
+					return;
+				}
+			}
+			
+//			alert(originalExercise);
+			actualLength = currentLength;
+			if (varsExist[1] > 0 || varsExist[2] > 0 )
+			{
+				hintNumber = -1;
+				if (allowNegative)
+				{
+					xValue = -9 + Math.floor(Math.random() * 19);
+					do
+					{
+						yValue = -9 + Math.floor(Math.random() * 19);
+					} while (xValue == yValue);
+				}
+				else
+				{
+					xValue = Math.floor(Math.random() * 10);
+					do
+					{
+						yValue = Math.floor(Math.random() * 10);
+					} while (xValue == yValue);
+				}
+				removeVars();
+				actualLength += varsExist[1] + varsExist[2];
+			} // if (varsExist)
+			else
+				exerciseWithoutVars = originalExercise;
+			
+//			alert("A " + exerciseWithoutVars);
+			
+//			alert("D " + exerciseWithoutVars);
+			result = calculate(exerciseWithoutVars);
+			if (result < 0 && !allowNegative)
+			{
+//				alert("C" + originalExercise);
+//				alert(originalExercise + "=" + result);
+				buildExercise();
+				return;
+			}
+			
+			tempExercise = exerciseWithoutVars;
+			if (paransProblematic(0) || exerciseProblematic())
+			{
+//				alert("D" + originalExercise);
+//				alert("Build another : " + tempExercise);
+				buildExercise();
+				return;
+			}
+			else
+			{
+				currentExercise = originalExercise;
+				exerciseText = '<span class="red-text" dir="ltr">' + 
+					"חשבו" + '<br>' + 
+					originalExercise + '&nbsp' + '=' + // '&nbsp' + result +
+					'</dir>' + 
+					"</span><br>"; // + formula + "<br>";	
+				if (varsExist[1] > 0 || varsExist[2] > 0)
+					exerciseText += " כאשר " + "<br>";
+				if (varsExist[1] > 0)
+					exerciseText += "x=" + xValue + "<br>";
+				if (varsExist[2] > 0)
+					exerciseText += "y=" + yValue + "<br>";
+				exercise.innerHTML = exerciseText		
+			}
+		} // buildExercise
+
+        // אתחול ראשוני
+        function drawAll() {
+		    orangeSquare.style.display = 'none';
+			output = "";
+            outputText.innerHTML = output;
+			hintNumber = 0;
+			buildExercise();
+			if (allowNegative)
+				currentLevel = 2 * currentOp * currentLength;
+			else
+				currentLevel = currentOp * currentLength;
+        }
+
+		let hintNumber = 0;
+		function checkSolution()
+		{
+			if (waitingConfirm)
+			{
+				alert("לחץ על כפתור התרגיל הבא");
+				return;
+			}
+			const text = answer.value;
+			
+			points = 0;
+			if (text == '' + result)
+			{
+				points += 10 * currentLevel;
+				alert("תשובה נכונה.");
+
+				setTimeout(() => {
+					drawAll();
+				}, 50);
+
+			} 
+			else 
+			{
+				waitingConfirm = true;
+				orangeSquare.style.display = 'block';
+		
+				if (hintNumber > 0)
+					output += "====================\n";
+				for (let i = hintNumber; i < actualLength; i++)
+				{
+					setHint(true, false);
+				}
+/*
+				setTimeout(() => {
+					alert("לא נכון. התשובה היא : " + result);
+				}, 50);
+*/
+			}
+			currentScore += points;
+			currentScoreInfo.textContent = `ניקוד מצטבר : ${currentScore}`;
+			potentialScore += 10 * currentLevel;
+			potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+		}
+		
+		function showSolution()
+		{
+			if (waitingConfirm)
+			{
+				alert("לחץ על כפתור התרגיל הבא");
+				return;
+			}
+			waitingConfirm = true;
+		    orangeSquare.style.display = 'block';
+			
+			if (hintNumber > 0)
+				output += "====================\n";
+			for (let i = hintNumber; i < actualLength; i++)
+			{
+				setHint(false, true);
+			}
+/*
+            setTimeout(() => {
+                alert("התשובה היא : " + result);
+            }, 50);
+*/
+
+			potentialScore += 10 * currentLevel;
+			potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+/*
+            setTimeout(() => {
+                drawAll();
+            }, 50);
+*/
+		}
+		
+		function nextExercise()
+		{
+			waitingConfirm = false;
+			drawAll();
+		}
+
+        function getHighlightedExpression(expr, start, end, highlightClass) {
+            if (start >= end || start < 0 || end > expr.length) {
+                return expr;
+            }
+            const before = expr.slice(0, start);
+            const highlighted = expr.slice(start, end);
+            const after = expr.slice(end);
+            
+            return before + 
+                   `<span class="${highlightClass}">` + highlighted + '</span>' + 
+                   after;
+        }
+
+		function removeUnneededParans()
+		{
+            if (before[before.length - 1] == '(' &&
+				after[0] == ')')
+			{
+				paranNeeded = 0;
+				for (let i = 0; i < highlightedPart.length; i++)
+					if (isOp(highlightedPart[i]))
+						paranNeeded++;
+					
+				console.log(highlightedPart + " " + paranNeeded);
+				if (paranNeeded <= 1)
+				{
+					before = before.slice(0, before.length - 1);
+					after = after.slice(1, after.length);
+				}
+			}	
+		}
+
+		function setHint(checkingSolution, showingSolution)
+		{
+			if (!checkingSolution && !showingSolution)
+			{
+				if (hintNumber >= actualLength - 1)
+				{
+ //				alert(hintNumber + " " + currentLength);
+					alert("אין יותר רמזים !");
+					return;
+				}
+			
+				currentScore -= 10;
+				currentScoreInfo.textContent = `ניקוד מצטבר : ${currentScore}`;
+			}
+			
+			hintNumber++;
+//			alert("G " + hintNumber);
+			if (hintNumber == 0)
+			{
+//				alert("B " + currentExercise + " C " + exerciseWithoutVars);
+				output += currentExercise + "\n" + exerciseWithoutVars + "\n\n";
+				currentExercise = exerciseWithoutVars;
+			}
+			else
+			{			
+				tempExercise = currentExercise;
+				findLocations();
+				if (firstLocation > 0 &&
+					currentExercise[firstLocation - 1] == '(' &&
+					currentExercise[lastLocation] == ')')
+				{
+					firstLocation--;
+					lastLocation++;
+				}
+				before = currentExercise.slice(0, firstLocation);
+				highlightedPart = currentExercise.slice(firstLocation, lastLocation);
+				after = currentExercise.slice(lastLocation);
+//				alert("E " + highlightedPart);
+				const partialResult = calculate(highlightedPart);
+				
+				console.log("SH before = " + before);
+				console.log("SH highlightedPart = " + highlightedPart);
+				console.log("SH after = " + after);
+
+				output += before + 
+					   '<span class="highlight-red"><b>' + highlightedPart + '</b></span>' + 
+					   after + "\n";
+				removeUnneededParans();
+				output += before + 
+					   '<span class="highlight-green"><b>' + partialResult + '</b></span>' + 
+					   after + "\n";
+	/*			if (before != "" || after != "")
+				{
+					output += currentExercise + "\n";
+				}
+				*/
+				console.log("SH1 currentExercise = " + currentExercise);
+				currentExercise = before + partialResult + after;
+				output += "\n";
+	//			alert(output);
+				if (hintNumber >= actualLength)
+				{
+					if (showingSolution)
+						output += "התשובה היא : " + result;
+					else if (checkingSolution)
+						output += "התשובה שלך לא נכונה." + 
+						"<br>" + "התשובה היא : " + result;
+				}
+			}
+            outputText.innerHTML = output;
+            outputText.scrollTop = outputText.scrollHeight;
+			console.log("SH2 currentExercise = " + currentExercise);
+				
+		}	
+		
+        opSelect.addEventListener('change', () => {
+		currentOp = opSelect.selectedIndex + 1;
+        drawAll();
+		})
+
+        lengthSelect.addEventListener('change', () => {
+		currentLength = lengthSelect.selectedIndex + 2;
+//		alert(currentLength);
+		drawAll();
+		})
+
+        varsSelect.addEventListener('change', () => {
+		allowVars = varsSelect.selectedIndex + 1;
+//		alert(allowVars);
+		drawAll();
+		})
+
+        negativeSelect.addEventListener('change', () => {
+/* 
+        allowNegative = !allowNegative;
+		if (allowNegative)
+			currentLevel = 2 * currentOp * currentLength;
+		else
+			currentLevel = currentOp * currentLength;
+        drawAll();
+*/
+		})
+
+
+	drawAll();
+    </script>
+</body>
+</html>

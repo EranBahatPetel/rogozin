@@ -1,0 +1,897 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>חיבור וחיסור מספרים מכוונים</title>
+    <style>
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .fraction > span {
+            display: block;
+            padding-top: 0.15em;
+        }
+        .fraction span.fdn {
+            border-top: thin solid black;
+        }
+        .fraction span.bar {
+            display: none;
+        }
+        body, html {
+            margin: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        .text-content {
+            font-size: 14px;
+            margin-bottom: 20px;
+        }
+        .red-text {
+            color: red;
+        }
+        #topBar {
+            display: flex;
+            justify-content: space-betweenenen
+			;
+            padding: 10px;
+            background-color: #e0e0e0;
+        }
+        .score-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            background-color: white;
+            padding: 2px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            transform: scale(0.2);
+            transform-origin: top right;
+        }
+        .score-box {
+            text-align: center;
+            padding: 2px;
+        }
+        .score-box:first-child {
+            border-left: 1px solid #ccc;
+        }
+        #timer {
+            font-size: 10px;
+            margin: 0px 0;
+            background-color: #fff;
+            padding: 5px 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin: 0 0 1px 0;
+            color: #333;
+            font-size: 0.8em;
+        }
+        .score {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        #currentLevelInfo, #potentialScoreInfo, #cumulativeScoreInfo {
+            flex: 1;
+            text-align: center;
+        }
+        #textContainer {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+       }
+        #textInput1-container {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            left: 30px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #textInput2-container {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            left: 30px;
+            top: 60%;
+            transform: translateY(-50%);
+        }
+        #textInput3-container {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            left: 30px;
+            top: 70%;
+            transform: translateY(-50%);
+        }
+        #inputArea {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f0f0f0;
+            align: left;
+        }
+        #levelSelect {
+            margin-right: 10px;
+        }
+        .coordinate-system {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            position: relative;
+        }
+        canvas {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #buttonCanvas {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+        }
+        #errorConfirm {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: white;
+            color: red;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #text-boxes {
+            position: absolute;
+            right: 100px;
+            top: 100px;
+        }
+        .text-box {
+            width: 150px;
+            height: 50px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+			direction: rtl;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+			padding-top: 0px; /* Location of the box */
+			padding-left: 350px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.1);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            max-width: 300px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+        #coordinates, #randomPoint {
+            position: absolute;
+            background-color: rgba(255, 255, 255, 0.8);
+            padding: 5px 10px;
+            border-radius: 5px;
+            font-size: 14px;
+        }
+        #coordinates {
+            top: 10px;
+            left: 10px;
+        }
+        #randomPoint {
+            top: 10px;
+            right: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div id="topBar">
+        <!-- <div id="currentLevelInfo">רמה : 1</div> -->
+        <div id="potentialScoreInfo">ניקוד אפשרי : 0</div>
+        <div id="xxx">&nbsp;&nbsp;&nbsp;</div>
+		<div id="timer">0 שניות</div>
+        <div id="xxx">&nbsp;&nbsp;&nbsp;</div>
+        <div id="cumulativeScoreInfo">ניקוד מצטבר: 0</div>
+    </div>
+    <div id="inputArea" direction="ltr">
+        <select id="levelSelect">
+<!--            <option value="1">1</option> --!>
+            <option value="0">היקף ושטח לפי צלעות</option>
+            <option value="1">צלע והיקף לפי צלע ושטח</option>
+            <option value="2">צלע ושטח לפי צלע והיקף</option>
+        </select>
+    </div>
+    <div id="text-boxes"></div>
+    <div id="textContainer">
+		<div id="textContent1" class="text-content">
+			<span class="red-text"></span><br>
+		</div>
+    </div>
+    
+	<div class="coordinate-system">
+        <canvas id="coordinateSystem" width="357" height="357"></canvas>
+<!--         <div id="coordinates"></div>
+        <div id="randomPoint"></div>
+ -->		<div id="textInput1-container">
+			<input type="text" id="textInput1" placeholder="כתבו כאן את אורך הצלע השנייה" dir="ltr">
+		</div>
+		<div id="textInput2-container">
+			<input type="text" id="textInput2" placeholder="כתבו כאן את היקף המלבן" dir="ltr">
+		</div>
+		<div id="textInput3-container">
+			<input type="text" id="textInput3" placeholder="כתבו כאן את שטח המלבן" dir="ltr">
+		</div>
+    </div>
+
+    <canvas id="buttonCanvas" width="300" height="200">
+	</canvas>
+	<div id="correctModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>יפה מאוד ! תשובה מדוייקת !</p>
+            <button id="correctConfirm">אישור</button>
+        </div>
+    </div>
+	<div id="partialModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>נכון חלקית. לחץ כדי להמשיך.</p>
+            <button id="partialConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="errorText1"></p>
+            <p id="errorText2" dir="ltr"></p>
+            <button id="errorConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="hintModal" class="modal" dir="ltr">
+        <div class="modal-content" dir="rtl">
+            <span class="close">&times;</span>
+            <button id="hintConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="solutionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="solutionText" dir="ltr"></p>
+            <button id="solutionConfirm">אישור</button>
+    </div>
+    <div id="otherModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>אחר</p>
+            <button id="otherConfirm">אישור</button>
+		</div>	
+	</div>	
+<script>
+        const canvas = document.getElementById('coordinateSystem');
+        const ctx = canvas.getContext('2d');
+        const coordinates = document.getElementById('coordinates');
+        const randomPointDisplay = document.getElementById('randomPoint');
+        const buttonCanvas = document.getElementById('buttonCanvas');
+        const buttonCtx = buttonCanvas.getContext('2d');
+
+        const textBoxes = document.getElementById('text-boxes');
+//        const currentLevelInfo = document.getElementById('currentLevelInfo');
+        const potentialScoreInfo = document.getElementById('potentialScoreInfo');
+        const textInput1 = document.getElementById('textInput1');
+		textInput1.size = 25;
+        const textInput2 = document.getElementById('textInput2');
+		
+        const textInput3 = document.getElementById('textInput3');
+        const textContent1 = document.getElementById('textContent1');
+        const levelSelect = document.getElementById('levelSelect');
+        const cumulativeScoreInfo = document.getElementById('cumulativeScoreInfo');
+        const correctModal = document.getElementById('correctModal');
+        const partialModal = document.getElementById('partialModal');
+        const errorModal = document.getElementById('errorModal');
+        const solutionModal = document.getElementById('solutionModal');
+        const otherModal = document.getElementById('otherModal');
+        const hintModal = document.getElementById('hintModal');
+        const solutionText = document.getElementById('solutionText');
+        const errorText1 = document.getElementById('errorText1');
+        const errorText2 = document.getElementById('errorText2');
+
+        const rectangles = [
+            { text: 'פתרון בבקשה', color: 'red' },
+            { text: 'אפשר רמז ?', color: 'blue' },
+            { text: 'יש לי תשובה', color: 'green' }
+        ];
+
+        const timerElement = document.getElementById('timer');
+
+        let seconds = 0;
+
+        // פונקציה לעדכון הטיימר
+        function updateTimer() {
+            seconds++;
+            timerElement.textContent = seconds + (seconds === 1 ? ' שנייה' : ' שניות');
+        }        let cumulativeScore = 0;
+		let potentialScore = 0;
+        let currentLevel = 0;
+		let maxNumber = 10;
+		let maxLevel = 6;
+		let pointedX = -11;
+		let pointedY = -11;
+		let fromNum = [];
+		let toNum = [];
+		
+        function drawRectangleWithText(x, y, width, height, text1, text2, color) {
+            buttonCtx.fillStyle = color;
+            buttonCtx.fillRect(x, y, width, height);
+            
+            buttonCtx.strokeStyle = 'black';
+            buttonCtx.lineWidth = 2;
+            buttonCtx.strokeRect(x, y, width, height);
+			buttonCtx.direction = "rtl";
+
+            buttonCtx.font = 'bold 10px Arial';
+            buttonCtx.fillStyle = 'white';
+            buttonCtx.textAlign = 'center';
+            buttonCtx.textBaseline = 'middle';
+			if (text2 == "")
+				buttonCtx.fillText(text1, x + width / 2, y + height / 2);
+			else
+			{
+				buttonCtx.fillText(text1, x + width / 2, y + height / 6);
+				buttonCtx.fillText(text2, x + width / 2, y + 3 * height / 6);
+			}
+
+            return { x, y, width, height, text1, color };
+        }
+
+        function drawBottomRectangles() {
+            const rectWidth = Math.min(buttonCanvas.width * 0.25, 200);
+            const rectHeight = Math.min(buttonCanvas.height * 0.5, 60);
+            const totalWidth = rectWidth * 3 + 20 * 2;
+            const startX = (buttonCanvas.width - totalWidth) / 2;
+            const y = buttonCanvas.height - rectHeight - 10;
+
+            rectangles.forEach((rect, i) => {
+                const x = startX + (rectWidth + 20) * i;
+                rect.bounds = drawRectangleWithText(x, y, rectWidth, rectHeight, rect.text, '', rect.color);
+            });
+        }
+		
+		let kind = 0;
+		let edge1 = 0;
+		let edge2 = 0;
+		let perimeter = 0;
+		let area = 0;
+		function chooseRectangle() {
+			orient = Math.floor(Math.random() * 2);
+			textInput1.value = '';
+			textInput2.value = '';
+			textInput3.value = '';
+			edge1 = 1 + Math.floor(Math.random() * 9);
+			edge2 = 1 + Math.floor(Math.random() * 9);
+			perimeter = 2 * (edge1 + edge2);
+			area = edge1 * edge2;
+			kind = currentLevel; // Math.floor(Math.random() * (currentLevel + 1));
+			switch (kind)
+			{
+				case 0 :
+					textContent1.innerHTML = '<span class="red-text" dir="ltr">' + 
+						"חשבו את היקף ושטח מלבן" + '<br>' + 
+						"שאורך צלע אחת שלו הוא" + '<br>' + 
+						edge1 + '<br>' +  
+						"ואורך הצלע השנייה הוא" + '<br>' +
+						edge2 +
+						'</dir>' + 
+						"</span><br>";
+					textInput1.style.display = 'none';
+					textInput2.style.display = 'block';
+					textInput3.style.display = 'block';
+					break;
+				case 1 :
+					textContent1.innerHTML = '<span class="red-text" dir="ltr">' + 
+						"חשבו את אורך הצלע השנייה ואת היקף המלבן" + '<br>' + 
+						"שאורך צלע אחת שלו הוא" + '<br>' +
+						edge1 + '<br>' +  
+						"והשטח שלו הוא" + '<br>' +
+						area +
+						'</dir>' + 
+						"</span><br>";
+					textInput1.style.display = 'block';
+					textInput2.style.display = 'block';
+					textInput3.style.display = 'none';
+					break;
+				case 2 :
+					textContent1.innerHTML = '<span class="red-text" dir="ltr">' + 
+						"חשבו את אורך הצלע השנייה ואת שטח המלבן" + '<br>' + 
+						"שאורך צלע אחת שלו הוא" + '<br>' +
+						edge1 + '<br>' +  
+						"וההיקף שלו הוא" + '<br>' +
+						perimeter +
+						'</dir>' + 
+						"</span><br>";
+					textInput1.style.display = 'block';
+					textInput2.style.display = 'none';
+					textInput3.style.display = 'block';
+					break;
+			}
+		}
+		
+        function drawAll() {
+            if (!ctx) return;  // בדיקה שהקונטקסט קיים
+
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+            drawBottomRectangles();
+			chooseRectangle();
+			hintNumber = 0;
+            canvas.style.display = 'block';
+        }
+				
+        function createTextBoxes() {
+            const texts = ['הרמה היא כמות המספרים בתרגיל'];
+            texts.forEach(text => {
+                const box = document.createElement('div');
+                box.className = 'text-box';
+                box.textContent = text;
+                textBoxes.appendChild(box);
+            });
+        }
+
+        function initializeCanvas() {
+//			alert(canvas.width + " " + window.innerWidth + " " + canvas.height + " " + window.innerHeight);
+//			createTextBoxes();
+            drawAll();
+        }
+		
+		let hintNumber = 0;
+		let maxHintNumber = 2;
+		let orient = 0;
+		let part = 15;
+        function drawRect(showSolution) {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+			unit = Math.min(canvas.width / part, canvas.height / part);
+
+            ctx.strokeStyle = 'red';
+            ctx.lineWidth = 3;
+			
+			if (orient == 0)
+			{
+				edgeX = edge1;
+				edgeY = edge2;
+			}
+			else
+			{
+				edgeX = edge2;
+				edgeY = edge1;
+			}
+			
+		
+			ctx.beginPath();
+			ctx.moveTo(unit * (part - edgeX) / 2, unit * (part - edgeY) / 2);
+			ctx.lineTo(unit * (part + edgeX) / 2, unit * (part - edgeY) / 2);
+			ctx.lineTo(unit * (part + edgeX) / 2, unit * (part + edgeY) / 2);
+			ctx.lineTo(unit * (part - edgeX) / 2, unit * (part + edgeY) / 2);
+			ctx.lineTo(unit * (part - edgeX) / 2, unit * (part - edgeY) / 2);
+			ctx.stroke();
+
+            ctx.font = '15px Arial';
+            ctx.textAlign = 'center';
+            ctx.direction = 'ltr';
+
+			if (kind == 1)
+			{
+				ctx.fillStyle = 'green';
+				ctx.fillText("השטח הוא מכפלת הצלעות",
+				canvas.width / 2, canvas.height - unit);
+			}
+			else
+			{
+				ctx.fillStyle = 'red';
+				ctx.fillText("ההיקף הוא סך אורכי הצלעות = אורך הקו האדום",
+					canvas.width / 2, unit);
+			}
+			
+			ctx.fillStyle = 'blue';
+			if (orient == 0)
+			{
+				ctx.fillText(edgeX,
+					unit * part  / 2, unit * (part - edgeY) / 2 - 15);
+				ctx.fillText(edgeX,
+					unit * part  / 2, unit * (part + edgeY) / 2 + 15);
+				if (kind == 0 || showSolution)
+				{
+					if (showSolution && kind != 0)
+						ctx.fillStyle = 'orange';
+					ctx.fillText(edgeY,
+						unit * (part - edgeX) / 2 - 15, unit * part  / 2);
+					ctx.fillText(edgeY,
+						unit * (part + edgeX) / 2 + 15, unit * part  / 2);
+					ctx.fillStyle = 'blue';
+				}
+				else
+				{
+					ctx.fillText("?",
+						unit * (part - edgeX) / 2 - 15, unit * part  / 2);
+					ctx.fillText("?",
+						unit * (part + edgeX) / 2 + 15, unit * part  / 2);
+				}
+			}
+			else
+			{
+				if (kind == 0 || showSolution)
+				{
+					if (showSolution && kind != 0)
+						ctx.fillStyle = 'orange';
+					ctx.fillText(edgeX,
+						unit * part  / 2, unit * (part - edgeY) / 2 - 15);
+					ctx.fillText(edgeX,
+						unit * part  / 2, unit * (part + edgeY) / 2 + 15);
+					ctx.fillStyle = 'blue';
+				}
+				else
+				{
+					ctx.fillText("?",
+						unit * part  / 2, unit * (part - edgeY) / 2 - 15);
+					ctx.fillText("?",
+						unit * part  / 2, unit * (part + edgeY) / 2 + 15);
+				}
+				ctx.fillText(edgeY,
+					unit * (part - edgeX) / 2 - 15, unit * part  / 2);
+				ctx.fillText(edgeY,
+					unit * (part + edgeX) / 2 + 15, unit * part  / 2);
+			}
+        }
+		
+        function drawSquares() 
+		{
+			if (kind == 1)
+			{
+				ctx.fillStyle = 'red';
+				ctx.fillText("ההיקף הוא סך אורכי הצלעות = אורך הקו האדום",
+					canvas.width / 2, unit);
+			}
+
+ 			if (orient == 0)
+			{
+				edgeX = edge1;
+				edgeY = edge2;
+			}
+			else
+			{
+				edgeX = edge2;
+				edgeY = edge1;
+			}
+			
+            ctx.strokeStyle = 'green';
+            ctx.lineWidth = 1;
+			for (let i = 1; i < edgeX; i++)
+			{
+				ctx.beginPath();
+				ctx.moveTo(unit * (part - edgeX) / 2 + i * unit, unit * (part - edgeY) / 2);
+				ctx.lineTo(unit * (part - edgeX) / 2 + i * unit, unit * (part + edgeY) / 2);
+				ctx.stroke();
+			}
+			for (let i = 1; i < edgeY; i++)
+			{
+				ctx.beginPath();
+				ctx.moveTo(unit * (part - edgeX) / 2, unit * (part - edgeY) / 2 + i * unit);
+				ctx.lineTo(unit * (part + edgeX) / 2, unit * (part - edgeY) / 2 + i * unit);
+				ctx.stroke();
+			}
+            ctx.fillStyle = 'green';
+			if (kind == 1)
+				ctx.clearRect(0, canvas.height - 2 * unit, canvas.width, canvas.height);
+			
+			ctx.fillText("השטח הוא מכפלת הצלעות = מספר המשבצות הירוקות",
+				canvas.width / 2, canvas.height - unit);
+		}		
+
+		function setHint(showSolution)
+		{
+			if (showSolution)
+			{
+				drawRect(showSolution);
+				drawSquares();
+			}
+			else
+			{
+				if (hintNumber >= maxHintNumber)
+					alert("אין יותר רמזים !");
+				else if (hintNumber == 0)
+					drawRect(showSolution);
+				else if (hintNumber == 1)
+					drawSquares();		
+				hintNumber++;
+			}
+		}	
+
+		function countPoints()
+		{
+			let points = 0;
+
+			answer= "";
+			switch (kind)
+			{
+				case 0 : // מצא שטח והיקף לפי שתי צלעות
+					answer = "<br><b><u>היקף המלבן</u></b><br>";
+					if (textInput2.value == perimeter)
+					{
+						answer += "נכון<br>";
+						points += 5;
+					}
+					else
+						answer += "לא נכון. היקף המלבן הוא" + "<br>" +
+						"סכום ארבע צלעות המלבן, כלומר" + "<br>" +
+						" : אורך הקו האדום שמקיף את המלבן" + "<br>" +
+						edge1 + " + " + edge2 + " + " + edge1 + " + " + edge2 + " = " + perimeter + "<br>";
+					answer += "<br><b><u>שטח המלבן</u></b><br>";
+					if (textInput3.value == area)
+					{
+						answer += "נכון<br>";
+						points += 5;
+					}
+					else
+						answer += "לא נכון. שטח המלבן הוא" + "<br>" +
+						"מכפלה של שתי צלעות סמוכות במלבן, כלומר" + "<br>" +
+						" : מספר המשבצות שממלאות את המלבן" + "<br>" +
+						edge1 + " * " + edge2 + " = " + area + "<br>";
+					break;
+			
+				case 1 : // מצא צלע שנייה והיקף לפי צלע ושטח
+					answer = "<br><b><u>אורך הצלע השנייה</u></b><br>";
+					if (textInput1.value == edge2)
+					{
+						answer += "נכון<br>";
+						points += 10;
+					}
+					else
+						answer += "לא נכון. שטח המלבן הוא" + "<br>" +
+						"מכפלה של שתי צלעות סמוכות במלבן, לכן" + "<br>" +
+						"אורך הצלע השנייה הוא " + "<br>" +
+						" : השטח לחלק באורך הצלע הראשונה" + "<br>" +
+						area + " / " + edge1 + " = " + edge2 + "<br>";
+					answer += "<br><b><u>היקף המלבן</u></b><br>";
+					if (textInput2.value == perimeter)
+					{
+						answer += "נכון<br>";
+						points += 10;
+					}
+					else
+						answer += "לא נכון. היקף המלבן הוא" + "<br>" +
+						"סכום ארבע צלעות המלבן, כלומר" + "<br>" +
+						" : אורך הקו האדום שמקיף את המלבן" + "<br>" +
+						edge1 + " + " + edge2 + " + " + edge1 + " + " + edge2 + " = " + perimeter + "<br>";
+					break;
+
+				case 2 : // מצא צלע שנייה ושטח לפי צלע והיקף
+					answer = "<br><b><u>אורך הצלע השנייה</u></b><br>";
+					if (textInput1.value == edge2)
+					{
+						answer += "נכון<br>";
+						points += 15;
+					}
+					else
+						answer += "לא נכון. היקף המלבן הוא" + "<br>" +
+						"סכום ארבע צלעות המלבן, לכן" + "<br>" +
+						"אורך הצלע השנייה הוא " + "<br>" +
+						"חצי ממה שנשאר אחרי שמורידים " + "<br>" +
+						" : מההיקף פעמיים אורך הצלע הראשונה" + "<br>" +
+						"(" + perimeter + " - 2 * " + edge1 + ") / 2 = " + edge2 + "<br>";
+					answer += "<br><b><u>שטח המלבן</u></b><br>";
+					if (textInput3.value == area)
+					{
+						answer += "נכון<br>";
+						points += 15;
+					}
+					else
+						answer += "לא נכון. שטח המלבן הוא" + "<br>" +
+						"מכפלה של שתי צלעות סמוכות במלבן, כלומר" + "<br>" +
+						" : מספר המשבצות שממלאות את המלבן" + "<br>" +
+						edge1 + " * " + edge2 + " = " + area + "<br>";
+					break;
+			}
+			answer += "<br>";
+			answer += "<span dir='rtl'><b><u>" + points + " נקודות מתוך " + (10 * (kind + 1)) + "</u></b></span>";
+			if (points != 10 * (kind + 1))
+				setHint(true);
+			
+//			errorText1.innerHTML = answer;
+			
+			return points;
+		}
+
+		let waitingConfirm = false;
+        buttonCanvas.addEventListener('click', (event) => {
+			if (waitingConfirm)
+				return;
+				
+            const rect = buttonCanvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            for (let i = 0; i < rectangles.length; i++) {
+                const rectangle = rectangles[i];
+                const { x, y, width, height, text } = rectangle.bounds;
+                if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+                    if (i === 0) { // "פתרון בבקשה"
+//						solutionModal.textContent = formula;
+						setHint(true);
+						waitingConfirm = true;
+						switch (kind)
+						{
+							case 0 :
+								answer = "היקף המלבן הוא" + "<br>" +
+								"סכום ארבע צלעות המלבן, כלומר" + "<br>" +
+								" : אורך הקו האדום שמקיף את המלבן" + "<br>" +
+								edge1 + " + " + edge2 + " + " + edge1 + " + " + edge2 + " = " + perimeter + "<br><br>" +
+								"שטח המלבן הוא" + "<br>" +
+								"מכפלה של שתי צלעות סמוכות במלבן, כלומר" + "<br>" +
+								" : מספר המשבצות שממלאות את המלבן" + "<br>" +
+								edge1 + " * " + edge2 + " = " + area + "<br>";
+								break;
+							case 1 :
+								answer = "שטח המלבן הוא" + "<br>" +
+								"מכפלה של שתי צלעות סמוכות במלבן, לכן" + "<br>" +
+								"אורך הצלע השנייה הוא " + "<br>" +
+								" : השטח לחלק באורך הצלע הראשונה" + "<br>" +
+								area + " / " + edge1 + " = " + edge2 + "<br><br>" +
+								"היקף המלבן הוא" + "<br>" +
+								"סכום ארבע צלעות המלבן, כלומר" + "<br>" +
+								" : אורך הקו האדום שמקיף את המלבן" + "<br>" +
+								edge1 + " + " + edge2 + " + " + edge1 + " + " + edge2 + " = " + perimeter + "<br>";
+								break;
+							case 2 :
+								answer = "היקף המלבן הוא" + "<br>" +
+								"סכום ארבע צלעות המלבן, לכן" + "<br>" +
+								"אורך הצלע השנייה הוא " + "<br>" +
+								"חצי ממה שנשאר אחרי שמורידים " + "<br>" +
+								" : מההיקף פעמיים אורך הצלע הראשונה" + "<br>" +
+								"(" + perimeter + " - 2 * " + edge1 + ") / 2 = " + edge2 + "<br><br>" +
+								"שטח המלבן הוא" + "<br>" +
+								"מכפלה של שתי צלעות סמוכות במלבן, כלומר" + "<br>" +
+								" : מספר המשבצות שממלאות את המלבן" + "<br>" +
+								edge1 + " * " + edge2 + " = " + area + "<br>";
+								break;
+						}
+                        solutionText.innerHTML = answer;
+                        solutionModal.style.display = 'block';
+
+						potentialScore += 10 * (kind + 1);
+						potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+                    } else if (i === 1) { // "רמז"
+						setHint(false);
+						cumulativeScore-= (3 * kind);
+						cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+                    } else if (i === 2) { // "יש לי תשובה"
+						potentialScore += 10 * (kind + 1);
+						potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+						
+						waitingConfirm = true;
+						points = countPoints();
+						solutionText.innerHTML = answer;
+                        solutionModal.style.display = 'block';
+
+						cumulativeScore += points;
+						cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+	                }
+                    return;
+                }
+            }
+        });
+
+    levelSelect.addEventListener('change', () => {
+        currentLevel = levelSelect.selectedIndex;
+        drawAll();
+//		currevntLevelInfo.textContent = `רמה : ${currentLevel}`;
+});
+
+/*
+   // Close modals when clicking on the close button or outside the modal
+    window.onclick = function(event) {
+		alert("a " + waitingConfirm);
+		if (event.target == solutionModal || event.target == hintModal || event.target == otherModal || event.target == partialModal || event.target == correctModal || event.target == errorModal) {
+			alert("b " + waitingConfirm);
+			correctModal.style.display = "none";
+			partialModal.style.display = "none";
+			errorModal.style.display = "none";
+			solutionModal.style.display = "none";
+            hintModal.style.display = "none";
+            otherModal.style.display = "none";
+			waitingConfirm = false;
+        }
+    }
+
+*/
+/*
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.onclick = function() {
+			correctModal.style.display = "none";
+			partialModal.style.display = "none";
+			errorModal.style.display = "none";
+            solutionModal.style.display = "none";
+            hintModal.style.display = "none";
+            otherModal.style.display = "none";
+			waitingConfirm = false;
+			}
+    });
+*/
+
+    document.getElementById('solutionConfirm').onclick = function() {
+        solutionModal.style.display = "none";
+		waitingConfirm = false;
+        drawAll();
+    }
+
+    document.getElementById('hintConfirm').onclick = function() {
+        hintModal.style.display = "none";
+    }
+
+    document.getElementById('otherConfirm').onclick = function() {
+        otherModal.style.display = "none";
+    }
+
+    document.getElementById('errorConfirm').onclick = function() {
+		waitingConfirm = false;
+        errorModal.style.display = "none";
+        drawAll();
+    }
+
+    document.getElementById('correctConfirm').onclick = function() {
+		waitingConfirm = false;
+        correctModal.style.display = "none";
+        drawAll();
+    }
+
+    document.getElementById('partialConfirm').onclick = function() {
+        partialModal.style.display = "none";
+        drawAll();
+    }
+
+	// קריאה לפונקציות בעת טעינת הדף ושינוי גודל החלון
+	//window.addEventListener('load', () => {
+		initializeCanvas();
+		setInterval(updateTimer, 1000); // עדכון הטיימר כל שנייה
+	//});
+    //window.addEventListener('resize', initializeCanvas);
+
+    // קריאה מיידית לפונקציית האתחול
+//    if (document.readyState === 'complete') {
+//        initializeCanvas();
+//    } else {
+//        window.addEventListener('load', initializeCanvas);
+//	    }
+        // initializeCanvas();
+</script>
+</body>
+</html>

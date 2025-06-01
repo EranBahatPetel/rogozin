@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            align-text: center;
+        }
+        #header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: #f0f0f0;
+            padding: 10px;
+            margin-bottom: 20px;
+        }
+        #game-area {
+            display: flex;
+            height: 70vh;
+        }
+        #center-area {
+            flex: 2;
+            margin: 0 20px;
+            transition: background-color 0.3s;
+        }
+        #scores-area {
+            flex: 1;
+            padding: 20px;
+            background: #f9f9f9;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            padding: 20px;
+            border: 1px solid #ccc;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        button {
+            padding: 10px 20px;
+            font-size: 16px;
+            cursor: pointer;
+        }
+        .time-input {
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <div id="header">
+		<div>
+		<label>מיקום המשחק: </label>
+		<select id="situation">
+			<option value="0">ראובן (1) - אנחנו בגן עדן</option>
+			<option value="1">שמעון (2) - אנחנו אלופי העולם</option>
+			<option value="2">לוי (3) - יש לנו שעון ביד</option>
+			<option value="3">יהודה (4) - אנחנו משתפרים ממשחק למשחק</option>
+			<option value="4">דן (5) - אנחנו במקום שקט ורגוע</option>
+			<option value="2">נפתלי (6) - יכול להיות יותר טוב</option>
+			<option value="3">גד (7) - לא כל כך נעים לשחק פה</option>
+			<option value="4">אשר (8) - יש כאן המון רעש</option>
+			<option value="2">יששכר (9) - מפריעים לנו בלי הפסקה</option>
+			<option value="3">זבולון (10) - מבלבלים אותנו בכוונה</option>
+			<option value="4">יוסף (11) - יורים עלינו</option>
+			<option value="2">בנימין (12) - אנחנו בגהינום</option>
+		</select>
+		</div>
+		<div>
+		<label>מספר שחקנים: </label>
+		<select id="playerCount">
+			<option value="1">1</option>
+			<option value="2">2</option>
+			<option value="3">3</option>
+			<option value="4">4</option>
+		</select>
+		</div>
+        <div>
+			מינימום שניות :
+            <input type="number" id="minSeconds" min="1" value="5" size="5" maxlength="5" style="width: 5em;">
+			מקסימום שניות :
+            <input type="number" id="maxSeconds" min="1" value="15" size="5" maxlength="5" style="width: 5em;">
+        </div>
+    </div>
+    
+<!--     <button id="startBtn"">התחל</button>
+ -->
+ 
+    <div id="game-area">
+        <div id="scores-area"></div>
+        <div id="center-area" onclick="startGame()" align="center"></div>
+    </div>
+
+    <div id="guessModal" class="modal">
+        <h3>נחשו כמה זמן עבר</h3>
+        <div id="guessInputs"></div>
+        <button onclick="submitGuesses()">שלח ניחושים</button>
+    </div>
+
+    <script>
+        let gameState = 'initial';
+        let startTime, endTime;
+        let playerScores = Array(4).fill(0);
+        let actualTime;
+		let situation = 1;
+        document.getElementById('situation').addEventListener('change', function() {
+            situation = document.getElementById('situation').selectedIndex + 1;
+			console.log(" situation = " + situation);
+		})
+				
+		function init()
+		{
+			const centerArea = document.getElementById('center-area');
+			centerArea.style.backgroundColor = 'orange';
+			centerArea.innerHTML = "<br><br><br><br>" + 'לחץ כאן וספור למשך כמה זמן המלבן נשאר אדום עד שהוא הופך לירוק';
+			gameState = 'initial';
+		}
+
+        function startGame() {
+//            const btn = document.getElementById('startBtn');
+            if (gameState === 'initial') {
+//                btn.textContent = 'משחק חדש';
+                const centerArea = document.getElementById('center-area');
+                centerArea.style.backgroundColor = 'red';
+				centerArea.innerHTML = '<br><br><br><div style="color: black; font-size: 40px;">לספור !!!</div>';
+                startTime = Date.now();
+                
+                const minSeconds = parseInt(document.getElementById('minSeconds').value);
+                const maxSeconds = parseInt(document.getElementById('maxSeconds').value);
+                const delay = (Math.random() * (maxSeconds - minSeconds) + minSeconds) * 1000;
+
+                setTimeout(() => {
+					centerArea.textContent = "";
+                    centerArea.style.backgroundColor = 'green';
+                    endTime = Date.now();
+                    actualTime = (endTime - startTime) / 1000;
+//				   setTimeout(() => {
+						showGuessModal();
+//					}, 5);
+				}, delay);
+                
+                gameState = 'playing';
+            } else {
+//                btn.textContent = 'התחל';
+                const centerArea = document.getElementById('center-area');
+                centerArea.style.backgroundColor = 'orange';
+                centerArea.innerHTML =  "<br><br><br><br>" + 'לחץ כאן וספור למשך כמה זמן המלבן נשאר אדום עד שהוא הופך לירוק';
+                gameState = 'initial';
+            }
+        }
+
+        function showGuessModal() {
+            const modal = document.getElementById('guessModal');
+            const inputs = document.getElementById('guessInputs');
+            inputs.innerHTML = '';
+            
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            for (let i = 1; i <= playerCount; i++) {
+                inputs.innerHTML += `
+                    <div class="time-input">
+                        <label>שחקן ${i}:</label>
+                        <input type="number" step="0.1" id="guess${i}">
+                    </div>
+                `;
+            }
+            
+            modal.style.display = 'block';
+        }
+
+        function submitGuesses() {
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            let space = "&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;";
+
+            let results = "<br><br><br><br><br>" + space + `<div style="color: white" id="result-text">הזמן האמיתי: ${actualTime.toFixed(2)} שניות` +
+				space + "<br><br>";
+			
+            for (let i = 1; i <= playerCount; i++) {
+                let guess = parseFloat(document.getElementById(`guess${i}`).value);
+				if (isNaN(guess))
+					guess = 0;
+				
+/*
+                const accuracy = Math.abs(guess - actualTime);
+                const points = Math.max(0, Math.round(100 - (accuracy * 100)));
+				console.log(guess + " " + actualTime + " " + accuracy + " " + points);
+*/
+				if (actualTime >= guess)
+					points = Math.round((guess / actualTime) * 100);
+				else
+					points = Math.round((actualTime / guess) * 100);
+				
+				points *= situation;
+                playerScores[i-1] += points;
+                results += space + `שחקן ${i}: ${guess} שניות (${points} נקודות)<br>`;
+            }
+            results += '<br><br>לחץ כאן כדי להכין משחק חדש</div>';
+            
+            document.getElementById('center-area').innerHTML = results;
+            document.getElementById('guessModal').style.display = 'none';
+            updateScores();
+        }
+
+        function updateScores() {
+            const scoresArea = document.getElementById('scores-area');
+            const playerCount = parseInt(document.getElementById('playerCount').value);
+            let scoreText = '<h3>ניקוד</h3>';
+            
+            for (let i = 1; i <= playerCount; i++) {
+                scoreText += `שחקן ${i}: ${playerScores[i-1]} נקודות<br>`;
+            }
+            
+            scoresArea.innerHTML = scoreText;
+        }
+
+        // Initialize scores display
+		init();
+        updateScores();
+    </script>
+</body>
+</html>

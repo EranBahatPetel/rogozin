@@ -1,0 +1,824 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>כינוס איברים</title>
+    <style>
+        .fraction {
+            display: inline-block;
+            vertical-align: middle;
+            text-align: center;
+        }
+        .fraction > span {
+            display: block;
+            padding-top: 0.15em;
+        }
+        .fraction span.fdn {
+            border-top: thin solid black;
+        }
+        .fraction span.bar {
+            display: none;
+        }
+        body, html {
+            margin: 0;
+            height: 100%;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+        .text-content {
+            font-size: 12px;
+            margin-bottom: 20px;
+        }
+        .red-text {
+            color: red;
+        }
+        .green-text {
+            color: green;
+        }
+        #topBar {
+            display: flex;
+            justify-content: space-betweenenen;
+            padding: 10px;
+            background-color: #e0e0e0;
+        }
+        .score-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            background-color: white;
+            padding: 2px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            transform: scale(0.2);
+            transform-origin: top right;
+        }
+        .score-box {
+            text-align: center;
+            padding: 2px;
+        }
+        .score-box:first-child {
+            border-left: 1px solid #ccc;
+        }
+        #timer {
+            font-size: 10px;
+            margin: 0px 0;
+            background-color: #fff;
+            padding: 5px 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin: 0 0 1px 0;
+            color: #333;
+            font-size: 0.8em;
+        }
+        .score {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        #currentLevelInfo, #potentialScoreInfo, #cumulativeScoreInfo {
+            flex: 1;
+            text-align: center;
+        }
+        #textContainer {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            left: 50px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #textInput2-container {
+            display: flex;
+            justify-content: space-between;
+            position: absolute;
+            left: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+        }
+        #inputArea {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px;
+            background-color: #f0f0f0;
+            align: left;
+        }
+        #levelSelect {
+            margin-right: 10px;
+        }
+        .coordinate-system {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            position: relative;
+        }
+        canvas {
+            background-color: white;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        #buttonCanvas {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+        }
+        #errorConfirm {
+            margin-top: 10px;
+            padding: 5px 10px;
+            background-color: white;
+            color: red;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        #text-boxes {
+            position: absolute;
+            right: 100px;
+            top: 80px;
+        }
+        .text-box {
+            width: 200px;
+            height: 15px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+			direction: ltr;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+			padding-top: 150px; /* Location of the box */
+			padding-left: 350px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.1);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            max-width: 300px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+    </style>
+</head>
+<body>
+    <div id="topBar">
+        <!-- <div id="currentLevelInfo">רמה : 1</div> -->
+        <div id="potentialScoreInfo">ניקוד אפשרי : 0</div>
+        <div id="xxx">&nbsp;&nbsp;&nbsp;</div>
+		<div id="timer">0 שניות</div>
+        <div id="xxx">&nbsp;&nbsp;&nbsp;</div>
+        <div id="cumulativeScoreInfo">ניקוד מצטבר: 0</div>
+    </div>
+    <div id="inputArea" direction="ltr">
+        <select id="levelSelect">
+            <option value="1">1</option> 
+            <option value="2">2</option>
+            <option value="3">3</option>
+            <option value="4">4</option>
+            <option value="5">5</option>
+			<option value="6">6</option>
+ <!--            <option value="7">7</option>
+            <option value="8">8</option>
+            <option value="9">9</option>
+            <option value="10">10</option> --!>
+        </select>
+    </div>
+    <div id="text-boxes"></div>
+    <div id="textContainer">
+		<div id="textContent1" class="text-content">
+			<span class="red-text"></span><br>
+			<span class="green-text"></span>
+		</div>
+    </div>
+    
+	<div class="coordinate-system">
+        <canvas id="myCanvas" width="357" height="357"></canvas>
+		<div id="textInput2-container">
+			<input type="text" id="textInput2" placeholder="כיתבו כאן את התוצאה" dir="ltr">
+		</div>
+    </div>
+
+    <canvas id="buttonCanvas" width="300" height="200">
+	</canvas>
+	<div id="correctModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>יפה מאוד ! תשובה מדוייקת !</p>
+            <button id="correctConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="errorText1"></p>
+            <p id="errorText2" dir="ltr"></p>
+            <button id="errorConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="hintModal" class="modal" dir="ltr">
+        <div class="modal-content" dir="rtl">
+            <span class="close">&times;</span>
+            <button id="hintConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="solutionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="solutionText" dir="ltr"></p>
+            <button id="solutionConfirm">אישור</button>
+    </div>
+<script>
+        const canvas = document.getElementById('myCanvas');
+        const ctx = canvas.getContext('2d');
+        const buttonCanvas = document.getElementById('buttonCanvas');
+        const buttonCtx = buttonCanvas.getContext('2d');
+
+        const textBoxes = document.getElementById('text-boxes');
+//        const currentLevelInfo = document.getElementById('currentLevelInfo');
+        const potentialScoreInfo = document.getElementById('potentialScoreInfo');
+        const textInput2 = document.getElementById('textInput2');
+        const textContent1 = document.getElementById('textContent1');
+        const levelSelect = document.getElementById('levelSelect');
+        const cumulativeScoreInfo = document.getElementById('cumulativeScoreInfo');
+        const correctModal = document.getElementById('correctModal');
+        const errorModal = document.getElementById('errorModal');
+        const solutionModal = document.getElementById('solutionModal');
+        const hintModal = document.getElementById('hintModal');
+        const solutionText = document.getElementById('solutionText');
+        const errorText1 = document.getElementById('errorText1');
+        const errorText2 = document.getElementById('errorText2');
+
+        const rectangles = [
+            { text: 'פתרון בבקשה', color: 'red' },
+            { text: 'אפשר רמז ?', color: 'blue' },
+            { text: 'יש לי תשובה', color: 'green' }
+        ];
+
+        const timerElement = document.getElementById('timer');
+
+        let seconds = 0;
+		let waitingComfirm = false;
+
+        // פונקציה לעדכון הטיימר
+        function updateTimer() {
+            seconds++;
+            timerElement.textContent = seconds + (seconds === 1 ? ' שנייה' : ' שניות');
+        }        let cumulativeScore = 0;
+		let potentialScore = 0;
+        let currentLevel = 1;
+		let maxNumber = 10;
+		let maxLevel = 6;
+		let fromNum = [];
+		let toNum = [];
+		let answer = "";
+		
+        function drawRectangleWithText(x, y, width, height, text1, text2, color) {
+            buttonCtx.fillStyle = color;
+            buttonCtx.fillRect(x, y, width, height);
+            
+            buttonCtx.strokeStyle = 'black';
+            buttonCtx.lineWidth = 2;
+            buttonCtx.strokeRect(x, y, width, height);
+			buttonCtx.direction = "rtl";
+
+            buttonCtx.font = 'bold 10px Arial';
+            buttonCtx.fillStyle = 'white';
+            buttonCtx.textAlign = 'center';
+            buttonCtx.textBaseline = 'middle';
+			if (text2 == "")
+				buttonCtx.fillText(text1, x + width / 2, y + height / 2);
+			else
+			{
+				buttonCtx.fillText(text1, x + width / 2, y + height / 6);
+				buttonCtx.fillText(text2, x + width / 2, y + 3 * height / 6);
+			}
+
+            return { x, y, width, height, text1, color };
+        }
+
+        function drawBottomRectangles() {
+            const rectWidth = Math.min(buttonCanvas.width * 0.25, 200);
+            const rectHeight = Math.min(buttonCanvas.height * 0.5, 60);
+            const totalWidth = rectWidth * 3 + 20 * 2;
+            const startX = (buttonCanvas.width - totalWidth) / 2;
+            const y = buttonCanvas.height - rectHeight - 10;
+
+            rectangles.forEach((rect, i) => {
+                const x = startX + (rectWidth + 20) * i;
+                rect.bounds = drawRectangleWithText(x, y, rectWidth, rectHeight, rect.text, '', rect.color);
+            });
+        }
+		
+		let result = 0;
+		let sizes = [];
+		let vars = ['x','y',''];
+		let actionTexts = [];
+		
+		let varsNum = 1;
+		function chooseCalculate() {
+			potentialScore += 10 * currentLevel;
+			potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+
+			textInput2.value = '';
+			let op = 0;
+			const opStr = ['+','-'];
+			let opsNum = 1;
+			let allVars = ['a','b','c','d','e','f','g','h','i','j','k','m',
+				'n','p','q','r','s','t','u','v','w','x','y','z'];
+			let results = [0, 0, 0, 0];
+			vars = ['x','y',''];
+			varsNum = 1;
+			let plus = 0, minus = 1;
+			let varsTempNum = 1;
+			let constants = false;
+			let negatives = false;
+
+			if (currentLevel > 1)
+				opsNum = 2;
+			if (currentLevel >= 3)
+				constants = true;
+			if (currentLevel == 4)
+				varsNum = 2;
+			if (currentLevel >= 5)
+			{
+				varsNum = 3;
+				do
+				{
+					vars[0] = allVars[Math.floor(Math.random() * 24)];
+					vars[1] = allVars[Math.floor(Math.random() * 24)];
+					vars[2] = allVars[Math.floor(Math.random() * 24)];
+				} while (vars[0] == vars[1] || vars[0] == vars[2] || vars[1] == vars[2]);
+			}
+			if (currentLevel == 6)
+				negatives = true;
+				
+			let calculate = '';
+			
+			for (let i = 0; i < 2 * currentLevel; i++)
+			{
+				do
+				{
+					if (i > 0 || negatives)
+						op = Math.floor(Math.random() * opsNum);
+					else
+						op = plus;
+					numChosen = 1 + Math.floor(Math.random() * 5);
+					if (constants && varsTempNum == varsNum + 1)
+						varChosen = Math.floor(Math.random() * varsTempNum);
+					else
+						varChosen = Math.floor(Math.random() * Math.min(varsNum, varsTempNum));
+					if (op == plus)
+						tempResult = results[varChosen] + numChosen;
+					else
+						tempResult = results[varChosen] - numChosen;
+				} while (((tempResult < 0) && !negatives) || (tempResult > 15));
+				results[varChosen] = tempResult;
+				if (i != 0 || (negatives && op == minus))
+					calculate += " " + opStr[op] + " ";
+				if (varChosen == varsNum)
+					calculate += numChosen;
+				else 
+				{
+					if (numChosen == 1)
+						calculate += vars[varChosen];
+					else
+						calculate += numChosen + vars[varChosen];
+					if (varChosen == varsTempNum - 1)
+						varsTempNum++;
+				}
+				
+//				alert(varsNum + " " + results);
+				for (let j = 4 * i; j < 4 * (i + 1); j++)
+					sizes.push(results[j - 4 * i]);
+				actionTexts.push("צעד" + "\xa0" + (i  + 1) + "\xa0" + ":");
+				if (varChosen == varsNum)
+				{
+					if (op == plus)
+					{
+						actionTexts.push("שמתי על")
+						actionTexts.push("המאזניים");
+						if (numChosen == 1)
+							actionTexts.push("עוד קילו אחד");
+						else
+						{
+							actionTexts.push("עוד" + "\xa0"+ numChosen); 
+							actionTexts.push("\xa0" + "קילו.");
+						}
+					}
+					else // op == minus
+					{
+						actionTexts.push("הורדתי");
+						actionTexts.push("מהמאזניים");
+						if (numChosen == 1)
+							actionTexts.push("קילו אחד");
+						else
+							actionTexts.push(numChosen + "\xa0" + "קילו.");
+					}
+				}
+				else if (i == 0)
+				{
+					actionTexts.push("שמתי על");
+					actionTexts.push("המאזניים");
+					if (numChosen == 1)
+					{
+						actionTexts.push("ארגז אחד");
+						actionTexts.push("שמשקלו");
+					}
+					else
+					{
+						actionTexts.push(numChosen  + "\xa0" + "ארגזים");
+						actionTexts.push("שמשקל כל");
+						actionTexts.push("אחד מהם");
+					}
+					actionTexts.push(vars[varChosen]  + "\xa0" + "קילו");
+				}
+				else if (op == plus)
+				{
+					actionTexts.push("הוספתי עוד");
+					if (numChosen == 1)
+					{
+						actionTexts.push("ארגז אחד");
+						actionTexts.push("שמשקלו");
+					}
+					else
+					{
+						actionTexts.push(numChosen  + "\xa0" + "ארגזים");
+						actionTexts.push("שמשקל כל");
+						actionTexts.push("אחד מהם");
+					}
+					actionTexts.push(vars[varChosen]  + "\xa0" + "קילו");
+				}
+				else
+				{
+					actionTexts.push("הורדתי");
+					if (numChosen == 1)
+					{
+						actionTexts.push("ארגז אחד");
+						actionTexts.push("שמשקלו");
+					}
+					else
+					{
+						actionTexts.push(numChosen  + "\xa0" + "ארגזים");
+						actionTexts.push("שמשקל כל");
+						actionTexts.push("אחד מהם");
+					}
+					actionTexts.push(vars[varChosen]  + "\xa0" + "קילו");
+				}
+				actionTexts.push("");
+//				alert(i + " " + varChosen + " " + varsNum + " " + varsTempNum + " " + calculate + " " + results);
+			}
+//			alert(fromNum + " " + toNum);
+//            textContent1.innerHTML = "x = <span class='fraction'><span class='fup'>a</span><span class='bar'>/</span><span class='fdn'>b</span></span>";
+            textContent1.innerHTML = '<span class="red-text" dir="ltr">' + 
+				"בצעו כינוס איברים" + '<br>' + 
+				calculate + '&nbsp' + '=' + // '&nbsp' + result +
+				'</dir>' + 
+				"</span><br>"; // + formula + "<br>";
+//			alert(results + " " + vars);
+			answer = "";
+			for (let i = 0; i < varsNum; i++)
+			{
+				if (answer == "")
+				{
+					if (results[i] == 1)
+						answer += vars[i];
+					else if (results[i] == -1)
+						answer += "-" + vars[i];
+					else if (results[i] != 0)
+						answer += results[i] + vars[i];
+				}
+				else
+				{
+					if (results[i] == 1)
+						answer += "+" + vars[i];
+					else if (results[i] == -1)
+						answer += "-" + vars[i];
+					else if (results[i] > 0)
+						answer += "+" + results[i] + vars[i];
+					else if (results[i] < 0)
+						answer += results[i] + vars[i];
+				}				
+			}
+			if (results[varsNum] > 0)
+			{
+				if (answer == "")
+					answer += results[varsNum];
+				else
+					answer += "+" + results[varsNum];
+			}
+			else if (results[varsNum] < 0)
+				answer += results[varsNum];
+			if (answer == "")
+				answer = "0";
+		}
+		
+        function drawSquare(x, y, size, borderColor, fillColor, text) {
+            ctx.beginPath();
+            ctx.rect(x, y, size, size);
+            ctx.strokeStyle = borderColor;
+            ctx.lineWidth = 2;
+            ctx.stroke();
+            
+            if (fillColor) {
+                ctx.fillStyle = fillColor;
+                ctx.fill();
+            }
+            
+            ctx.fillStyle = 'black';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(text, x + size/2, y + size/2);
+        }
+
+        function drawStack(startX, startY, borderColor, fillColor, text, count) {
+            const size = 12;
+            const spacing = 2;
+            let totalHeight = 0;
+            
+            for (let i = 0; i < count; i++) {
+                const y = startY - (i * (size + spacing));
+                const currentFillColor = fillColor; // i < 10 ? fillColor : null;
+                drawSquare(startX, y, size, borderColor, currentFillColor, text);
+                totalHeight = (i + 1) * (size + spacing);
+            }
+            return { width: size, height: totalHeight };
+        }
+
+        function drawStackSet(startX, startY, stackSetNum) {
+            const stack1 = drawStack(startX, startY, 'red', '#ffcccc', vars[0], sizes[4 * stackSetNum]);
+			let stack1Width = 0;
+			if (sizes[4 * stackSetNum] > 0)
+				stack1Width = stack1.width;
+
+			let text = vars[1];
+			if (varsNum < 2)
+				text = '1';
+            const stack2 = drawStack(startX + stack1Width + 5, startY, 'green', '#ccffcc', text, sizes[4 * stackSetNum + 1]);
+			let stack2Width = 0;
+			if (sizes[4 * stackSetNum + 1] > 0)
+				stack2Width = stack2.width;
+
+			text = vars[2];
+//			alert("a");
+			if (varsNum < 3)
+			{
+//				alert("b");
+				text = '1';
+			}
+//			alert(text);
+            const stack3 = drawStack(startX + stack1Width + stack2Width + 10, startY, 'blue', '#ccccff', text, sizes[4 * stackSetNum + 2]);
+			let stack3Width = 0;
+			if (sizes[4 * stackSetNum + 2] > 0)
+				stack3Width = stack3.width;
+            
+            const stack4 = drawStack(startX + stack1Width + stack2Width + stack3Width + 12, startY, 'purple', '#ffccff', '1', sizes[4 * stackSetNum + 3]);
+			let stack4Width = 0;
+			if (sizes[4 * stackSetNum + 3] > 0)
+				stack4Width = stack4.width;
+/*			
+            let purpleSquareSize = 12;
+			if (sizes[4 * stackSetNum + 3] > 0)
+			{
+				purpleSquareSize = 12;
+				drawSquare(startX + stack1Width + stack2Width + stack3Width + 10, startY, purpleSquareSize, 'purple', null, "" + sizes[4 * stackSetNum + 3]);
+			}
+*/            
+            return {
+                width: stack1.width + stack2.width + stack3.width + stack4.width + 10,
+                height: Math.max(stack1.height, stack2.height, stack3.height)
+            };
+        }
+
+		let actionTextsIndex = 0;
+		let textColor = 0;
+        function drawTextBox(x, y, width, height) {
+            ctx.beginPath();
+            ctx.rect(x, y, width, height);
+/*
+            ctx.strokeStyle = 'black';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+			*/
+			
+            ctx.font = '12px Arial';  // הקטנת גודל הפונט
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+
+            const lineHeight = 12;  // הקטנת גובה השורה
+			let index = 0;
+			textColor = 1 - textColor;
+			if (textColor == 0)
+				ctx.fillStyle = 'blue';
+			else
+				ctx.fillStyle = 'brown';
+			while (actionTexts[actionTextsIndex + index] != "")
+			{
+                ctx.fillText(actionTexts[actionTextsIndex + index], x + width / 2, y + (index + 0.5) * lineHeight);
+				index++;
+			}	
+			actionTextsIndex += (index + 1);
+        }
+
+		let hintNumber = 0;
+        function setHint(hintNumber){
+			if (currentLevel > 5)
+			{
+				alert("לשלב זה אין רמזים !");
+				return;
+			}
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+			textColor = 0;
+            const startY = 340;
+            let currentX = 10;
+            const setSpacing = 10;
+            const textBoxHeight = 50;  // הקטנת גובה מלבן הטקסט
+			actionTextsIndex = 0;
+
+//			alert(sizes);
+            for (let i = 0; i < hintNumber; i++) {
+                const stackSet = drawStackSet(currentX, startY, i);
+                
+//                for (let j = 0; j < 2; j++) {
+//                    textContent += `ערימה מספר ${i + 1}\n`;
+//                }
+                // מיקום מלבן הטקסט בדיוק מעל הערימה
+                drawTextBox(currentX, /* startY - stackSet.height - */ 10, stackSet.width, textBoxHeight);
+                
+                currentX += stackSet.width + setSpacing;
+				if (hintNumber > 5 && i == hintNumber - 6)
+				{
+					ctx.clearRect(0, 0, canvas.width, canvas.height);
+					currentX = 10;
+				}
+            }
+        }
+
+        function drawAll() {
+            if (!ctx) return;  // בדיקה שהקונטקסט קיים
+
+			hintNumber = 0;
+			sizes = [];
+			actionTexts = [];
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawBottomRectangles();
+			chooseCalculate();
+            canvas.style.display = 'block';
+        }
+				
+        function createTextBoxes() {
+            const texts = ['1. 5x+2x','2. 7x-4x+3x','3. 5x+6-2x-3',
+				'4. x+2y+5+3x-2-y', '5. p+4q+5+3b-p+2b-2','6. -2t-2f+f-5g-6+4+7g'];
+            texts.forEach(text => {
+                const box = document.createElement('div');
+                box.className = 'text-box';
+                box.textContent = text;
+                textBoxes.appendChild(box);
+            });
+        }
+
+        function initializeCanvas() {
+//			alert(canvas.width + " " + window.innerWidth + " " + canvas.height + " " + window.innerHeight);
+			createTextBoxes();
+            drawAll();
+        }
+
+        buttonCanvas.addEventListener('click', (event) => {
+			if (waitingComfirm)
+				return;
+            const rect = buttonCanvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+
+            for (let i = 0; i < rectangles.length; i++) {
+                const rectangle = rectangles[i];
+                const { x, y, width, height, text } = rectangle.bounds;
+                if (mouseX >= x && mouseX <= x + width && mouseY >= y && mouseY <= y + height) {
+                    if (i === 0) { // "פתרון בבקשה"
+                        solutionText.innerHTML = "<span dir='rtl'>" + "התשובה היא :" + 
+							"</span><br><span dir='ltr'>" + answer + "</span>";
+                        solutionModal.style.display = 'block';
+						waitingComfirm = true;
+                    } else if (i === 1) { // "רמז"
+						if (hintNumber < 2 * currentLevel)
+						{
+							hintNumber++;
+							setHint(hintNumber);
+							cumulativeScore-= 5;
+							cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+						}
+						else
+							alert("אין יותר רמזים ! התשובה מול העיניים שלך !");
+                    } else if (i === 2) { // "יש לי תשובה"
+						const text = textInput2.value;
+						
+						if (text === answer)
+						{
+							cumulativeScore += 10 * currentLevel;
+							correctModal.style.display = 'block';
+						} else 
+						{
+							errorText1.textContent = "תשובה לא נכונה.";
+							errorText2.innerHTML = "<span dir='rtl'>" + "התשובה היא :" + 
+							"</span><br><span dir='ltr'>" + answer + "</span>";
+							errorModal.style.display = 'block';
+						}
+						cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+						waitingComfirm = true;
+	                }
+                    return;
+                }
+            }
+        });
+
+        levelSelect.addEventListener('change', () => {
+        currentLevel = parseInt(levelSelect.value) || 1;
+        drawAll();
+//		currevntLevelInfo.textContent = `רמה : ${currentLevel}`;
+});
+   // Close modals when clicking on the close button or outside the modal
+/*
+    window.onclick = function(event) {
+		if (event.target == solutionModal || event.target == hintModal || event.target == correctModal || event.target == errorModal) {
+			correctModal.style.display = "none";
+			errorModal.style.display = "none";
+			solutionModal.style.display = "none";
+            hintModal.style.display = "none";
+        }
+    }
+
+    document.querySelectorAll('.close').forEach(closeBtn => {
+        closeBtn.onclick = function() {
+			correctModal.style.display = "none";
+			errorModal.style.display = "none";
+            solutionModal.style.display = "none";
+            hintModal.style.display = "none";
+        }
+    });
+*/
+
+    document.getElementById('solutionConfirm').onclick = function() {
+        solutionModal.style.display = "none";
+		waitingComfirm = false;
+        drawAll();
+    }
+
+    document.getElementById('hintConfirm').onclick = function() {
+        hintModal.style.display = "none";
+    }
+
+    document.getElementById('errorConfirm').onclick = function() {
+        errorModal.style.display = "none";
+		waitingComfirm = false;
+        drawAll();
+    }
+
+    document.getElementById('correctConfirm').onclick = function() {
+        correctModal.style.display = "none";
+		waitingComfirm = false;
+        drawAll();
+    }
+
+	// קריאה לפונקציות בעת טעינת הדף ושינוי גודל החלון
+	window.addEventListener('load', () => {
+		initializeCanvas();
+		setInterval(updateTimer, 1000); // עדכון הטיימר כל שנייה
+	});
+    window.addEventListener('resize', initializeCanvas);
+
+    // קריאה מיידית לפונקציית האתחול
+//    if (document.readyState === 'complete') {
+//        initializeCanvas();
+//    } else {
+//        window.addEventListener('load', initializeCanvas);
+//	    }
+        // initializeCanvas();
+</script>
+</body>
+</html>
