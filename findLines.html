@@ -1,0 +1,1036 @@
+<!DOCTYPE html>
+<html lang="he">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>זהו איזה גרף שייך לאיזו פונקציה קווית</title>
+    <style>
+        body, html {
+            display: flex;
+            <!-- justify-content: center; -->
+            <!-- align-items: center; -->
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+            flex-direction: column;
+        }
+        #topBar {
+            display: flex;
+            justify-content: space-betweenenen
+			;
+            padding: 10px;
+            background-color: #e0e0e0;
+        }
+        .score-container {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            display: flex;
+            background-color: white;
+            padding: 2px;
+            border-radius: 5px;
+            box-shadow: 0 0 5px rgba(0,0,0,0.1);
+            transform: scale(0.2);
+            transform-origin: top right;
+        }
+        .score-box {
+            text-align: center;
+            padding: 2px;
+        }
+        .score-box:first-child {
+            border-left: 1px solid #ccc;
+        }
+        #timer {
+            font-size: 10px;
+            margin: 0px 0;
+            background-color: #fff;
+            padding: 5px 5px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        h2 {
+            margin: 0 0 1px 0;
+            color: #333;
+            font-size: 0.8em;
+        }
+        .score {
+            font-size: 1.2em;
+            font-weight: bold;
+            color: #007bff;
+        }
+        #currentLevelInfo, #potentialScoreInfo, #cumulativeScoreInfo {
+            flex: 1;
+            text-align: center;
+        }
+
+        #container {
+            display: flex;
+            flex-direction: row;
+            width: 100%;
+            height: 100vh;
+        }
+        #controls {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            width: 33%;
+            padding: 10px;
+            box-sizing: border-box;
+            position: relative;
+        }
+        #coordinate-system {
+        <!-- .coordinate-system { -->
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            flex-grow: 1;
+            position: relative;
+            <!-- width: 33%; -->
+            <!-- height: 100%; -->
+            border: 1px solid black;
+        <!-- } -->
+        }
+        #rightSection {
+            width: 33%;
+            height: 90%;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-evenly;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .rectangle {
+			direction : rtl;
+            width: 100px;
+            height: 50px;
+            display: flex;
+            justify-content: space-evenly;
+            align-items: center;
+            color: white;
+            font-weight: bold;
+            cursor: pointer;
+            padding: 10px;
+            padding-left: 10px;
+        }
+        #rectanglesContainer {
+			direction : ltr;
+            display: flex;
+            <!-- justify-content: space-around; -->
+            justify-content: space-evenly;
+        }
+        .radio-columns-container {
+            display: flex;
+            flex-direction: row-reverse;
+            height: calc(100% - 50px);
+            position: relative;
+        }
+        .column-group {
+            width: 50%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+        #leftGroup {
+            position: absolute;
+            left: 0;
+            width: 50%;
+        }
+        #rightGroup {
+            position: absolute;
+            right: 0;
+            width: 50%;
+            transition: opacity 0.3s ease;
+            opacity: 0;
+        }
+        .column-title {
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.7em;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .radio-columns {
+            display: flex;
+            flex-direction: row;
+            justify-content: space-between;
+            height: calc(100% - 35px);
+        }
+        .radio-column {
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            height: 100%;
+            text-align: right;
+            width: 50%;
+        }
+        #linesCanvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+        .buttons {
+            display: flex;
+            justify-content: flex-start;
+            padding-top: 10px;
+            border-top: 1px solid #ccc;
+        }
+        button {
+            margin-right: 5px;
+            padding: 3px 6px;
+            font-size: 0.8em;
+        }
+        label {
+            margin-right: 25px;
+            position: relative;
+			top: -10px;
+            z-index: 1;
+            font-size: 0.8em;
+			direction : ltr;
+        }
+        input[type="radio"] {
+            margin: 2px 0;
+        }
+        #text-boxes {
+            position: absolute;
+            right: 50px;
+            top: 100px;
+        }
+        .text-box {
+            width: 350px;
+            height:150px;
+            margin-bottom: 10px;
+            border: 1px solid #000;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: #f0f0f0;
+			direction: rtl;
+            text-align: center;			
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1;
+			padding-top: 150px; /* Location of the box */
+			padding-left: 350px; /* Location of the box */
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.1);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 5% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            max-width: 300px;
+            text-align: center;
+        }
+        .close {
+            color: #aaa;
+            float: right;
+            font-size: 28px;
+            font-weight: bold;
+        }
+        .close:hover,
+        .close:focus {
+            color: black;
+            text-decoration: none;
+            cursor: pointer;
+    </style>
+</head>
+<body>
+    <div id="topBar">
+        <!-- <div id="currentLevelInfo">רמה : 1</div> -->
+        <div id="cumulativeScoreInfo">ניקוד מצטבר: 0</div>
+        <div id="xxx">&nbsp;&nbsp;&nbsp;</div>
+		<div id="timer">0 שניות</div>
+        <div id="xxx">&nbsp;&nbsp;&nbsp;</div>
+        <div id="potentialScoreInfo">ניקוד אפשרי : 0</div>
+    </div>
+    <div id="text-boxes"></div>
+
+    <div id="container">
+
+        <div id="controls">
+            <canvas id="linesCanvas"></canvas>
+            <div class="radio-columns-container">
+                <div class="column-group" id="leftGroup">
+                    <div class="column-title">חבר בין צבע הקו לבין משוואת הקו הישר המתאימה</div>
+                    <div class="radio-columns">
+                        <div class="radio-column" id="column1"></div>
+                        <div class="radio-column" id="column2"></div>
+                    </div>
+                </div>
+                <div class="column-group" id="rightGroup">
+                    <div class="column-title">הפתרון המלא</div>
+                    <div class="radio-columns">
+                        <div class="radio-column" id="column3"></div>
+                        <div class="radio-column" id="column4"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- <canvas id="coordinateSystem"></canvas> -->
+		<div class="coordinate-System">
+			<canvas id="coordinateSystem" width="357" height="357"></canvas>
+			<div id="coordinates"></div>
+		</div>
+        <div id="rightSection">
+            <div id="grayRectangle"></div>
+            <div id="rectanglesContainer" dir="rtl">
+                <div class="rectangle" style="background-color: red;">פתרון בבקשה</div>
+                <div class="rectangle" style="background-color: green;">אפשר רמז ?</div>
+                <div class="rectangle" style="background-color: blue;">יש לי תשובה</div>
+                <div class="rectangle" style="background-color: gray;">נקה</div>
+            </div>
+        </div>
+		<div id="inputArea" direction="rtl">
+			<select id="levelSelect">
+				<!-- <option value="1">1</option> -->
+				<option value="2">קווים 2</option>
+				<option value="3">3 קווים</option>
+				<option value="4">4 קווים</option>
+				<option value="5">5 קווים</option>
+				<option value="6">6 קווים</option>
+				<!--<option value="7">7</option>
+				<option value="8">8</option>
+				<option value="9">9</option>
+				<option value="10">10</option>
+	--!>			
+			</select>
+		</div>
+    </div>
+
+	<div id="correctModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>יפה מאוד ! תשובה מדוייקת !</p>
+            <button id="correctConfirm">תרגיל נוסף</button>
+        </div>
+    </div>
+	<div id="partialModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p>בחר אחד העיגולים ואז בקש שוב רמז כדי לקבל פתרון שלו.</p>
+            <button id="partialConfirm">אישור</button>
+        </div>
+    </div>
+    <div id="errorModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="errorText1"></p>
+            <p id="errorText2" dir="rtl"></p>
+            <button id="errorConfirm">תרגיל נוסף</button>
+        </div>
+    </div>
+    <div id="hintModal" class="modal" dir="ltr">
+        <div class="modal-content" dir="rtl">
+            <span class="close">&times;</span>
+            <button id="hintConfirm">המשך לפתור</button>
+        </div>
+    </div>
+    <div id="solutionModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <p id="solutionText"></p>
+            <button id="solutionConfirm">תרגיל נוסף</button>
+    </div>
+
+    <script>
+		let waitingConfirm = false;
+        const coordinateSystem = document.getElementById('coordinateSystem');
+        const coordCtx = coordinateSystem.getContext('2d');
+        const textBoxes = document.getElementById('text-boxes');
+        const linesCanvas = document.getElementById('linesCanvas');
+        const linesCtx = linesCanvas.getContext('2d');
+        const rectangles = document.querySelectorAll('.rectangle');
+        let lines = [];
+        let linesPoints = [];
+        let selectedPoints = [null, null, null, null];
+        const colors = ['red', 'blue', 'green', 'purple', 'orange', 'brown'];
+        const colorsH = ['אדום', 'כחול', 'ירוק', 'סגול', 'כתום', 'חום'];
+        const colorNames = ['קו אדום', 'קו כחול', 'קו ירוק', 'קו סגול', 'קו כתום', 'קו חום'];
+        let rightColumnsVisible = false;
+		let formula = [' ', ' ', ' ', ' ', ' ', ' '];
+		let formulaLocation = [-1, -1, -1, -1, -1, -1];
+		let formulaLocationByUser = [-1, -1, -1, -1, -1, -1];
+		let chosenM = [-100, -100, -100, -100, -100, -100];
+		let chosenB = [-100, -100, -100, -100, -100, -100];
+
+        const levelSelect = document.getElementById('levelSelect');
+        const cumulativeScoreInfo = document.getElementById('cumulativeScoreInfo');
+        const correctModal = document.getElementById('correctModal');
+        const partialModal = document.getElementById('partialModal');
+        const errorModal = document.getElementById('errorModal');
+        const solutionModal = document.getElementById('solutionModal');
+        const hintModal = document.getElementById('hintModal');
+        const solutionText = document.getElementById('solutionText');
+        const errorText1 = document.getElementById('errorText1');
+        const errorText2 = document.getElementById('errorText2');
+
+        function createTextBoxes() {
+			const box = document.createElement('div');
+			box.className = 'text-box';
+			box.innerHTML = 
+			"y = mx + b<br>" +
+			"פונקציה עולה שיפוע חיובי m>0<br>" +
+			"פונקציה יורדת שיפוע שלילי m<0 \<br>" +
+			"פונקציה קבועה 0=m מספר=y (קו אופקי)<br>" +
+			"שיפוע אינסופי מספר=X (קו אנכי)<br>" +
+			"נקודת החיתוך עם ציר ה-Y : (0, b)<br>" +
+			"ככל שהשיפוע יותר קרוב ל-0 (חיובי או שלילי) - הקו יותר מתון";
+			textBoxes.appendChild(box);
+        }
+
+        function initializeCanvases() {
+            coordinateSystem.width = coordinateSystem.offsetWidth;
+            coordinateSystem.height = coordinateSystem.offsetHeight;
+            linesCanvas.width = linesCanvas.offsetWidth;
+            linesCanvas.height = linesCanvas.offsetHeight;
+			createTextBoxes();
+            drawAll();
+        }
+
+        const timerElement = document.getElementById('timer');
+
+        let seconds = 0;
+		let correctColors = '';
+
+        // פונקציה לעדכון הטיימר
+        function updateTimer() {
+            seconds++;
+            timerElement.textContent = seconds + (seconds === 1 ? ' שנייה' : ' שניות');
+        }        
+		let cumulativeScore = 0;
+		let potentialScore = 0;
+        let currentLevel = 2;
+		let maxNumber = 10;
+		let maxLevel = 6;
+		let pointedX = -11;
+		let pointedY = -11;
+		const scale = 1;
+		
+		function drawNumbersByAxis()
+		{
+            // מספרים
+            coordCtx.fillStyle = 'blue';
+            coordCtx.font = '6.67px Arial';
+            coordCtx.textAlign = 'center';
+            coordCtx.direction = 'ltr';
+            for (let i = -11; i <= 11; i++) {
+                if (i !== 0) {
+                    // ציר X
+                    coordCtx.fillText(i * scale, coordinateSystem.width / 2 + i * 18/* * 10 / 11*/, coordinateSystem.height / 2 + 15);
+                    // ציר Y
+                    coordCtx.fillText(i * scale, coordinateSystem.width / 2 - 15, coordinateSystem.height / 2 - i * 18/* * 10 / 11*/);
+                }
+            }
+
+            // אפס בראשית הצירים
+            coordCtx.fillText('0', coordinateSystem.width / 2 + 10, coordinateSystem.height / 2 - 5);
+
+		}
+	
+        function drawCoordinateSystem() {
+            coordCtx.clearRect(0, 0, coordinateSystem.width, coordinateSystem.height);
+            
+            // רשת
+            coordCtx.strokeStyle = 'lightgray';
+            for (let i = 0; i <= coordinateSystem.width; i += 18) {
+                coordCtx.beginPath();
+                coordCtx.moveTo(i, 0);
+                coordCtx.lineTo(i, coordinateSystem.height);
+                coordCtx.stroke();
+                coordCtx.moveTo(0, i);
+                coordCtx.lineTo(coordinateSystem.width, i);
+                coordCtx.stroke();
+            }
+
+            // צירים
+            coordCtx.strokeStyle = 'black';
+            coordCtx.lineWidth = 2;
+            coordCtx.beginPath();
+            coordCtx.moveTo(0, coordinateSystem.height / 2);
+            coordCtx.lineTo(coordinateSystem.width, coordinateSystem.height / 2);
+            coordCtx.moveTo(coordinateSystem.width / 2, 0);
+            coordCtx.lineTo(coordinateSystem.width / 2, coordinateSystem.height);
+            coordCtx.stroke();
+
+            // חיצים
+            coordCtx.fillStyle = 'black';
+            coordCtx.beginPath();
+            coordCtx.moveTo(coordinateSystem.width, coordinateSystem.height / 2);
+            coordCtx.lineTo(coordinateSystem.width - 10, coordinateSystem.height / 2 - 5);
+            coordCtx.lineTo(coordinateSystem.width - 10, coordinateSystem.height / 2 + 5);
+            coordCtx.fill();
+            coordCtx.beginPath();
+            coordCtx.moveTo(coordinateSystem.width / 2, 0);
+            coordCtx.lineTo(coordinateSystem.width / 2 - 5, 10);
+            coordCtx.lineTo(coordinateSystem.width / 2 + 5, 10);
+            coordCtx.fill();
+
+            // תיאור הצירים
+            coordCtx.font = '8px Arial';
+            coordCtx.fillText('X', coordinateSystem.width - 10, coordinateSystem.height / 2 + 20);
+            coordCtx.fillText('Y', coordinateSystem.width / 2 + 20, 10);
+			
+			drawNumbersByAxis(1);
+        }
+
+
+/*
+        function drawCoordinateSystem() {
+            coordCtx.beginPath();
+            coordCtx.moveTo(coordinateSystem.width / 2, 0);
+            coordCtx.lineTo(coordinateSystem.width / 2, coordinateSystem.height);
+            coordCtx.moveTo(0, coordinateSystem.height / 2);
+            coordCtx.lineTo(coordinateSystem.width, coordinateSystem.height / 2);
+            coordCtx.stroke();
+        }
+*/
+
+
+		function chooseFormulaLocation(j)
+		{
+			let location = Math.floor(Math.random() * currentLevel);
+			for (let i = 0; i < currentLevel; i++)
+			{				
+				if (formulaLocation[(location + i) % currentLevel] == -1)
+				{
+					formulaLocation[(location + i) % currentLevel] = j;
+					return ((location + i) % currentLevel);
+				}			
+			}			
+			return(0);
+		}
+		
+        function createRadioButtons() {
+            const texts = [
+                ['נקודה 1', 'נקודה 2', 'נקודה 3', 'נקודה 4', 'נקודה 5', 'נקודה 6'],
+                ['אפשרות א', 'אפשרות ב', 'אפשרות ג', 'אפשרות ד', 'אפשרות ה', 'אפשרות ו'],
+                ['בחירה 1', 'בחירה 2', 'בחירה 3', 'בחירה 4', 'בחירה 5', 'בחירה 6'],
+                ['אופציה X', 'אופציה Y', 'אופציה Z', 'אופציה W', 'אופציה V', 'אופציה U']
+            ];
+
+            for (let i = 0; i < 6; i++) 
+				formulaLocation[i] = -1;
+            for (let i = 0; i < 6; i++) 
+				formulaLocationByUser[i] = -1;
+            for (let i = 0; i < 4; i++) {
+                const column = document.getElementById(`column${i+1}`);
+				while (column.firstChild) {
+					column.removeChild(column.lastChild);
+				}				
+				for (let j = 0; j < 6; j++) 
+				{
+					const radio = document.createElement('input');
+					radio.type = 'radio';
+					radio.name = `column${i+1}`;
+					radio.id = `radio${i+1}_${j+1}`;
+					radio.value = j;
+					
+					const label = document.createElement('label');
+					label.htmlFor = `radio${i+1}_${j+1}`;
+					if (i == 0)
+					{
+						k = chooseFormulaLocation(j);
+//						label.textContent = formula[j];
+						label.textContent = formula[k];
+					}
+					else if (i == 2)
+					{
+						for (let k = 0; k < currentLevel; k++)
+							if (formulaLocation[k] == j)
+								label.textContent = formula[k];
+					}
+					else if (i == 1 || i == 3)
+						label.textContent = colorNames[j];
+					if (i == 1 || i == 3)
+					label.style.color = colors[j];
+
+					column.appendChild(radio);
+					column.appendChild(label);
+//					column.appendChild(document.createElement('br'));
+
+					if (i == 0 || i == 1)
+						radio.addEventListener('change', () => handleRadioChange(i, j));
+					if (j >= currentLevel)
+					{
+						radio.style.opacity = '0';
+						label.style.opacity = '0';
+					}
+				}
+            }
+        }
+
+        function handleRadioChange(columnIndex, rowIndex) {
+            if (columnIndex === 0) {
+                selectedPoints[0] = rowIndex;
+				if (selectedPoints[1] !== null) {
+					const radio0 = document.getElementById(`radio1_${rowIndex+1}`);
+					radio0.checked = false;
+					const radio1 = document.getElementById(`radio2_${selectedPoints[1]+1}`);
+					radio1.checked = false;
+                    drawLine(0, 1, selectedPoints[0], selectedPoints[1], false);
+					formulaLocationByUser[selectedPoints[1]] =
+						selectedPoints[0];
+					selectedPoints[0] = null;
+					selectedPoints[1] = null;				
+                }
+            }
+            if (columnIndex === 1) {
+                selectedPoints[1] = rowIndex;
+                if (selectedPoints[0] !== null) {
+					const radio1 = document.getElementById(`radio2_${rowIndex+1}`);
+					radio1.checked = false;
+					const radio0 = document.getElementById(`radio1_${selectedPoints[0]+1}`);
+					radio0.checked = false;
+                    drawLine(0, 1, selectedPoints[0], selectedPoints[1], false);
+					formulaLocationByUser[selectedPoints[1]] =
+						selectedPoints[0];
+					selectedPoints[0] = null;
+					selectedPoints[1] = null;
+                }
+            }
+        }
+
+        function drawLine(startColumn, endColumn, startRow, endRow, recursive) {
+			if (startColumn == 0 && !recursive)
+			{
+				linesCtx.clearRect(0, 0, linesCanvas.width, linesCanvas.height);
+				redrawLines(startRow, endRow);
+				lines.push({selectedPoint0:startRow, selectedPoint1:endRow});
+			}
+
+            const columnWidth = linesCanvas.width / 4;
+            const rowHeight = linesCanvas.height / 6;
+			
+			const addStartY = (3 - startRow) * 15;
+			const addEndY = (3 - endRow) * 15;
+            
+            const startX = (startColumn * columnWidth) + (columnWidth / 2) + 10 - 5 * startColumn;
+            const endX = (endColumn * columnWidth) + (columnWidth / 2) - 5 * endColumn;
+            const startY = (startRow * rowHeight) + addStartY + 10; // + (rowHeight / 5);
+            const endY = (endRow * rowHeight) + addEndY + 10; // + (rowHeight / 5);
+
+            linesCtx.beginPath();
+            linesCtx.moveTo(startX, startY);
+            linesCtx.lineTo(endX, endY);
+			linesCtx.strokeStyle = colors[endRow];
+            linesCtx.lineWidth = 2;
+            linesCtx.stroke();
+        }
+		
+		function drawSolution()
+		{
+			for (let i = 0; i < currentLevel; i++)
+			{
+				selectedPoints[3] = i;
+				selectedPoints[2] = formulaLocation[i];
+				drawLine(2, 3, formulaLocation[i], i, false);
+			}
+		}
+
+        function clearLines() {
+            linesCtx.clearRect(0, 0, linesCanvas.width, linesCanvas.height);
+            for (let i = 0; i < 6; i++) 
+				formulaLocationByUser[i] = -1;
+            lines = [];
+        }
+/*
+        function redrawLines() {
+            linesCtx.clearRect(0, 0, linesCanvas.width, linesCanvas.height);
+            lines.forEach(line => {
+                linesCtx.beginPath();
+                linesCtx.moveTo(line.startX, line.startY);
+                linesCtx.lineTo(line.endX, line.endY);
+                linesCtx.strokeStyle = line.color;
+                linesCtx.lineWidth = 2;
+                linesCtx.stroke();
+            });
+        }
+*/
+        function redrawLines(startRow, endRow) {
+            for (let i = 0; i < lines.length; i++) 
+			{
+				if (lines[i].selectedPoint0 == startRow || lines[i].selectedPoint1 == endRow)
+				{
+					lines[i].selectedPoint0 = -1;
+					lines[i].selectedPoint1 = -1;
+				}
+				else if (lines[i].selectedPoint0 != -1)
+				{
+					drawLine(0, 1, lines[i].selectedPoint0, lines[i].selectedPoint1, true);
+				}
+			}
+        }
+
+        function toggleRightColumns() {
+            const rightGroup = document.getElementById('rightGroup');
+            
+            if (rightColumnsVisible) {
+                rightGroup.style.opacity = '0';
+                rightGroup.style.pointerEvents = 'none';
+            } else {
+                rightGroup.style.opacity = '1';
+                rightGroup.style.pointerEvents = 'auto';
+            }
+            
+            rightColumnsVisible = !rightColumnsVisible;
+        }
+		
+        function drawExtendedLine(color) {
+            // מחשב את נקודות החיתוך עם קצוות ה-canvas
+			x1 = coordinateSystem.width / 2 + chosenX1 / scale * 18;
+			x2 = coordinateSystem.width / 2 + chosenX2 / scale * 18;
+			y1 = coordinateSystem.height / 2 - chosenY1 / scale * 18;
+			y2 = coordinateSystem.height / 2 - chosenY2 / scale * 18;
+			
+            const m = (y2 - y1) / (x2 - x1);
+            const b1 = y1 - m * x1;
+            const b2 = y2 - m * x2;
+            let startX, startY, endX, endY;
+
+            if (isFinite(m)) {
+                startX = 0;
+                startY = b1;
+                endX = coordinateSystem.width;
+                endY = m * coordinateSystem.width + b1;
+            } else {
+                // במקרה של קו אנכי
+                startX = x1;
+                startY = 0;
+                endX = x1;
+                endY = coordinateSystem.height;
+            }
+
+            // מצייר את הקו
+            coordCtx.beginPath();
+            coordCtx.moveTo(startX, startY);
+            coordCtx.lineTo(endX, endY);
+            coordCtx.strokeStyle = color;
+            coordCtx.lineWidth = 2;
+            coordCtx.stroke();
+        }
+
+		function choseMB() {
+			let i = 0;
+            while (i < currentLevel) 
+			{
+				kind = Math.floor(Math.random() * 5);
+				if (kind == 1)
+				{
+					chosenM[i] = 0;
+					chosenB[i]= -5 + Math.floor(Math.random() * 11);
+				}
+				else if (kind == 2)
+				{
+					chosenM[i] = 100; // parallel to Y axix x=7
+					chosenB[i] = -5 + Math.floor(Math.random() * 11);
+				}
+				else
+				{
+					chosenM[i] = -5 + Math.floor(Math.random() * 11);
+					chosenB[i] = -5 + Math.floor(Math.random() * 11);
+				}
+				chosenX1 = -2;
+				chosenX2 = 2;
+				
+				if (chosenM[i] == 100)  // parallel to Y axix x=7
+				{
+					chosenX2 = chosenX1;
+					chosenY1 = -2;
+					chosenY2 = 2;
+				}
+				else
+				{
+					chosenY1 = chosenM[i] * chosenX1 + chosenB[i];
+					chosenY2 = chosenM[i] * chosenX2 + chosenB[i];
+				}
+
+				if (chosenM[i] == 100)
+					formula[i] = "x=" + chosenX1;
+				else if (chosenM[i] == 1)
+				{
+					if (chosenB[i] == 0)
+						formula[i] = "y=x";
+					else if (chosenB[i] > 0)
+						formula[i] = "y=x+" + chosenB[i];
+					else
+						formula[i] = "y=x" + chosenB[i];
+				}
+				else if (chosenM[i] == -1)
+				{
+					if (chosenB[i] == 0)
+						formula[i] = "y=-x";
+					else if (chosenB[i] > 0)
+						formula[i] = "y=-x+" + chosenB[i];
+					else
+						formula[i] = "y=-x" + chosenB[i];
+				}
+				else if (chosenM[i] == 0)
+				{
+					formula[i] = "y=" + chosenB[i];
+				}
+				else
+				{
+					if (chosenB[i] == 0)
+						formula[i] = "y=" + chosenM[i] + "x";
+					else if (chosenB[i] > 0)
+						formula[i] = "y=" + chosenM[i] + "x+" + chosenB[i];
+					else
+						formula[i] = "y=" + chosenM[i] + "x" + chosenB[i];
+				}
+				foundDouble = false;
+				let j = 0;
+				while (j < i)
+				{
+					if (formula[i] == formula[j])
+					{
+						foundDouble = true;
+						break;
+					}
+					j++;
+				}
+					
+				if (!foundDouble)
+				{
+					drawExtendedLine(colors[i]);
+					i++;					
+				}
+
+			}
+		}
+
+		function drawAll()
+		{
+			rightColumnsVisible = false;
+			clearLines();
+			drawCoordinateSystem();
+			choseMB();
+            createRadioButtons();
+			rightGroup.style.opacity = '0';
+			rightGroup.style.pointerEvents = 'none';
+		}
+		
+        function drawPoint(x, y, color) {
+            coordCtx.beginPath();
+            coordCtx.arc(coordinateSystem.width / 2 + x * 18, coordinateSystem.height / 2 - y * 18, 3, 0, 2 * Math.PI);
+            coordCtx.fillStyle = color;
+            coordCtx.fill();
+
+            coordCtx.fillStyle = color;
+            coordCtx.font = '10px Arial';
+            coordCtx.textAlign = 'center';
+            coordCtx.direction = 'ltr';
+			
+			if (x > 0)
+				offsetX = -15
+			else
+				offsetX = 15;
+			if (y > 0)
+				offsetY = 15;
+			else
+				offsetY = -15;
+		
+            coordCtx.fillText("(" + x +", " + y + ")",
+				coordinateSystem.width / 2 + x * 18 + offsetX, coordinateSystem.height / 2 - y * 18 + offsetY);			
+        }
+		
+		function setHint()
+		{
+			if (selectedPoints[0] != null && selectedPoints[1] == null)
+			{
+				for (let i = 0; i < currentLevel; i++)
+				{
+					if (formulaLocation[i] == selectedPoints[0])
+					{
+						selectedPoints[0] = i;
+						selectedPoints[1] = selectedPoints[0];
+						drawLine(0, 1, formulaLocation[i], i, false);
+						formulaLocationByUser[i] = formulaLocation[i];
+						selectedPoints[0];
+						const radio1 = document.getElementById(`radio1_${formulaLocation[i]+1}`);
+						radio1.checked = false;
+						break;
+					}
+				}
+				selectedPoints[0] = null;
+				selectedPoints[1] = null;
+			}
+			else if (selectedPoints[0] == null && selectedPoints[1] != null)
+			{
+				selectedPoints[0] = formulaLocation[selectedPoints[1]];
+				drawLine(0, 1, formulaLocation[selectedPoints[1]], selectedPoints[1], false);
+				formulaLocationByUser[selectedPoints[1]] = formulaLocation[selectedPoints[1]];
+				const radio1 = document.getElementById(`radio2_${selectedPoints[1]+1}`);
+				radio1.checked = false;
+				selectedPoints[0] = null;
+				selectedPoints[1] = null;
+			}
+		}
+		
+		function checkSolution()
+		{
+			correctColors = '';
+			let count = 0;
+			for (let i = 0; i < currentLevel; i++)
+				if (formulaLocation[i] ==
+						formulaLocationByUser[i])
+				{
+					count++;
+					correctColors += 
+						colorsH[i] + " ";
+				}
+			return count;
+		}
+
+        rectangles.forEach(rect => {
+            rect.addEventListener('click', () => {
+				if (waitingConfirm)
+					return;
+				if (rect.textContent == 'פתרון בבקשה')
+				{
+					waitingConfirm = true;
+					toggleRightColumns();
+					drawSolution();
+					solutionModal.style.display = 'block';
+
+					potentialScore += 10 * currentLevel;
+					potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+				}
+				else if (rect.textContent == 'אפשר רמז ?')
+				{
+					if (selectedPoints[0] == null && selectedPoints[1] == null)
+						partialModal.style.display = 'block';
+					else
+					{
+						setHint();						
+						cumulativeScore-= 10;
+						cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+						hintModal.style.display = 'block';
+					}
+				}
+				else if (rect.textContent == 'יש לי תשובה')
+				{
+					waitingConfirm = true;
+					potentialScore += 10 * currentLevel;
+					potentialScoreInfo.textContent = `ניקוד אפשרי : ${potentialScore}`;
+					points = checkSolution();
+					cumulativeScore += points * 10;
+					cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+					if (points == currentLevel)
+						correctModal.style.display = 'block';
+					else if (points == 0)
+					{
+						toggleRightColumns();
+						drawSolution();
+						errorText1.textContent = "תשובה לגמרי לא נכונה.";
+						errorText2.textContent = '';
+						errorModal.style.display = 'block';
+					}
+					else
+					{
+						toggleRightColumns();
+						drawSolution();
+						errorText1.textContent = "תשובה נכונה חלקית.";
+						errorText2.textContent =  points + " (" + correctColors + " )" + " נכונים מתוך " + currentLevel;
+						errorModal.style.display = 'block';
+					}
+				}
+				else if (rect.textContent == 'נקה')
+					clearLines();
+            });
+        });
+
+        coordinateSystem.addEventListener('click', function(event) {
+            const rect = coordinateSystem.getBoundingClientRect();
+            const x = event.clientX - rect.left;
+            const y = event.clientY - rect.top;
+
+			const times = 1;
+
+            pointedX = Math.round((x - 178.5) / 18 * times); // 11 / 10);
+            pointedY = Math.round((178.5 - y) / 18 * times); // 11 / 10);
+			drawPoint(pointedX, pointedY, 'black');
+			cumulativeScore--;
+			cumulativeScoreInfo.textContent = `ניקוד מצטבר : ${cumulativeScore}`;
+//            coordinates.textContent = `קואורדינטות: (${svgX}, ${svgY})`;
+        });
+/*
+		window.onclick = function(event) {
+			if (event.target == solutionModal || event.target == hintModal || event.target == partialModal || event.target == correctModal || event.target == errorModal) {
+				correctModal.style.display = "none";
+				partialModal.style.display = "none";
+				errorModal.style.display = "none";
+				solutionModal.style.display = "none";
+				hintModal.style.display = "none";
+			}
+		}
+
+		document.querySelectorAll('.close').forEach(closeBtn => {
+			closeBtn.onclick = function() {
+				correctModal.style.display = "none";
+				partialModal.style.display = "none";
+				errorModal.style.display = "none";
+				solutionModal.style.display = "none";
+				hintModal.style.display = "none";
+			}
+		});
+*/
+
+		document.getElementById('solutionConfirm').onclick = function() {
+			solutionModal.style.display = "none";
+			waitingConfirm = false;
+			drawAll();
+		}
+
+		document.getElementById('hintConfirm').onclick = function() {
+			hintModal.style.display = "none";
+		}
+
+		document.getElementById('errorConfirm').onclick = function() {
+			errorModal.style.display = "none";
+			waitingConfirm = false;
+			drawAll();
+		}
+
+		document.getElementById('correctConfirm').onclick = function() {
+			correctModal.style.display = "none";
+			waitingConfirm = false;
+			drawAll();
+		}
+
+		document.getElementById('partialConfirm').onclick = function() {
+			partialModal.style.display = "none";
+			drawAll();
+		}
+
+        levelSelect.addEventListener('change', () => {
+        currentLevel = parseInt(levelSelect.value) || 1;
+        drawAll();
+//		currevntLevelInfo.textContent = `רמה : ${currentLevel}`;
+});
+        window.onload = () => {
+			setInterval(updateTimer, 1000); // עדכון הטיימר כל שנייה
+            initializeCanvases();
+        };
+
+        window.onresize = () => {
+//            initializeCanvases();
+//            redrawLines(-1);
+        };
+    </script>
+</body>
+</html>
