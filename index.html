@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מתמטיקה</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px;
+            position: relative;
+            min-height: 100vh;
+        }
+        h1 {
+            text-align: center;
+        }
+        .container {
+            display: flex;
+            justify-content: space-around;
+            margin-bottom: 60px;
+        }
+        .column {
+            text-align: center;
+            flex: 1;
+            margin: 0 10px;
+        }
+        .box {
+            width: 200px;
+            height: 50px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            margin: 10px auto;
+            cursor: pointer;
+            text-decoration: none;
+            color: white;
+            font-weight: bold;
+            transition: opacity 0.3s;
+        }
+        .box:hover {
+            opacity: 0.8;
+        }
+        .column:nth-child(1) .box:nth-child(2) { background-color: brown; }
+        .column:nth-child(1) .box:nth-child(3) { background-color: brown; }
+        .column:nth-child(1) .box:nth-child(4) { background-color: brown; }
+        .column:nth-child(1) .box:nth-child(5) { background-color: brown; }
+        .column:nth-child(1) .box:nth-child(6) { background-color: brown; }
+        .column:nth-child(1) .box:nth-child(7) { background-color: brown; }
+        .column:nth-child(1) .box:nth-child(8) { background-color: brown; }
+        .column:nth-child(1) .box:nth-child(9) { background-color: brown; }
+        .column:nth-child(2) .box:nth-child(2) { background-color: purple; }
+        .column:nth-child(2) .box:nth-child(3) { background-color: purple; }
+        .column:nth-child(2) .box:nth-child(4) { background-color: purple; }
+        .column:nth-child(2) .box:nth-child(5) { background-color: purple; }
+        .column:nth-child(3) .box:nth-child(2) { background-color: orange; }
+        .column:nth-child(3) .box:nth-child(3) { background-color: orange; }
+        .column:nth-child(4) .box:nth-child(2) { background-color: green; }
+        .column:nth-child(4) .box:nth-child(3) { background-color: green; }
+        .copyright {
+            position: absolute;
+            bottom: 100px;
+            left: 10px;
+            background-color: #f0f0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 0.8em;
+        }
+        .email-container {
+            position: fixed;
+            bottom: 30px;
+            left: 10px;
+            font-family: Arial, sans-serif;
+            font-size: 14px;
+        }
+
+        .email-container a {
+            color: #0066cc;
+            text-decoration: none;
+        }
+
+        .email-container a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+<body>
+    <h1>מתמטיקה</h1>
+    <div class="container">
+        <div class="column">
+            <h2>כיתה ז'</h2>
+            <a href="numbers machine.html" class="box">מציאת כלל</a>
+            <a href="add sub negatives.html" class="box">חיבור וחיסור מספרים מכוונים</a>
+            <a href="combining like terms.html" class="box">כינוס איברים</a>
+            <a href="solve equation.html" class="box">פתרון משוואה</a>
+            <a href="order of operations.html" class="box">חישוב והצבה לפי סדר פעולות</a>
+            <a href="rectangle.html" class="box">היקף ושטח מלבן</a>
+            <a href="parallel lines.html" class="box">זוויות קדקדיות, צמודות ובין מקבילים</a>
+            <a href="angles.html" class="box">חישוב זוויות</a>
+        </div>
+        <div class="column">
+            <h2>כיתה ח'</h2>
+            <a href="coordinates.html" class="box">נקודה במערכת צירים</a>
+            <a href="findLines.html" class="box">זיהוי גרף של פונקציה קווית</a>
+            <a href="y=mx+b.html" class="box">מציאת משוואת ישר לפי שתי נקודות עליו</a>
+            <a href="congruent triangles.html" class="box">זיהוי משולשים חופפים</a>
+        </div>
+        <div class="column">
+            <h2>כיתה ט'</h2>
+            <a href="two-functions.html" class="box">מציאת חיתוך בין שתי פונקציות</a>
+            <a href="function investigation.html" class="box">חקירת פונקציה</a>
+        </div>
+        <div class="column">
+            <h2>משחקים</h2>
+            <a href="buildExerciseFromDigits.html" class="box">בנה תרגיל</a>
+            <a href="It's about time.html" class="box">הגיע הזמן</a>
+        </div>
+    </div>
+    <div class="copyright">
+        כל הזכויות שמורות ל-עירן בהט פטל &copy;
+    </div>
+    <div class="email-container">
+        הערות ובקשות : <a href="mailto:eranbahatpetel@gmail.com">eranbahatpetel@gmail.com</a>
+    </div>
+</body>
+</html>
