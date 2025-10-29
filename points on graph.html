@@ -1,0 +1,499 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק הפונקציה הקווית</title>
+    <style>
+        html, body {
+            height: 100%;
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        .top-bar, .menu-bar {
+            flex-shrink: 0;
+        }
+        .top-bar {
+            background-color: #e0e0e0;
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 1.1em;
+        }
+        .timer { font-weight: bold; }
+        .menu-bar {
+            background-color: #f0f0f0;
+            padding: 10px;
+            display: flex;
+            justify-content: center;
+            gap: 25px;
+            border-bottom: 1px solid #ddd;
+        }
+
+        .content-wrapper {
+            flex-grow: 1;
+            display: flex;
+            padding: 20px;
+            gap: 20px;
+            min-height: 0;
+        }
+
+        .sidebar {
+            flex-shrink: 0;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            width: 200px;
+        }
+        #function-display {
+            font-size: 1.5em;
+            font-family: 'Times New Roman', Times, serif;
+            padding: 20px;
+            border: 2px solid #333;
+            background-color: #fff;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .boxes-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .color-box, #new-exercise-btn {
+            padding: 15px;
+            color: white;
+            border-radius: 8px;
+            cursor: pointer;
+            text-align: center;
+            font-size: 1.1em;
+            font-weight: bold;
+            transition: background-color 0.3s;
+            border: none;
+        }
+
+        main {
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100%;
+        }
+        canvas {
+            border: 2px solid #333;
+            background-color: #ffffff;
+            cursor: crosshair;
+        }
+
+        #green-box { background-color: #2ecc71; }
+        #blue-box { background-color: #3498db; }
+        #red-box { background-color: #e74c3c; }
+
+        .disabled {
+            cursor: not-allowed !important;
+            pointer-events: none;
+        }
+        #red-box.disabled { background-color: #f8a59b !important; }
+        #green-box.disabled { background-color: #a3e4b9 !important; }
+        #blue-box.disabled { background-color: #a9d7f3 !important; }
+
+        #score-container {
+            border: 2px solid #333;
+            background-color: #fff;
+            padding: 15px;
+            border-radius: 8px;
+        }
+        #score-container p { margin: 5px 0; font-size: 1.1em; }
+        #score-container h3 { margin: 10px 0 15px 0; text-align: center; }
+        #new-exercise-btn {
+            width: 100%;
+            background-color: #f0ad4e;
+        }
+        .hidden {
+            display: none !important;
+        }
+
+        .main-text {
+            font-size: 1.1em;
+            font-weight: bold;
+        }
+        .sub-text {
+            font-size: 0.8em;
+            font-weight: normal;
+        }
+        #blue-box {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            line-height: 1.3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <span id="score-display">ניקוד מצטבר: 0</span>
+        <div id="stopwatch" class="timer">00:00:00</div>
+    </div>
+
+    <div class="menu-bar">
+        <select id="functionTypeSelect">
+            <option value="random">לא מקביל לצירים</option>
+            <option value="horizontal">מקביל לציר ה-X</option>
+            <option value="vertical">מקביל לציר ה-Y</option>
+            <option value="all">כל הסוגים</option>
+        </select>
+    </div>
+
+    <div class="content-wrapper">
+        <div class="sidebar">
+            <div id="function-display"></div>
+            <div class="boxes-container">
+                <div id="green-box" class="color-box" onclick="revealGraphAndScore()">יש לי פתרון</div>
+                <div id="blue-box" class="color-box" onclick="requestHint()">
+                    <span class="main-text">רמז בבקשה</span>
+                    <span class="sub-text">עולה 2 נקודות</span>
+                </div>
+                <div id="red-box" class="color-box" onclick="giveUp()">פתרון בבקשה</div>
+            </div>
+
+            <div id="score-container" class="hidden">
+                <p>נקודות נכונות: <strong id="correct-points">0</strong></p>
+                <p>נקודות שגויות: <strong id="incorrect-points">0</strong></p>
+                <h3>ניקוד: <span id="final-score">0</span></h3>
+            </div>
+            <button id="new-exercise-btn" class="hidden">תרגיל חדש</button>
+        </div>
+        <main>
+            <canvas id="axisCanvas"></canvas>
+        </main>
+    </div>
+
+    <script>
+        // --- תפיסת אלמנטים ---
+        const timerElement = document.getElementById('stopwatch');
+        const canvas = document.getElementById('axisCanvas');
+        const functionDisplay = document.getElementById('function-display');
+        const redBox = document.getElementById('red-box');
+        const greenBox = document.getElementById('green-box');
+        const blueBox = document.getElementById('blue-box');
+        const scoreContainer = document.getElementById('score-container');
+        const correctPointsSpan = document.getElementById('correct-points');
+        const incorrectPointsSpan = document.getElementById('incorrect-points');
+        const finalScoreSpan = document.getElementById('final-score');
+        const newExerciseBtn = document.getElementById('new-exercise-btn');
+        const scoreDisplay = document.getElementById('score-display');
+        const functionTypeSelect = document.getElementById('functionTypeSelect');
+        const ctx = canvas.getContext('2d');
+        const canvasContainer = canvas.parentElement;
+
+        // --- משתנים גלובליים ---
+        const gridSize = 20;
+        let points = [];
+        let showGraph = false;
+        let m, b;
+        let cumulativeScore = 0;
+        const functionTypes = ['random', 'horizontal', 'vertical'];
+
+        // --- פונקציות מרכזיות ---
+
+        function startNewExercise() {
+            scoreContainer.classList.add('hidden');
+            newExerciseBtn.classList.add('hidden');
+
+            points = [];
+            showGraph = false;
+
+            let selectedType = functionTypeSelect.value;
+            let actualType = selectedType;
+
+            if (selectedType === 'all') {
+                const rand = Math.random();
+                if (rand < 0.6) { actualType = 'random'; }
+                else if (rand < 0.9) { actualType = 'horizontal'; }
+                else { actualType = 'vertical'; }
+            }
+
+            if (actualType === 'horizontal') {
+                m = 0; b = getRandomParam();
+                 if (canvas.height > 0) {
+                     const maxUnitsY = Math.floor(canvas.height / 2 / gridSize);
+                     if (Math.abs(b) > maxUnitsY) b = Math.sign(b) * Math.floor(Math.random() * (maxUnitsY + 1));
+                     if (b === 0) b = (Math.random() < 0.5 ? 1 : -1) * (Math.floor(Math.random() * maxUnitsY) + 1);
+                 }
+            } else if (actualType === 'vertical') {
+                m = Infinity; b = getRandomParam();
+                 if (canvas.width > 0) {
+                     const maxUnitsX = Math.floor(canvas.width / 2 / gridSize);
+                     if (Math.abs(b) > maxUnitsX) b = Math.sign(b) * Math.floor(Math.random() * (maxUnitsX + 1));
+                     if (b === 0) b = (Math.random() < 0.5 ? 1 : -1) * (Math.floor(Math.random() * maxUnitsX) + 1);
+                 }
+            } else { m = getRandomParam(); b = getRandomParam(); }
+
+            displayFunction();
+            greenBox.classList.remove('disabled');
+            blueBox.classList.remove('disabled');
+            redBox.classList.remove('disabled');
+            updateButtonState();
+            requestAnimationFrame(redrawCanvas);
+        }
+
+        function revealGraphAndScore() {
+            showGraph = true;
+            calculateAndDisplayScore();
+            scoreContainer.classList.remove('hidden');
+            newExerciseBtn.classList.remove('hidden');
+            greenBox.classList.add('disabled');
+            blueBox.classList.add('disabled');
+            redBox.classList.add('disabled');
+            redrawCanvas();
+        }
+
+        function giveUp() {
+            showGraph = true;
+            newExerciseBtn.classList.remove('hidden');
+            greenBox.classList.add('disabled');
+            blueBox.classList.add('disabled');
+            redBox.classList.add('disabled');
+            redrawCanvas();
+        }
+
+        function calculateAndDisplayScore() {
+            let correctCount = 0;
+            const origin = canvas.width / 2;
+            points.forEach(p => {
+                const mathX = (p.x - origin) / gridSize;
+                const mathY = (origin - p.y) / gridSize;
+                let isCorrect = false;
+                if (m === Infinity) { isCorrect = Math.abs(mathX - b) < 0.1; }
+                else { isCorrect = Math.abs(mathY - (m * mathX + b)) < 0.1; }
+                if (p.type === 'user' && isCorrect) { correctCount++; }
+                else if (p.type === 'hint') { correctCount++; }
+            });
+            const incorrectCount = points.length - correctCount;
+            const finalScore = correctCount - incorrectCount;
+            cumulativeScore += finalScore;
+            correctPointsSpan.textContent = correctCount;
+            incorrectPointsSpan.textContent = incorrectCount;
+            finalScoreSpan.textContent = '\u200e' + finalScore;
+            scoreDisplay.textContent = 'ניקוד מצטבר: ' + '\u200e' + cumulativeScore;
+        }
+
+        function requestHint() {
+            if (showGraph) return;
+            const origin = canvas.width / 2;
+            const maxUnitsX = Math.floor(origin / gridSize);
+            const maxUnitsY = Math.floor(canvas.height / 2 / gridSize);
+            let potentialHints = [];
+             if (m === Infinity) {
+                 if (Math.abs(b) > maxUnitsX) { alert("הפונקציה מחוץ לתחום התצוגה, לא ניתן לתת רמז."); return; }
+                 for (let y = -maxUnitsY; y <= maxUnitsY; y++) {
+                     const canvasX = origin + b * gridSize; const canvasY = origin - y * gridSize;
+                      const pointExists = points.some(p => p.x === canvasX && p.y === canvasY);
+                      if (!pointExists) { potentialHints.push({x: canvasX, y: canvasY, type: 'hint'}); }
+                 }
+             } else {
+                 const yAtMinX = m * (-maxUnitsX) + b; const yAtMaxX = m * (maxUnitsX) + b;
+                 if ((yAtMinX > maxUnitsY && yAtMaxX > maxUnitsY) || (yAtMinX < -maxUnitsY && yAtMaxX < -maxUnitsY)) { alert("הפונקציה מחוץ לתחום התצוגה ברובה, לא ניתן לתת רמז."); return; }
+                for (let x = -maxUnitsX; x <= maxUnitsX; x++) {
+                    const y = m * x + b;
+                    if (y >= -maxUnitsY && y <= maxUnitsY && Math.abs(y - Math.round(y)) < 0.01) {
+                        const roundedY = Math.round(y);
+                        const canvasX = origin + x * gridSize; const canvasY = origin - roundedY * gridSize;
+                        const pointExists = points.some(p => p.x === canvasX && p.y === canvasY);
+                        if (!pointExists) { potentialHints.push({x: canvasX, y: canvasY, type: 'hint'}); }
+                    }
+                }
+             }
+            if (potentialHints.length > 0) {
+                const hint = potentialHints[Math.floor(Math.random() * potentialHints.length)];
+                points.push(hint);
+                cumulativeScore -= 2;
+                scoreDisplay.textContent = 'ניקוד מצטבר: ' + '\u200e' + cumulativeScore;
+                redrawCanvas();
+                updateButtonState();
+            } else {
+                const allPointsMarked = points.length > 0;
+                if (allPointsMarked) alert("כל הנקודות הנכונות כבר סומנו!");
+                 else alert("אין נקודות שלמות על הקו בתחום התצוגה.");
+            }
+        }
+
+        // --- פונקציות עזר וציור ---
+
+        function getRandomParam() {
+            let value;
+            do { value = Math.floor(Math.random() * 11) - 5; } while (value === 0);
+            return value;
+        }
+
+        function displayFunction() {
+             let functionText = "";
+            if (m === Infinity) { functionText = `x = ${b}`; }
+            else {
+                let b_display = b === 0 ? '' : (b > 0 ? ` + ${b}` : ` - ${Math.abs(b)}`);
+                let m_display = "";
+                 if (m === 1) m_display = 'x';
+                 else if (m === -1) m_display = '-x';
+                 else if (m !== 0) m_display = `${m}x`;
+                 if (m === 0) functionText = `y = ${b}`;
+                 else if (b === 0) functionText = `y = ${m_display}`;
+                 else functionText = `y = ${m_display}${b_display}`;
+            }
+            functionDisplay.textContent = functionText;
+        }
+
+        // ===== עדכון לוגיקת הכפתורים =====
+        function updateButtonState() {
+            // כפתור ירוק ("יש לי פתרון") - זמין רק אם יש לפחות 2 נקודות
+            if (points.length >= 2) {
+                greenBox.classList.remove('disabled');
+            } else {
+                greenBox.classList.add('disabled');
+            }
+
+            // כפתור כחול ("רמז") - זמין רק אם אין נקודות כלל
+            if (points.length > 0) {
+                blueBox.classList.add('disabled');
+            } else {
+                blueBox.classList.remove('disabled');
+            }
+            
+            // כפתור אדום ("פתרון בבקשה") - תמיד זמין עד לפתרון
+            // (מנוטרל בתוך פונקציות הפתרון עצמן)
+        }
+
+        function redrawCanvas() {
+            if (!canvasContainer) return;
+            const containerWidth = canvasContainer.clientWidth;
+            const containerHeight = canvasContainer.clientHeight;
+            if (containerWidth <= 0 || containerHeight <= 0) return;
+            const size = Math.max(gridSize * 2, Math.min(containerWidth, containerHeight));
+            if (canvas.width !== size || canvas.height !== size) {
+                 canvas.width = size; canvas.height = size;
+            }
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            drawGridAxesAndLabels();
+            if (showGraph) { drawLineFunction(); }
+            drawAllPoints();
+        }
+
+        function drawGridAxesAndLabels() {
+             const origin = canvas.width / 2;
+            const maxUnits = Math.max(1, Math.floor(origin / gridSize));
+            ctx.beginPath(); ctx.strokeStyle = '#cccccc';
+            for (let i = 1; i <= maxUnits; i++) {
+                ctx.moveTo(origin + i * gridSize, 0); ctx.lineTo(origin + i * gridSize, canvas.height);
+                ctx.moveTo(origin - i * gridSize, 0); ctx.lineTo(origin - i * gridSize, canvas.height);
+                ctx.moveTo(0, origin + i * gridSize); ctx.lineTo(canvas.width, origin + i * gridSize);
+                ctx.moveTo(0, origin - i * gridSize); ctx.lineTo(canvas.width, origin - i * gridSize);
+            }
+            ctx.stroke();
+            ctx.beginPath(); ctx.strokeStyle = '#333'; ctx.lineWidth = 2;
+            ctx.moveTo(0, origin); ctx.lineTo(canvas.width, origin);
+            ctx.moveTo(origin, 0); ctx.lineTo(origin, canvas.height);
+            ctx.stroke();
+            ctx.fillStyle = '#333'; ctx.font = '10px Arial'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.lineWidth = 1;
+            for (let i = -maxUnits; i <= maxUnits; i++) {
+                if (i === 0) continue;
+                const xPos = origin + i * gridSize;
+                ctx.beginPath(); ctx.moveTo(xPos, origin - 5); ctx.lineTo(xPos, origin + 5); ctx.stroke();
+                ctx.fillText('\u200e' + i, xPos, origin + 15);
+                const yPos = origin - i * gridSize;
+                ctx.beginPath(); ctx.moveTo(origin - 5, yPos); ctx.lineTo(origin + 5, yPos); ctx.stroke();
+                ctx.fillText('\u200e' + i, origin - 15, yPos);
+            }
+        }
+
+        function drawLineFunction() {
+             const origin = canvas.width / 2;
+            const maxUnits = Math.max(1, Math.floor(origin / gridSize));
+            ctx.beginPath(); ctx.strokeStyle = '#3498db'; ctx.lineWidth = 2;
+            if (m === Infinity) {
+                 const canvasX = origin + b * gridSize;
+                  if (canvasX >= 0 && canvasX <= canvas.width) { ctx.moveTo(canvasX, 0); ctx.lineTo(canvasX, canvas.height); }
+            } else {
+                 let x1_render = -maxUnits; let y1_render = m * x1_render + b;
+                 let x2_render = maxUnits; let y2_render = m * x2_render + b;
+                 if (Math.abs(y1_render) > maxUnits || Math.abs(y2_render) > maxUnits) {
+                     x1_render = -origin / gridSize; y1_render = m * x1_render + b;
+                     x2_render = origin / gridSize; y2_render = m * x2_render + b;
+                 }
+                const canvasX1 = origin + x1_render * gridSize; const canvasY1 = origin - y1_render * gridSize;
+                const canvasX2 = origin + x2_render * gridSize; const canvasY2 = origin - y2_render * gridSize;
+                 ctx.moveTo(canvasX1, canvasY1); ctx.lineTo(canvasX2, canvasY2);
+            }
+            ctx.stroke();
+        }
+
+        function drawAllPoints() {
+            const origin = canvas.width / 2;
+            points.forEach(p => {
+                let color = '#e74c3c';
+                if (p.type === 'hint') { color = '#3498db'; }
+                if (showGraph) {
+                    const mathX = (p.x - origin) / gridSize;
+                    const mathY = (origin - p.y) / gridSize;
+                    let isCorrect = false;
+                    if (m === Infinity) { isCorrect = Math.abs(mathX - b) < 0.1; }
+                    else { isCorrect = Math.abs(mathY - (m * mathX + b)) < 0.1; }
+                    if (p.type === 'user') { color = isCorrect ? '#2ecc71' : '#e74c3c'; }
+                }
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                 const drawX = Math.max(0, Math.min(canvas.width, p.x));
+                 const drawY = Math.max(0, Math.min(canvas.height, p.y));
+                ctx.arc(drawX, drawY, 4, 0, 2 * Math.PI);
+                ctx.fill();
+            });
+        }
+
+        function handleCanvasClick(event) {
+            if (showGraph) return;
+             const origin = canvas.width / 2;
+            const rect = canvas.getBoundingClientRect();
+            const mouseX = event.clientX - rect.left;
+            const mouseY = event.clientY - rect.top;
+            const relativeX = mouseX - origin;
+            const relativeY = mouseY - origin;
+            const snappedRelativeX = Math.round(relativeX / gridSize) * gridSize;
+            const snappedRelativeY = Math.round(relativeY / gridSize) * gridSize;
+            const finalX = origin + snappedRelativeX;
+            const finalY = origin + snappedRelativeY;
+             const maxUnits = Math.floor(origin / gridSize);
+             const mathX = snappedRelativeX / gridSize;
+             const mathY = -snappedRelativeY / gridSize;
+             if (Math.abs(mathX) <= maxUnits && Math.abs(mathY) <= maxUnits) {
+                 const existingPointIndex = points.findIndex(p => p.x === finalX && p.y === finalY);
+                if (existingPointIndex > -1) { points.splice(existingPointIndex, 1); }
+                else { points.push({ x: finalX, y: finalY, type: 'user' }); }
+                redrawCanvas();
+                updateButtonState();
+            }
+        }
+
+        let stopWatchTotalSeconds = 0;
+        setInterval(() => {
+            stopWatchTotalSeconds++;
+            const h = String(Math.floor(stopWatchTotalSeconds / 3600)).padStart(2, '0');
+            const m = String(Math.floor((stopWatchTotalSeconds % 3600) / 60)).padStart(2, '0');
+            const s = String(stopWatchTotalSeconds % 60).padStart(2, '0');
+            timerElement.textContent = `${h}:${m}:${s}`;
+        }, 1000);
+
+        // --- Event Listeners ---
+        functionTypeSelect.addEventListener('change', startNewExercise);
+        window.addEventListener('resize', redrawCanvas);
+        canvas.addEventListener('click', handleCanvasClick);
+        newExerciseBtn.addEventListener('click', startNewExercise);
+
+        // --- Initial Load ---
+        startNewExercise();
+    </script>
+</body>
+</html>
