@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>זיהוי נקודות על גרף פונקציה</title>
+    <title>חקירת פונקציה</title>
     <style>
         .math {
             direction: ltr;
@@ -359,7 +359,7 @@
             <button id="solutionConfirm">אישור</button>
     </div>
  <script>
-        const canvas = document.getElementById('coordinateSystem');
+		const canvas = document.getElementById('coordinateSystem');
         const ctx = canvas.getContext('2d');
         const coordinates = document.getElementById('coordinates');
         const randomPointDisplay = document.getElementById('randomPoint');
@@ -392,7 +392,7 @@
 
         const rectangles = [
             { text: 'פתרון בבקשה', color: 'red' },
-            { text: 'אפשר רמז ?', color: 'blue' },
+            { text: 'אפשר רמז ?', color: 'blue'},
             { text: 'יש לי תשובה', color: 'green' }
         ];
 
@@ -493,8 +493,8 @@
 				buttonCtx.fillText(text1, x + width / 2, y + height / 2);
 			else
 			{
-				buttonCtx.fillText(text1, x + width / 2, y + height / 6);
-				buttonCtx.fillText(text2, x + width / 2, y + 3 * height / 6);
+				buttonCtx.fillText(text1, x + width / 2, y + height / 2);
+				buttonCtx.fillText(text2, x + width / 2, y + 5 * height / 6);
 			}
 
             return { x, y, width, height, text1, color };
@@ -509,7 +509,10 @@
 
             rectangles.forEach((rect, i) => {
                 const x = startX + (rectWidth + 20) * i;
-                rect.bounds = drawRectangleWithText(x, y, rectWidth, rectHeight, rect.text, '', rect.color);
+				if (i == 1)
+					rect.bounds = drawRectangleWithText(x, y, rectWidth, rectHeight, rect.text, 'נשארו ' + (2 - hintNumber), rect.color);
+				else
+					rect.bounds = drawRectangleWithText(x, y, rectWidth, rectHeight, rect.text,'', rect.color);				
             });
         }
 		
@@ -821,7 +824,8 @@
 		function setHint(showSolution)
 		{
 			hintNumber++;
-			
+			if (hintNumber <= 2)
+				drawBottomRectangles();		
 			if (hintNumber == 1)
 			{
 				canvas.style.display = 'block';
@@ -1216,12 +1220,16 @@
 */
 
 	// קריאה לפונקציות בעת טעינת הדף ושינוי גודל החלון
+/*
 	window.addEventListener('load', () => {
 		initializeCanvas();
 		setInterval(updateTimer, 1000); // עדכון הטיימר כל שנייה
 	});
     window.addEventListener('resize', initializeCanvas);
+*/
 
+		initializeCanvas();
+		setInterval(updateTimer, 1000); // עדכון הטיימר כל שנייה
     // קריאה מיידית לפונקציית האתחול
 //    if (document.readyState === 'complete') {
 //        initializeCanvas();

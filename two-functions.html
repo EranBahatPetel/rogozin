@@ -1072,12 +1072,16 @@
 */
 
 	// קריאה לפונקציות בעת טעינת הדף ושינוי גודל החלון
+/*
 	window.addEventListener('load', () => {
 		initializeCanvas();
 		setInterval(updateTimer, 1000); // עדכון הטיימר כל שנייה
 	});
     window.addEventListener('resize', initializeCanvas);
+*/
 
+		initializeCanvas();
+		setInterval(updateTimer, 1000); // עדכון הטיימר כל שנייה
     // קריאה מיידית לפונקציית האתחול
 //    if (document.readyState === 'complete') {
 //        initializeCanvas();

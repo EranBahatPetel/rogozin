@@ -91,7 +91,71 @@
             display: block;
             margin: 10px 0;
         }
-    </style>
+/* צבעים לאפשרויות ב-select */
+select option:nth-child(1) { color: #999; }
+select option:nth-child(2) { color: #2196F3; font-weight: bold; }
+select option:nth-child(3) { color: #d32f2f; font-weight: bold; }
+select option:nth-child(4) { color: #4CAF50; font-weight: bold; }
+select option:nth-child(5) { color: #9C27B0; font-weight: bold; }
+select option:nth-child(6) { color: #FF5722; font-weight: bold; }
+select option:nth-child(7) { color: #795548; font-weight: bold; }
+select option:nth-child(8) { color: #607D8B; font-weight: bold; }
+
+/* הסתרת חץ ושמירת צבע נבחר */
+select.hide-arrow {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+select.selected-0 { color: #999; }
+select.selected-1 { color: #2196F3; font-weight: bold; }
+select.selected-2 { color: #d32f2f; font-weight: bold; }
+select.selected-3 { color: #4CAF50; font-weight: bold; }
+select.selected-4 { color: #9C27B0; font-weight: bold; }
+select.selected-5 { color: #FF5722; font-weight: bold; }
+select.selected-6 { color: #795548; font-weight: bold; }
+select.selected-7 { color: #607D8B; font-weight: bold; }
+
+select {
+    border: none;
+    outline: none;
+}
+
+select:focus {
+    outline: none;
+    border: none;
+}
+.selected-items-panel {
+    position: absolute;
+    top: 200px;
+    left: 50px;
+    width: 300px;
+    padding: 15px;
+    background-color: rgba(245, 245, 245, 0.95);
+    border: 2px solid #ccc;
+    border-radius: 8px;
+    max-height: 400px;
+    overflow-y: auto;
+    z-index: 100;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+selected-items-panel h3 {
+    margin-top: 0;
+    color: #333;
+    text-align: center;
+}
+
+.selected-line {
+    margin-bottom: 8px;
+    padding: 8px;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+</style>
 </head>
 <body>
     <div class="header">
@@ -121,13 +185,18 @@
 
     <div class="text-bar" id="concatenated-text">טקסט באמצע</div>
 
+<div class="selected-items-panel">
+    <h3>פתרונות :</h3>
+    <div id="selectedList" dir="ltr"></div>
+</div>
+
     <div id="r2" class="input-row" dir="ltr">
 		<span id="r2d0">א</span>
 		<span id="r2do1">
-				<select id="r2o00" onchange="updateText()"><option> </option><option>+</option><option>-</option></select>
-<!-- 				<select id="r2o00" onchange="updateText()"><option> </option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
- --><!-- 				<select id="r2o01" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r2o02" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r2o00" onchange="updateText(); updateSelectStyle(this,true);"><option> </option><option>+</option><option>-</option></select>
+<!-- 				<select id="r2o00" onchange="updateText(); updateSelectStyle(this,true);"><option> </option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+ --><!-- 				<select id="r2o01" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r2o02" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
  -->			<span id="r2d1">ב</span>
 		</span>
         <span id="r2result"> = 0</span>
@@ -135,144 +204,144 @@
 
     <div id="r3" class="input-row" dir="ltr">
 		<span id="r3do0">
-				<select id="r3o00" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r3o01" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r3o02" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o00" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o01" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o02" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r3d0">א</span>
 		</span>
 		<span id="r3do1">
-				<select id="r3o10" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r3o11" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r3o12" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o10" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o11" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o12" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r3d1">ב</span>
 		</span>
 		<span id="r3do2">
-				<select id="r3o20" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r3o21" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r3o22" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o20" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o21" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o22" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r3d2">אב</span>
 		</span>
 		<span id="r3do3">
-				<select id="r3o30" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r3o31" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r3o32" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o30" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o31" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r3o32" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 		</span>
         <span id="r3result"> = 0</span>
     </div>
 
     <div id="r4" class="input-row" dir="ltr">
 		<span id="r4do0">
-				<select id="r4o00" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r4o01" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r4o02" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o00" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o01" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o02" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r4d0">א</span>
 		</span>
 		<span id="r4do1">
-				<select id="r4o10" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r4o11" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r4o12" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o10" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o11" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o12" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r4d1">ב</span>
 		</span>
 		<span id="r4do2">
-				<select id="r4o20" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r4o21" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r4o22" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o20" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o21" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o22" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r4d2">אב</span>
 		</span>
 		<span id="r4do3">
-				<select id="r4o30" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r4o31" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r4o32" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o30" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o31" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o32" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r4d3">אב</span>
 		</span>
 		<span id="r4do4">
-				<select id="r4o40" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r4o41" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r4o42" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o40" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o41" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r4o42" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 		</span>
         <span id="r4result"> = 0</span>
     </div>
 
     <div id="r5" class="input-row" dir="ltr">
 		<span id="r5do0">
-				<select id="r5o00" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o01" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o02" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o00" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o01" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o02" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r5d0">א</span>
 		</span>
 		<span id="r5do1">
-				<select id="r5o10" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o11" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o12" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o10" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o11" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o12" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r5d1">ב</span>
 		</span>
 		<span id="r5do2">
-				<select id="r5o20" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o21" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o22" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o20" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o21" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o22" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r5d2">אב</span>
 		</span>
 		<span id="r5do3">
-				<select id="r5o30" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o31" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o32" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o30" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o31" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o32" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r5d3">אב</span>
 		</span>
 		<span id="r5do4">
-				<select id="r5o40" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o41" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o42" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o40" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o41" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o42" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r5d4">אב</span>
 		</span>
 		<span id="r5do5">
-				<select id="r5o50" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o51" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r5o52" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o50" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o51" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r5o52" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 		</span>
         <span id="r5result"> = 0</span>
     </div>
 
     <div id="r6" class="input-row" dir="ltr">
 		<span id="r6do0">
-				<select id="r6o00" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o01" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o02" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o00" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o01" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o02" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r6d0">א</span>
 		</span>
 		<span id="r6do1">
-				<select id="r6o10" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o11" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o12" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o10" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o11" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o12" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r6d1">ב</span>
 		</span>
 		<span id="r6do2">
-				<select id="r6o20" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o21" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o22" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o20" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o21" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o22" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r6d2">אב</span>
 		</span>
 		<span id="r6do3">
-				<select id="r6o30" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o31" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o32" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o30" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o31" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o32" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r6d3">אב</span>
 		</span>
 		<span id="r6do4">
-				<select id="r6o40" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o41" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o42" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o40" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o41" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o42" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r6d4">אב</span>
 		</span>
 		<span id="r6do5">
-				<select id="r6o50" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o51" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o52" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o50" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o51" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o52" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 			<span id="r6d5">אב</span>
 		</span>
 		<span id="r6do6">
-				<select id="r6o60" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o61" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
-				<select id="r6o62" onchange="updateText()"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o60" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o61" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
+				<select id="r6o62" onchange="updateText(); updateSelectStyle(this,true);"><option></option><option>+</option><option>-</option><option>×</option><option>/</option><option>(</option><option>)</option><option>^</option></select>
 		</span>
         <span id="r6result"> = 0</span>
     </div>
@@ -299,7 +368,7 @@
 
     <div class="modalOK" id="modalOK">
 		יפה מאוד ! <br>תשובה נכונה !
-        <br><br><button onclick="drawAll()">תרגיל נוסף</button>
+        <br><br><button onclick="drawAll()">תרגיל נוסף</button><button onclick="drawAll()">עוד פתרון</button>
     </div>
 
     <script>
@@ -635,6 +704,64 @@
         document.querySelectorAll('.controls select')[2].addEventListener('change', updateSpaces);
 
 		let totalPoints = 0;
+
+		// פונקציה לעדכון סגנון select (צבע והסתרת חץ)
+		let elements = [];
+		function updateSelectStyle(selectElement, doPush) {
+			// הסרת כל הקלאסים הקודמים
+			if (doPush)
+				elements.push(selectElement);
+			selectElement.className = selectElement.className.replace(/selected-\d+|hide-arrow/g, '');
+			
+			// הוספת קלאס צבע חדש ומסתיר חץ אם נבחרה אפשרות
+			if (selectElement.selectedIndex > 0) {
+				selectElement.classList.add('selected-' + selectElement.selectedIndex);
+				selectElement.classList.add('hide-arrow');
+			} else {
+				selectElement.classList.add('selected-0');
+			}
+		}
+		
+		function updateAllSelectStyle() {
+//			alert("a" + elements.length);
+			for (let i = 0; i < elements.length; i++)
+			{
+//				alert("b" + elements.length);
+				updateSelectStyle(elements[i], false);
+			}
+			elements = [];	
+//			alert("c" + elements.length);
+		}
+		
+		let selections = 1;
+		function addSelection(userExercise) {
+/*
+	if (selectElement.selectedIndex === 0) return;
+			
+			const selectedList = document.getElementById('selectedList');
+			const selectedText = selectElement.options[selectElement.selectedIndex].text;
+			
+			const existingItems = selectedList.querySelectorAll('.selected-line');
+			const alreadyExists = Array.from(existingItems).some(item => 
+				item.textContent === selectedText
+			);
+			
+			if (!alreadyExists) {
+*/
+				const newLine = document.createElement('div');
+				newLine.className = 'selected-line';
+				newLine.textContent = (selections++) + '.  ' + userExercise;
+				selectedList.appendChild(newLine);
+/*	} */
+		}
+
+		// פונקציה למחיקת כל הבחירות
+		function clearSelections() {
+			const selectedList = document.getElementById('selectedList');
+			selectedList.innerHTML = '';
+			selections = 1;
+		}
+
         function updateText() {
 //            const spans = document.querySelectorAll('.input-row span');
 //            const selects = document.querySelectorAll('.input-row select');
@@ -726,7 +853,9 @@
 	            document.getElementById('modalOK').style.display = 'block';
 				document.getElementById('modalOK').innerHTML = "יפה מאוד !" + "<br>" + 
 					"תשובה נכונה !" + "<br>" + points + " נקודות !" + "<br>" + 
-					"<button onclick='drawAll()'>תרגיל נוסף</button>" + "<br>";
+					"<button onclick='drawAll()'>תרגיל חדש</button>" + 
+					"<button onclick='initBoard(true)'>עוד פתרון</button>" + "<br>";
+				addSelection(userExercise);
 			}
             
 /*
@@ -778,7 +907,7 @@
             }
 			result = document.getElementById(`inputResult`).value;
             document.getElementById('inputModal').style.display = 'none';
-			initBoard();
+			initBoard(false);
 			solutionPlease.textContent = "תרגיל חדש";
         }
 
@@ -1213,14 +1342,18 @@
 			}
 		} // buildExercise
 		
-		function initBoard()
+		function initBoard(removeModal)
 		{
+			if (removeModal)
+				document.getElementById('modalOK').style.display = 'none';
+				
 			for (let i = 0; i < ros[digitsNumber - 2].length; i++)
 				for (let j = 0; j < ros[digitsNumber - 2][i].length; j++)
 				{
 					ros[digitsNumber - 2][i][j].selectedIndex = 0;
 				}
 			updateText();
+			updateAllSelectStyle();
 			for (let i = 0; i < digitsNumber; i++)
 				rds[digitsNumber - 2][i].textContent = '' + nums[i];
 			results[digitsNumber - 2].textContent =  ' = ' + result;
@@ -1239,7 +1372,8 @@
 			rs[digitsNumber - 2].style.display = 'block';
 			buildExercise();
 //			r2o00.selectedIndex = 0;
-			initBoard();
+			initBoard(false);
+			clearSelections();
 		}
 		drawAll();
     </script>
