@@ -177,6 +177,7 @@
             const scoreSpan = document.getElementById('score');
             const timerSpan = document.getElementById('timer');
             const difficultySelect = document.getElementById('difficulty');
+			let difficulty = 1;
             const exerciseScopeSelect = document.getElementById('exerciseScope'); // *** הוספה ***
             
             const checkAnswerBtn = document.getElementById('checkAnswer');
@@ -313,7 +314,7 @@
                 resetExerciseState();
                 
                 // --- *** שינוי: קריאת שני התפריטים *** ---
-                const difficulty = parseInt(difficultySelect.value);
+                difficulty = parseInt(difficultySelect.value);
                 const scope = exerciseScopeSelect.value;
                 // --- *** סוף שינוי *** ---
                 
@@ -935,12 +936,14 @@
                         const userValue = Number(userValueStr);
                         if (userValue === correctValue) {
                             correctCount++;
-                            exerciseScore++;
+                            //exerciseScore++;
+							exerciseScore += difficulty;
                             feedback.style.color = "green";
                             feedback.textContent = '✔';
                         } else {
                             wrongCount++;
-                            exerciseScore--;
+                            //exerciseScore--;
+                            exerciseScore-=difficulty;
                             feedback.style.color = "red";
                             feedback.textContent = `(התשובה: ${correctValue}°)`;
                         }
