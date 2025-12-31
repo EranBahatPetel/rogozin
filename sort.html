@@ -1,0 +1,282 @@
+<!-- שינויים ממה שג'מיני כותב -->
+<!-- בשיטה highlightCorrectPositions למיין לפי b - a -->
+<!-- בשיטה checkIsSortedAscending כיוון אי שוויון צריך להיות שמקום קטן יותר יש ערך קטן יותר -->
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>משחק מיון מספרים - עם בדיקת מצב</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 0; background-color: #f4f4f4; text-align: center; overflow-x: hidden; }
+        #status-bar { background-color: #555; color: white; padding: 10px; display: flex; justify-content: space-around; align-items: center; font-weight: bold; }
+        #settings-bar { background-color: #ddd; padding: 15px; display: flex; flex-wrap: wrap; justify-content: center; gap: 10px; align-items: center; }
+        input[type="number"] { width: 60px; padding: 5px; border: 1px solid #ccc; border-radius: 4px; direction: ltr; text-align: center; }
+        #seed { width: 180px; }
+        button { padding: 6px 16px; cursor: pointer; background-color: #333; color: white; border: none; border-radius: 4px; font-weight: bold; transition: 0.2s; }
+        button:hover { background-color: #000; }
+        .btn-clear { background-color: #c0392b; }
+        .btn-check { background-color: #2980b9; }
+        .btn-check:hover { background-color: #1a5276; }
+        
+        #game-container { margin: 20px auto; display: inline-grid; gap: 10px; padding: 20px; background: white; border-radius: 8px; box-shadow: 0 0 15px rgba(0,0,0,0.1); }
+        .number-box { 
+            width: 65px; height: 65px; display: flex; align-items: center; justify-content: center; 
+            border: 2px solid #333; font-size: 1.3em; font-weight: bold; cursor: pointer; 
+            user-select: none; transition: background 0.3s, color 0.3s; direction: ltr; background-color: white; 
+        }
+        
+        #win-message { 
+            position: fixed; top: 50%; right: -1000px; transform: translateY(-50%);
+            background-color: #e74c3c; color: white; padding: 60px 80px; font-size: 4em; 
+            font-weight: bold; border-radius: 40px 0 0 40px; box-shadow: -15px 0 30px rgba(0,0,0,0.3);
+            transition: right 0.7s cubic-bezier(0.175, 0.885, 0.32, 1.275); z-index: 2000;
+            pointer-events: none; text-align: center;
+        }
+        #win-message.show { right: 0; }
+        #planning-timer { color: red; font-size: 1.3em; margin: 10px; height: 30px; font-weight: bold; }
+        .radio-group { display: flex; align-items: center; gap: 5px; background: #eee; padding: 5px 10px; border-radius: 4px; }
+    </style>
+</head>
+<body>
+
+<div id="status-bar">
+    <div>מספר החלפות: <span id="swap-count">0</span></div>
+    <div>זמן מצטבר: <span id="timer-display">0</span> שניות</div>
+    <div id="target-swaps">הזינו ערכים ולחצו "משחק חדש"</div>
+</div>
+
+<div id="settings-bar">
+    <label>שורות: <input type="number" id="rows" placeholder="אקראי"></label>
+    <label>עמודות: <input type="number" id="cols" placeholder="אקראי"></label>
+    <label>מינימום: <input type="number" id="min-val" placeholder="0"></label>
+    <label>מקסימום: <input type="number" id="max-val" placeholder="אקראי"></label>
+    <label>Seed: <input type="number" id="seed"></label>
+    <label>זמן תכנון: <input type="number" id="plan-time" placeholder="0"></label>
+    <div class="radio-group">
+        <input type="checkbox" id="only-adjacent">
+        <label for="only-adjacent">רק סמוכים</label>
+    </div>
+    <button onclick="startNewGame()">משחק חדש</button>
+    <button onclick="resetCurrentGame()">מהתחלה</button>
+    <button class="btn-check" onclick="highlightCorrectPositions()">בדוק מצב</button>
+    <button class="btn-clear" onclick="clearAllInputs()">נקה הכל</button>
+</div>
+
+<div id="planning-timer"></div>
+<div id="game-container"></div>
+<div id="win-message">כל הכבוד !<br>סיימת למיין !</div>
+
+<script>
+    let swaps = 0, seconds = 0, timerInterval = null, planningInterval = null;
+    let isPlanning = false, isSwapping = false, firstCard = null;
+    let currentNumbers = [], initialOrder = [], currentSeed = 0;
+    let gRows = 0, gCols = 0;
+
+    function seededRandom() {
+        currentSeed = (currentSeed * 1664525 + 1013904223) % 4294967296;
+        return currentSeed / 4294967296;
+    }
+
+    function checkIsSortedAscending(arr) {
+        for (let i = 0; i < arr.length - 1; i++) {
+            if (Number(arr[i]) < Number(arr[i + 1])) return false; 
+        }
+        return true;
+    }
+
+    function highlightCorrectPositions() {
+        if (currentNumbers.length === 0) return;
+        
+        // יצירת מערך ממוין להשוואה
+        const sortedNumbers = [...currentNumbers].sort((a, b) => b - a);
+        const boxes = document.querySelectorAll('.number-box');
+
+        boxes.forEach(box => {
+            const index = parseInt(box.dataset.index);
+            const value = currentNumbers[index];
+
+            if (value === sortedNumbers[index]) {
+                const originalBg = box.style.backgroundColor;
+                const originalColor = box.style.color;
+                
+                box.style.backgroundColor = "#27ae60"; // ירוק
+                box.style.color = "white";
+
+                setTimeout(() => {
+                    box.style.backgroundColor = "white";
+                    box.style.color = "black";
+                }, 3000);
+            }
+        });
+    }
+
+    function calculateMinSwaps(arr) {
+        const isAdj = document.getElementById('only-adjacent').checked;
+        let sorted = [...arr].sort((a, b) => a - b);
+        
+        if (!isAdj) {
+            let n = arr.length;
+            let pairs = arr.map((val, idx) => [val, idx]).sort((a, b) => a[0] - b[0]);
+            let visited = new Array(n).fill(false);
+            let min = 0;
+            for (let i = 0; i < n; i++) {
+                if (visited[i] || pairs[i][1] === i) continue;
+                let cycleSize = 0, j = i;
+                while (!visited[j]) { visited[j] = true; j = pairs[j][1]; cycleSize++; }
+                if (cycleSize > 1) min += (cycleSize - 1);
+            }
+            return min;
+        } else {
+            let totalDist = 0;
+            arr.forEach((val, idx) => {
+                let targetIdx = sorted.indexOf(val);
+                let x1 = idx % gCols, y1 = Math.floor(idx / gCols);
+                let x2 = targetIdx % gCols, y2 = Math.floor(targetIdx / gCols);
+                totalDist += Math.abs(x1 - x2) + Math.abs(y1 - y2);
+            });
+            return Math.ceil(totalDist / 2);
+        }
+    }
+
+    function clearAllInputs() {
+        document.getElementById('rows').value = "";
+        document.getElementById('cols').value = "";
+        document.getElementById('min-val').value = "";
+        document.getElementById('max-val').value = "";
+        document.getElementById('seed').value = "";
+        document.getElementById('plan-time').value = "";
+        document.getElementById('only-adjacent').checked = false;
+    }
+
+    function startNewGame() {
+        clearInterval(timerInterval); clearInterval(planningInterval);
+        document.getElementById('win-message').classList.remove('show');
+        
+        let rowsInput = document.getElementById('rows');
+        let colsInput = document.getElementById('cols');
+        if (!rowsInput.value) rowsInput.value = Math.floor(Math.random() * 8) + 3;
+        if (!colsInput.value) colsInput.value = Math.floor(Math.random() * 8) + 3;
+        gRows = parseInt(rowsInput.value);
+        gCols = parseInt(colsInput.value);
+
+        let minInput = document.getElementById('min-val');
+        let maxInput = document.getElementById('max-val');
+        if (!minInput.value) minInput.value = 0;
+        if (!maxInput.value) maxInput.value = gRows * gCols * 10;
+        
+        let minVal = parseInt(minInput.value);
+        let maxVal = parseInt(maxInput.value);
+
+        if (maxVal - minVal < (gRows * gCols) - 1) {
+            alert("הטווח קטן מדי ביחס למספר המספרים שנבחר!");
+            return;
+        }
+
+        currentSeed = document.getElementById('seed').value === "" ? Date.now() : parseInt(document.getElementById('seed').value);
+        document.getElementById('seed').value = currentSeed;
+
+        let available = Array.from({length: maxVal - minVal + 1}, (_, i) => i + minVal);
+        for (let i = available.length - 1; i > 0; i--) {
+            const j = Math.floor(seededRandom() * (i + 1));
+            [available[i], available[j]] = [available[j], available[i]];
+        }
+        
+        let numbers = available.slice(0, gRows * gCols);
+        if (checkIsSortedAscending(numbers)) { startNewGame(); return; }
+
+        initialOrder = [...numbers];
+        document.getElementById('target-swaps').innerText = `יעד אופטימלי: ${calculateMinSwaps(numbers)} החלפות`;
+
+        initUI(numbers, gRows, gCols, parseInt(document.getElementById('plan-time').value) || 0, true);
+    }
+
+    function resetCurrentGame() {
+        document.getElementById('win-message').classList.remove('show');
+        initUI([...initialOrder], gRows, gCols, 0, false);
+    }
+
+    function initUI(numbers, r, c, planTime, resetStats) {
+        currentNumbers = numbers.map(Number);
+        firstCard = null; isSwapping = false;
+        if (resetStats) { swaps = 0; seconds = 0; document.getElementById('swap-count').innerText = "0"; }
+        
+        const container = document.getElementById('game-container');
+        container.innerHTML = "";
+        container.style.gridTemplateRows = `repeat(${r}, 65px)`;
+        container.style.gridTemplateColumns = `repeat(${c}, 65px)`;
+
+        for (let row = r - 1; row >= 0; row--) {
+            for (let col = 0; col < c; col++) {
+                let index = row * c + col;
+                const div = document.createElement('div');
+                div.className = 'number-box';
+                div.innerText = currentNumbers[index];
+                div.dataset.index = index;
+                div.onclick = () => handleSelection(div);
+                container.appendChild(div);
+            }
+        }
+
+        if (planTime > 0) {
+            isPlanning = true;
+            let tl = planTime;
+            document.getElementById('planning-timer').innerText = `זמן תכנון נותר: ${tl}`;
+            planningInterval = setInterval(() => {
+                document.getElementById('planning-timer').innerText = `זמן תכנון נותר: ${--tl}`;
+                if (tl <= 0) { clearInterval(planningInterval); isPlanning = false; startClock(); }
+            }, 1000);
+        } else { document.getElementById('planning-timer').innerText = ""; isPlanning = false; startClock(); }
+    }
+
+    function startClock() {
+        clearInterval(timerInterval);
+        timerInterval = setInterval(() => { seconds++; document.getElementById('timer-display').innerText = seconds; }, 1000);
+    }
+
+    function handleSelection(div) {
+        if (isPlanning || isSwapping || document.getElementById('win-message').classList.contains('show')) return;
+
+        if (!firstCard) {
+            firstCard = div;
+            div.style.backgroundColor = "#e74c3c"; div.style.color = "white";
+        } else {
+            if (firstCard === div) { div.style.backgroundColor = "white"; div.style.color = "black"; firstCard = null; return; }
+
+            let idx1 = parseInt(firstCard.dataset.index);
+            let idx2 = parseInt(div.dataset.index);
+
+            if (document.getElementById('only-adjacent').checked) {
+                let r1 = Math.floor(idx1 / gCols), c1 = idx1 % gCols;
+                let r2 = Math.floor(idx2 / gCols), c2 = idx2 % gCols;
+                let dist = Math.abs(r1 - r2) + Math.abs(c1 - c2);
+                if (dist !== 1) {
+                    alert("שגיאה: ניתן להחליף רק מספרים סמוכים!");
+                    firstCard.style.backgroundColor = "white"; firstCard.style.color = "black";
+                    firstCard = null;
+                    return;
+                }
+            }
+
+            let secondCard = div;
+            secondCard.style.backgroundColor = "#f1c40f";
+            isSwapping = true;
+
+            setTimeout(() => {
+                [currentNumbers[idx1], currentNumbers[idx2]] = [currentNumbers[idx2], currentNumbers[idx1]];
+                firstCard.innerText = currentNumbers[idx1];
+                secondCard.innerText = currentNumbers[idx2];
+                firstCard.style.backgroundColor = "white"; firstCard.style.color = "black";
+                secondCard.style.backgroundColor = "white"; secondCard.style.color = "black";
+
+                document.getElementById('swap-count').innerText = ++swaps;
+                if (checkIsSortedAscending(currentNumbers)) {
+                    clearInterval(timerInterval);
+                    document.getElementById('win-message').classList.add('show');
+                }
+                firstCard = null; isSwapping = false;
+            }, 300);
+        }
+    }
+</script>
+</body>
+</html>
