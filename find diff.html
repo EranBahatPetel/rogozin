@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>משחק זיהוי - יציבות מקסימלית</title>
+    <style>
+        :root {
+            --primary-color: #3498db;
+            --secondary-color: #2ecc71;
+            --danger-color: #e74c3c;
+            --header-height: 60px;
+        }
+
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background-color: #ffffff;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+
+        #toolbar {
+            height: var(--header-height);
+            background: #2c3e50;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-around;
+            padding: 0 20px;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            position: relative;
+            z-index: 100;
+        }
+
+        .stat-item { font-size: 1.1rem; font-weight: 500; }
+        .btn { padding: 8px 15px; border: none; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        .btn-reset { background-color: var(--primary-color); color: white; }
+        .btn-new { background-color: #95a5a6; color: white; }
+
+        #win-message {
+            color: var(--secondary-color);
+            font-weight: bold;
+            font-size: 1.5rem;
+            display: none;
+        }
+
+        #board {
+            width: 100%;
+            height: calc(100vh - var(--header-height));
+            display: flex;
+            flex-wrap: wrap;
+            align-content: flex-start;
+            justify-content: flex-start;
+        }
+
+        .item {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 4px;
+            box-sizing: border-box;
+            color: #333;
+            cursor: pointer;
+            user-select: none;
+            flex-grow: 1;
+            /* שינוי צבע ואאוטליין בלבד */
+            transition: color 0.2s ease, outline-color 0.2s ease;
+            outline: 2px solid transparent;
+            outline-offset: -3px;
+            font-weight: normal !important; /* מבטל כל סיכוי להדגשה */
+        }
+
+        /* צבע ומסגרת בלבד ללא שינוי עובי האותיות */
+        .item.success {
+            color: var(--secondary-color) !important;
+            outline-color: var(--secondary-color) !important;
+        }
+
+        .item.revealed {
+            color: var(--danger-color) !important;
+            outline-color: var(--danger-color) !important;
+        }
+    </style>
+</head>
+<body>
+
+    <div id="toolbar">
+        <div class="stat-item">נותרו: <span id="counter">0</span></div>
+        <div class="stat-item">זמן: <span id="timer">0</span> שניות</div>
+        <div id="win-message">יפה מאוד!</div>
+        <button class="btn btn-reset" onclick="resetGame()">אפס משחק</button>
+        <button class="btn btn-new" onclick="fullRestart()">הגדרות חדשות</button>
+    </div>
+
+    <div id="board"></div>
+
+    <script>
+        let bgText, specialText, specialCount, fontSize;
+        let remaining, seconds, timerInterval, gameActive;
+
+        function fullRestart() {
+            bgText = prompt("הזן את המילה/תו שימלאו את הרקע:", "") || " ";
+            specialText = prompt("הזן את המילה/תו שיהיו יוצאי הדופן:", "") || " ";
+            specialCount = parseInt(prompt("כמה פעמים להציג את יוצא הדופן?", "1")) || 1;
+            fontSize = parseInt(prompt("מה גודל הפונט הרצוי (בפיקסלים)?", "24")) || 24;
+            resetGame();
+        }
+
+        function resetGame() {
+            clearInterval(timerInterval);
+            seconds = 0;
+            remaining = specialCount;
+            gameActive = true;
+            document.getElementById('timer').textContent = "0";
+            document.getElementById('counter').textContent = remaining;
+            document.getElementById('win-message').style.display = "none";
+            drawBoard();
+            startTimer();
+        }
+
+        function startTimer() {
+            timerInterval = setInterval(() => {
+                seconds++;
+                document.getElementById('timer').textContent = seconds;
+            }, 1000);
+        }
+
+        function stopGame(isWin) {
+            gameActive = false;
+            clearInterval(timerInterval);
+            if (isWin) document.getElementById('win-message').style.display = "block";
+        }
+
+        function drawBoard() {
+            const board = document.getElementById('board');
+            board.innerHTML = '';
+            
+            const measure = document.createElement('div');
+            measure.style.fontSize = fontSize + 'px';
+            measure.style.position = 'absolute';
+            measure.style.visibility = 'hidden';
+            measure.style.padding = '4px';
+            measure.textContent = bgText.length > specialText.length ? bgText : specialText;
+            document.body.appendChild(measure);
+            
+            const itemWidth = measure.offsetWidth;
+            const itemHeight = measure.offsetHeight;
+            document.body.removeChild(measure);
+
+            const cols = Math.floor(window.innerWidth / itemWidth);
+            const rows = Math.floor((window.innerHeight - 60) / itemHeight) - 1;
+            
+            if (cols <= 0 || rows <= 0) return;
+
+            const totalItems = cols * rows; 
+            const specialIndices = new Set();
+            while(specialIndices.size < Math.min(specialCount, totalItems)) {
+                specialIndices.add(Math.floor(Math.random() * totalItems));
+            }
+
+            for (let i = 0; i < totalItems; i++) {
+                const div = document.createElement('div');
+                div.className = 'item';
+                div.style.fontSize = fontSize + 'px';
+                div.style.minWidth = (100 / cols) + "%"; 
+                div.style.height = itemHeight + "px";
+                
+                if (specialIndices.has(i)) {
+                    div.textContent = specialText;
+                    div.dataset.isSpecial = "true";
+                    div.onclick = function() {
+                        if (!gameActive || this.classList.contains('success')) return;
+                        this.classList.add('success');
+                        remaining--;
+                        document.getElementById('counter').textContent = remaining;
+                        if (remaining === 0) stopGame(true);
+                    };
+                } else {
+                    div.textContent = bgText;
+                }
+                board.appendChild(div);
+            }
+        }
+
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                event.preventDefault(); 
+                if (gameActive) {
+                    stopGame(false);
+                    const specials = document.querySelectorAll('[data-is-special="true"]');
+                    specials.forEach(el => {
+                        if (!el.classList.contains('success')) {
+                            el.classList.add('revealed');
+                        }
+                    });
+                }
+            }
+        });
+
+        window.onresize = drawBoard;
+        fullRestart();
+    </script>
+</body>
+</html>
