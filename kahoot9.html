@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מרכז תרגול מתמטיקה - כיתה ט</title>
+    <style>
+        :root {
+            --primary-color: #461A42;
+            --accent-blue: #1368CE;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin: 0;
+            border-bottom: 4px solid var(--accent-blue);
+            padding-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 25px;
+            max-width: 1200px;
+            width: 100%;
+        }
+
+        @media (max-width: 900px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .column {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-top: 6px solid var(--accent-blue);
+        }
+
+        .column:nth-child(1) { border-top-color: #461A42; }
+        .column:nth-child(2) { border-top-color: #1368CE; }
+        .column:nth-child(3) { border-top-color: #864CBF; }
+
+        .column h2 {
+            font-size: 1.5rem;
+            color: #222;
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .btn-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        .kahoot-btn {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            background-color: #f8f9fa;
+            color: #444;
+            padding: 14px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .kahoot-btn:hover {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(19, 104, 206, 0.2);
+        }
+
+        .column:nth-child(1) .kahoot-btn:hover { background-color: #461A42; border-color: #461A42; box-shadow: 0 4px 8px rgba(70, 26, 66, 0.2); }
+        .column:nth-child(3) .kahoot-btn:hover { background-color: #864CBF; border-color: #864CBF; box-shadow: 0 4px 8px rgba(134, 76, 191, 0.2); }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.8rem;
+            background-color: #edf2f7;
+            color: #4a5568;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>כיתה ט</h1>
+    </header>
+
+    <div class="container">
+
+        <div class="column">
+            <h2>משוואות</h2>
+            <div class="btn-list">
+                <a href="https://create.kahoot.it/share/1/ec5e8f77-e190-4cf7-9dd9-0f7b89ddcd0c" target="_blank" class="kahoot-btn">
+                    <span class="badge">משוואות 1</span><br>משוואות
+                </a>
+                <a href="https://create.kahoot.it/share/2/3f32f9d2-e8ef-4d54-8d36-308ad20fd4d5" target="_blank" class="kahoot-btn">
+                    <span class="badge">משוואות 2</span><br>משוואות
+                </a>
+                <a href="https://create.kahoot.it/share/3/127d77fe-f954-4d6b-8985-8b7b4d4940cc" target="_blank" class="kahoot-btn">
+                    <span class="badge">משוואות 3</span><br>משוואות
+                </a>
+                <a href="https://create.kahoot.it/share/4/402f89cd-e9dd-450d-a4d3-8b0c4d79ca42" target="_blank" class="kahoot-btn">
+                    <span class="badge">משוואות 4</span><br>משוואות
+                </a>
+            </div>
+        </div>
+
+        <div class="column">
+            <h2>מציאת שיפוע</h2>
+            <div class="btn-list">
+                <a href="https://create.kahoot.it/share/1/29f660d0-8e0f-468b-8448-ba1bf65e666b" target="_blank" class="kahoot-btn">
+                    <span class="badge">מציאת שיפוע 1</span><br>מציאת שיפוע
+                </a>
+                <a href="https://create.kahoot.it/share/2/64b0b13f-28c8-4aca-b2fb-79fc34aa7fc7" target="_blank" class="kahoot-btn">
+                    <span class="badge">מציאת שיפוע 2</span><br>מציאת שיפוע
+                </a>
+                <a href="https://create.kahoot.it/share/3/02ce7a69-85bc-4d53-91f5-b66ae0ca8938" target="_blank" class="kahoot-btn">
+                    <span class="badge">מציאת שיפוע 3</span><br>מציאת שיפוע
+                </a>
+                <a href="https://create.kahoot.it/share/4/d82839a4-6e49-4793-afad-36f94c665329" target="_blank" class="kahoot-btn">
+                    <span class="badge">מציאת שיפוע 4</span><br>מציאת שיפוע
+                </a>
+            </div>
+        </div>
+
+        <div class="column">
+            <h2>חיתוך עם ציר ה-Y</h2>
+            <div class="btn-list">
+                <a href="https://create.kahoot.it/share/y-1/c6352c37-df6c-473e-a122-00e25fa2754b" target="_blank" class="kahoot-btn">
+                    <span class="badge">חיתוך עם ציר ה-Y 1</span><br>חיתוך עם ציר ה-Y
+                </a>
+                <a href="https://create.kahoot.it/share/y-2/7f107737-64d2-47a6-be7d-11ac42f55910" target="_blank" class="kahoot-btn">
+                    <span class="badge">חיתוך עם ציר ה-Y 2</span><br>חיתוך עם ציר ה-Y
+                </a>
+                <a href="https://create.kahoot.it/share/y-3/dfc700ec-4d2f-4b98-9ed7-abfd0998aa97" target="_blank" class="kahoot-btn">
+                    <span class="badge">חיתוך עם ציר ה-Y 3</span><br>חיתוך עם ציר ה-Y
+                </a>
+                <a href="https://create.kahoot.it/share/y-4/a94615b1-8ce5-4a9f-be64-b9bd0e018578" target="_blank" class="kahoot-btn">
+                    <span class="badge">חיתוך עם ציר ה-Y 4</span><br>חיתוך עם ציר ה-Y
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

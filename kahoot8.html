@@ -1,0 +1,261 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>מרכז תרגול מתמטיקה - כיתה ח</title>
+    <style>
+        :root {
+            --primary-color: #461A42;
+            --accent-blue: #1368CE;
+            --bg-color: #f4f6f9;
+            --card-bg: #ffffff;
+            --text-color: #333333;
+            --border-radius: 12px;
+            --shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        header {
+            margin-bottom: 40px;
+            text-align: center;
+        }
+
+        header h1 {
+            font-size: 3rem;
+            color: var(--primary-color);
+            margin: 0;
+            border-bottom: 4px solid var(--accent-blue);
+            padding-bottom: 10px;
+            font-weight: 800;
+        }
+
+        .container {
+            display: grid;
+            /* שינוי ל-4 עמודות עבור ארבעת הנושאים */
+            grid-template-columns: repeat(4, 1fr);
+            gap: 25px;
+            max-width: 1400px;
+            width: 100%;
+        }
+
+        @media (max-width: 1100px) {
+            .container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 700px) {
+            .container {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .column {
+            background-color: var(--card-bg);
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            padding: 25px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            border-top: 6px solid var(--accent-blue);
+        }
+
+        .column:nth-child(1) { border-top-color: #461A42; }
+        .column:nth-child(2) { border-top-color: #1368CE; }
+        .column:nth-child(3) { border-top-color: #864CBF; }
+        .column:nth-child(4) { border-top-color: #2E6F40; } /* צבע כותרת לעמודה החדשה */
+
+        .column h2 {
+            font-size: 1.5rem;
+            color: #222;
+            margin-top: 0;
+            margin-bottom: 25px;
+            text-align: center;
+            font-weight: 700;
+        }
+
+        .btn-list {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+        }
+
+        /* רשת פנימית מיוחדת לעמודה הרביעית: 3 עמודות של כפתורים */
+        .btn-grid-3x4 {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+            width: 100%;
+        }
+
+        @media (max-width: 400px) {
+            .btn-grid-3x4 {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .kahoot-btn {
+            display: block;
+            text-align: center;
+            text-decoration: none;
+            background-color: #f8f9fa;
+            color: #444;
+            padding: 14px 20px;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            font-weight: 600;
+            font-size: 1rem;
+            transition: all 0.2s ease-in-out;
+        }
+
+        .kahoot-btn:hover {
+            background-color: var(--accent-blue);
+            color: #ffffff;
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(19, 104, 206, 0.2);
+        }
+
+        .column:nth-child(1) .kahoot-btn:hover { background-color: #461A42; border-color: #461A42; box-shadow: 0 4px 8px rgba(70, 26, 66, 0.2); }
+        .column:nth-child(3) .kahoot-btn:hover { background-color: #864CBF; border-color: #864CBF; box-shadow: 0 4px 8px rgba(134, 76, 191, 0.2); }
+        .column:nth-child(4) .kahoot-btn:hover { background-color: #2E6F40; border-color: #2E6F40; box-shadow: 0 4px 8px rgba(46, 111, 64, 0.2); }
+
+        .badge {
+            display: inline-block;
+            font-size: 0.8rem;
+            background-color: #edf2f7;
+            color: #4a5568;
+            padding: 2px 8px;
+            border-radius: 4px;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        
+        /* התאמת גודל הטקסט בכפתורים הקטנים של העמודה המעורבבת */
+        .column:nth-child(4) .kahoot-btn {
+            padding: 10px 5px;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>כיתה ח</h1>
+    </header>
+
+    <div class="container">
+
+        <div class="column">
+            <h2>חישוב כמות לפי אחוזים</h2>
+            <div class="btn-list">
+                <a href="https://create.kahoot.it/share/1/e4060058-4472-4a7d-ba70-109894883426" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 1</span><br>חישוב כמות לפי אחוזים
+                </a>
+                <a href="https://create.kahoot.it/share/2/48620c88-1dec-4751-9516-a61f1e3efe73" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 2</span><br>חישוב כמות לפי אחוזים
+                </a>
+                <a href="https://create.kahoot.it/share/3/315de6e3-3ccf-4c2c-a75b-dd27097eb57a" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 3</span><br>חישוב כמות לפי אחוזים
+                </a>
+                <a href="https://create.kahoot.it/share/4/86d5d17d-a460-4967-9eaf-6e4860fad41a" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 4</span><br>חישוב כמות לפי אחוזים
+                </a>
+            </div>
+        </div>
+
+        <div class="column">
+            <h2>חישוב אחוזים לפי כמות</h2>
+            <div class="btn-list">
+                <a href="https://create.kahoot.it/share/1/0168fc4c-a311-4f34-8cbf-ffb1afa10fa2" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 1</span><br>חישוב אחוזים לפי כמות
+                </a>
+                <a href="https://create.kahoot.it/share/2/8eab22c6-b9fa-4f04-b032-67f7257f54fe" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 2</span><br>חישוב אחוזים לפי כמות
+                </a>
+                <a href="https://create.kahoot.it/share/3/9f479b40-e134-4c56-b097-5d0e7589afdb" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 3</span><br>חישוב אחוזים לפי כמות
+                </a>
+                <a href="https://create.kahoot.it/share/4/86651c94-c7bd-4342-a5e3-c76ad2200b88" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 4</span><br>חישוב אחוזים לפי כמות
+                </a>
+            </div>
+        </div>
+
+        <div class="column">
+            <h2>שינויי מחיר</h2>
+            <div class="btn-list">
+                <a href="https://create.kahoot.it/share/1/aad05e69-9d67-47cc-9b65-16e8ee62e091" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 1</span><br>שינויי מחיר
+                </a>
+                <a href="https://create.kahoot.it/share/2/eddf9f3b-bacf-4e0b-a2e4-01703679fd97" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 2</span><br>שינויי מחיר
+                </a>
+                <a href="https://create.kahoot.it/share/3/249a17cc-2b2b-404a-a06e-3cfad09cdcf1" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 3</span><br>שינויי מחיר
+                </a>
+                <a href="https://create.kahoot.it/share/4/3f44987a-0ed0-4d52-896c-e056789e8c05" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 4</span><br>שינויי מחיר
+                </a>
+            </div>
+        </div>
+
+        <div class="column">
+            <h2>אחוזים - מעורבב</h2>
+            <div class="btn-grid-3x4">
+                <a href="https://create.kahoot.it/share/1/ab05b9d8-2e42-459b-a428-4409277de0e8" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 1
+                </a>
+                <a href="https://create.kahoot.it/share/2/9f7be917-0d04-486a-a1c0-f23617e34121" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 2
+                </a>
+                <a href="https://create.kahoot.it/share/3/3affa902-ccef-4062-b01c-d1ae1b8d0cc0" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 3
+                </a>
+                <a href="https://create.kahoot.it/share/4/2d6a6ffb-4ee2-4a08-8632-c73013264296" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 4
+                </a>
+                <a href="https://create.kahoot.it/share/5/17cc2e45-e6b7-4c38-bba9-2d375b5c00dd" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 5
+                </a>
+                <a href="https://create.kahoot.it/share/6/0a68cbaa-1fcd-4145-8c8a-978dba665d03" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 6
+                </a>
+                <a href="https://create.kahoot.it/share/7/e740b795-11c1-4ac6-849f-a3fb7f754bbf" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 7
+                </a>
+                <a href="https://create.kahoot.it/share/8/276fb880-406d-4794-9fcb-963c16c3684f" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 8
+                </a>
+                <a href="https://create.kahoot.it/share/9/9791c8ff-bd24-40fd-a181-b7424be2cccf" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 9
+                </a>
+                <a href="https://create.kahoot.it/share/10/90c1966c-1469-4ad5-9902-643079820d3b" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 10
+                </a>
+                <a href="https://create.kahoot.it/share/11/0fc8e807-b846-492a-bc17-e9c47ed5c8f2" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 11
+                </a>
+                <a href="https://create.kahoot.it/share/12/8bfdb9c2-ad25-4c6e-ad41-0fde2bb044b0" target="_blank" class="kahoot-btn">
+                    אחוזים מעורבב 12
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>
