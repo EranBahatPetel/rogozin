@@ -42,13 +42,26 @@
 
         .container {
             display: grid;
-            grid-template-columns: repeat(3, 1fr);
+            /* עודכן ל-5 עמודות עבור חמשת הנושאים */
+            grid-template-columns: repeat(5, 1fr);
             gap: 25px;
-            max-width: 1200px;
+            max-width: 1600px;
             width: 100%;
         }
 
+        @media (max-width: 1400px) {
+            .container {
+                grid-template-columns: repeat(3, 1fr);
+            }
+        }
+
         @media (max-width: 900px) {
+            .container {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+
+        @media (max-width: 600px) {
             .container {
                 grid-template-columns: 1fr;
             }
@@ -68,6 +81,8 @@
         .column:nth-child(1) { border-top-color: #461A42; }
         .column:nth-child(2) { border-top-color: #1368CE; }
         .column:nth-child(3) { border-top-color: #864CBF; }
+        .column:nth-child(4) { border-top-color: #2E6F40; } /* צבע כותרת לחלק החדש הראשון */
+        .column:nth-child(5) { border-top-color: #D97706; } /* צבע כותרת לחלק החדש השני */
 
         .column h2 {
             font-size: 1.5rem;
@@ -76,6 +91,10 @@
             margin-bottom: 25px;
             text-align: center;
             font-weight: 700;
+            min-height: 68px; /* שומר על גובה אחיד של הכותרות גם כשהטקסט ארוך */
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .btn-list {
@@ -109,6 +128,8 @@
 
         .column:nth-child(1) .kahoot-btn:hover { background-color: #461A42; border-color: #461A42; box-shadow: 0 4px 8px rgba(70, 26, 66, 0.2); }
         .column:nth-child(3) .kahoot-btn:hover { background-color: #864CBF; border-color: #864CBF; box-shadow: 0 4px 8px rgba(134, 76, 191, 0.2); }
+        .column:nth-child(4) .kahoot-btn:hover { background-color: #2E6F40; border-color: #2E6F40; box-shadow: 0 4px 8px rgba(46, 111, 64, 0.2); }
+        .column:nth-child(5) .kahoot-btn:hover { background-color: #D97706; border-color: #D97706; box-shadow: 0 4px 8px rgba(217, 119, 6, 0.2); }
 
         .badge {
             display: inline-block;
@@ -180,6 +201,42 @@
                 </a>
                 <a href="https://create.kahoot.it/share/y-4/a94615b1-8ce5-4a9f-be64-b9bd0e018578" target="_blank" class="kahoot-btn">
                     <span class="badge">חיתוך עם ציר ה-Y 4</span><br>חיתוך עם ציר ה-Y
+                </a>
+            </div>
+        </div>
+
+        <div class="column">
+            <h2>מציאת נקודה על קו ישר לפי הפונקציה</h2>
+            <div class="btn-list">
+                <a href="https://create.kahoot.it/share/1/fdb3f138-128e-4fff-891f-5ebb0c6bfc5d" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 1</span><br>מציאת נקודה על קו ישר
+                </a>
+                <a href="https://create.kahoot.it/share/2/8328023c-8093-4513-bc43-31be721a6453" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 2</span><br>מציאת נקודה על קו ישר
+                </a>
+                <a href="https://create.kahoot.it/share/3/db0436e0-b751-4f61-ad6d-f143317cd892" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 3</span><br>מציאת נקודה על קו ישר
+                </a>
+                <a href="https://create.kahoot.it/share/4/ae018e9c-04ff-4962-bd6c-39b6a3dcba70" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 4</span><br>מציאת נקודה על קו ישר
+                </a>
+            </div>
+        </div>
+
+        <div class="column">
+            <h2>מציאת משוואת קו ישר דרך שתי נקודות</h2>
+            <div class="btn-list">
+                <a href="https://create.kahoot.it/share/1/d5a74e4e-949f-45b7-9e51-4406253cc467" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 1</span><br>משוואת קו ישר דרך 2 נקודות
+                </a>
+                <a href="https://create.kahoot.it/share/2/f211d243-d075-4ecf-9024-f9280d201614" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 2</span><br>משוואת קו ישר דרך 2 נקודות
+                </a>
+                <a href="https://create.kahoot.it/share/3/93624e5e-103b-4ff3-85bd-6f675ab09069" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 3</span><br>משוואת קו ישר דרך 2 נקודות
+                </a>
+                <a href="https://create.kahoot.it/share/4/07f729ca-dd28-44d2-be8a-876f1f885b0e" target="_blank" class="kahoot-btn">
+                    <span class="badge">חלק 4</span><br>משוואת קו ישר דרך 2 נקודות
                 </a>
             </div>
         </div>
